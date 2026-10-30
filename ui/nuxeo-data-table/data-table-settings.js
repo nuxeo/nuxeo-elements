@@ -6,6 +6,8 @@ import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-radio-button/paper-radio-button.js';
+import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-dialog.js';
@@ -41,6 +43,25 @@ import '../nuxeo-button-styles.js';
             @apply --buttons-bar;
             margin-top: 0px;
           }
+
+          .scope {
+            margin: 0 24px 16px;
+          }
+
+          .scope[hidden] {
+            display: none;
+          }
+
+          .scope-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+          }
+
+          .scope paper-radio-group {
+            display: flex;
+            flex-direction: column;
+            --paper-radio-group-item-padding: 4px 0;
+          }
         </style>
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -68,6 +89,22 @@ import '../nuxeo-button-styles.js';
               </div>
             </div>
           </paper-dialog-scrollable>
+          <div class="scope" hidden$="[[!scopeEnabled]]">
+            <div id="scopeLabel" class="scope-label">[[i18n('tableSettings.columnSettings.applyTo')]]</div>
+            <paper-radio-group
+              id="scope"
+              selected="[[scope]]"
+              aria-labelledby="scopeLabel"
+              on-paper-radio-group-changed="_scopeSelected"
+            >
+              <paper-radio-button name="all" noink>
+                [[i18n('tableSettings.columnSettings.applyTo.all')]]
+              </paper-radio-button>
+              <paper-radio-button name="document" noink>
+                [[i18n('tableSettings.columnSettings.applyTo.document')]]
+              </paper-radio-button>
+            </paper-radio-group>
+          </div>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink on-click="_resetSettings" class="secondary"
@@ -101,6 +138,21 @@ import '../nuxeo-button-styles.js';
           type: Array,
           notify: true,
         },
+        /**
+         * `true` to let the user choose where column changes apply (see `scope`).
+         */
+        scopeEnabled: {
+          type: Boolean,
+          value: false,
+        },
+        /**
+         * Where column changes apply: `all` (every document of this type) or `document` (this document only).
+         */
+        scope: {
+          type: String,
+          value: 'all',
+          notify: true,
+        },
       };
     }
 
@@ -109,18 +161,32 @@ import '../nuxeo-button-styles.js';
     }
 
     toggleColsSettingsPopup() {
-      this.$$('#columnsSettingsPopup').toggle();
+      const dialog = this.$$('#columnsSettingsPopup');
+      if (!dialog.opened) {
+        this._editing = true;
+        this._changedWhileEditing = false;
+      }
+      dialog.toggle();
     }
 
     _columnDisplayChanged(change) {
       if (change.path.endsWith('hidden')) {
-        this.dispatchEvent(
-          new CustomEvent('settings-changed', {
-            composed: true,
-            bubbles: true,
-          }),
-        );
+        // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then
+        if (this._editing) {
+          this._changedWhileEditing = true;
+          return;
+        }
+        this._fireSettingsChanged();
       }
+    }
+
+    _fireSettingsChanged() {
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     }
 
     _resetSettings() {
@@ -133,10 +199,32 @@ import '../nuxeo-button-styles.js';
       if (this.columns.every((column) => column.hidden)) {
         this._resetSettings();
       }
+      this._editing = false;
+      if (this._changedWhileEditing) {
+        this._changedWhileEditing = false;
+        this._fireSettingsChanged();
+      }
     }
 
     canChangeVisibility(column) {
       return !column.alwaysVisible;
+    }
+
+    // Runs only when the user picks an option, not when `scope` is set by code.
+    _scopeSelected(e) {
+      const scope = e.target.selected;
+      if (!scope || scope === this.scope) {
+        return;
+      }
+      this.scope = scope;
+      this.dispatchEvent(
+        new CustomEvent('settings-scope-selected', {
+          composed: true,
+          bubbles: true,
+          // tells whether column changes made in the open dialog are still to be saved
+          detail: { scope, pendingChanges: Boolean(this._editing && this._changedWhileEditing) },
+        }),
+      );
     }
   }
 

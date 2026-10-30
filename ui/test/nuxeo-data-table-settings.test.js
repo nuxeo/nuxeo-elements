@@ -1,4 +1,4 @@
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-data-table/data-table-settings.js';
 
 suite('nuxeo-data-table-settings', () => {
@@ -56,6 +56,57 @@ suite('nuxeo-data-table-settings', () => {
       element.addEventListener('settings-changed', spy);
       element._columnDisplayChanged({ path: 'columns.1.hiddenBack', value: true });
       expect(spy).to.not.have.been.called;
+    });
+  });
+
+  suite('saving when the dialog closes', () => {
+    const toggle = (idx) => element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
+
+    test('should not fire settings-changed while the dialog is open', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      toggle(2);
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should fire settings-changed once when the dialog closes after changes', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      toggle(2);
+      element._onSettingsClosed();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should not fire settings-changed when the dialog closes without changes', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element._onSettingsClosed();
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should tell whether column changes are pending when a scope is picked', async () => {
+      element.scopeEnabled = true;
+      element.toggleColsSettingsPopup();
+      await flush();
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      expect(spy.firstCall.args[0].detail).to.deep.equal({ scope: 'document', pendingChanges: true });
+    });
+
+    test('should fire at once again after the dialog is closed', () => {
+      element.toggleColsSettingsPopup();
+      element._onSettingsClosed();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      expect(spy).to.have.been.calledOnce;
     });
   });
 
@@ -128,6 +179,66 @@ suite('nuxeo-data-table-settings', () => {
 
     test('should return true when alwaysVisible is undefined', () => {
       expect(element.canChangeVisibility({ name: 'Test' })).to.be.true;
+    });
+  });
+
+  suite('scope choice', () => {
+    const scopeSection = () => element.shadowRoot.querySelector('.scope');
+    const radio = (name) => element.shadowRoot.querySelector(`paper-radio-button[name="${name}"]`);
+
+    test('should be hidden by default and default to all documents', () => {
+      expect(scopeSection().hidden).to.be.true;
+      expect(element.scope).to.equal('all');
+    });
+
+    test('should be shown when scopeEnabled is set', async () => {
+      element.scopeEnabled = true;
+      await flush();
+      expect(scopeSection().hidden).to.be.false;
+      expect(element.shadowRoot.querySelector('#scope').getAttribute('aria-labelledby')).to.equal('scopeLabel');
+    });
+
+    test('should update scope and fire settings-scope-selected when the user picks an option', async () => {
+      element.scopeEnabled = true;
+      await flush();
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      radio('document').click();
+      expect(element.scope).to.equal('document');
+      expect(spy).to.have.been.calledOnce;
+      const event = spy.firstCall.args[0];
+      expect(event.detail).to.deep.equal({ scope: 'document', pendingChanges: false });
+      expect(event.composed).to.be.true;
+      expect(event.bubbles).to.be.true;
+    });
+
+    test('should select the matching option when scope is set by code, without firing the event', async () => {
+      element.scopeEnabled = true;
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      element.scope = 'document';
+      await flush();
+      expect(radio('document').checked).to.be.true;
+      expect(radio('all').checked).to.be.false;
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should not fire again when the selected option is picked', async () => {
+      element.scopeEnabled = true;
+      await flush();
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      radio('all').click();
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should ignore an empty or unchanged selection', () => {
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      element._scopeSelected({ target: { selected: '' } });
+      element._scopeSelected({ target: { selected: 'all' } });
+      expect(spy).to.not.have.been.called;
+      expect(element.scope).to.equal('all');
     });
   });
 });
