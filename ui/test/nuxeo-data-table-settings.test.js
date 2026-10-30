@@ -180,5 +180,14 @@ suite('nuxeo-data-table-settings', () => {
       radio('all').click();
       expect(spy).to.not.have.been.called;
     });
+
+    test('should ignore an empty or unchanged selection', () => {
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      element._scopeSelected({ target: { selected: '' } });
+      element._scopeSelected({ target: { selected: 'all' } });
+      expect(spy).to.not.have.been.called;
+      expect(element.scope).to.equal('all');
+    });
   });
 });
