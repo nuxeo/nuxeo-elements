@@ -221,7 +221,8 @@ import '../nuxeo-button-styles.js';
         new CustomEvent('settings-scope-selected', {
           composed: true,
           bubbles: true,
-          detail: { scope },
+          // tells whether column changes made in the open dialog are still to be saved
+          detail: { scope, pendingChanges: Boolean(this._editing && this._changedWhileEditing) },
         }),
       );
     }

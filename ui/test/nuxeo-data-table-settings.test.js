@@ -89,6 +89,17 @@ suite('nuxeo-data-table-settings', () => {
       expect(spy).to.not.have.been.called;
     });
 
+    test('should tell whether column changes are pending when a scope is picked', async () => {
+      element.scopeEnabled = true;
+      element.toggleColsSettingsPopup();
+      await flush();
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      expect(spy.firstCall.args[0].detail).to.deep.equal({ scope: 'document', pendingChanges: true });
+    });
+
     test('should fire at once again after the dialog is closed', () => {
       element.toggleColsSettingsPopup();
       element._onSettingsClosed();
@@ -196,7 +207,7 @@ suite('nuxeo-data-table-settings', () => {
       expect(element.scope).to.equal('document');
       expect(spy).to.have.been.calledOnce;
       const event = spy.firstCall.args[0];
-      expect(event.detail).to.deep.equal({ scope: 'document' });
+      expect(event.detail).to.deep.equal({ scope: 'document', pendingChanges: false });
       expect(event.composed).to.be.true;
       expect(event.bubbles).to.be.true;
     });
