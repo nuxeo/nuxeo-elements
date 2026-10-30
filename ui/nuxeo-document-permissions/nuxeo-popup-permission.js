@@ -387,7 +387,11 @@ import '../nuxeo-button-styles.js';
         return null;
       }
       // Editing an ACE must preserve its exact access window when the calendar day was not changed.
-      if (this.updatingACE && original && value === moment(new Date(original)).format('YYYY-MM-DD')) {
+      if (
+        this.updatingACE &&
+        original &&
+        (value === original || value === moment(new Date(original)).format('YYYY-MM-DD'))
+      ) {
         return original;
       }
       const date = moment(new Date(value));

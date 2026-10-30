@@ -18,6 +18,12 @@ limitations under the License.
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import momentTz from '@nuxeo/moment-timezone';
 
+// Match moment-timezone's Moment extension: retain parsed calendar parts so its needsOffset()
+// helper can distinguish wall-clock input from absolute instants on the locale-aware build too.
+if (!moment.momentProperties.includes('_a')) {
+  moment.momentProperties.push('_a');
+}
+
 // Keep track of timezones we already warned about, so an invalid configuration only logs once.
 const _warnedZones = new Set();
 
@@ -109,17 +115,17 @@ export function momentTimezoneParser(timezone) {
     return moment;
   }
   return (...args) => {
-    // `momentTz` resolves the zone (DST transitions, sub-hour offsets) for both parsing and display, but it
-    // wraps a different `moment` build than the locale-aware one imported here, so its own locale is always
-    // `en`. Only the resolved instant and offset are taken from it; the returned object is rebuilt on the
-    // locale-aware instance so `format('L')` and friends keep honouring the language selected by the user.
-    const zoned = momentTz.tz(...args, timezone);
-    if (!zoned.isValid()) {
-      // Unparseable input is invalid whichever zone it is read in; returning it from the locale-aware
-      // instance keeps the type consistent for callers that inspect the result before `isValid()`.
-      return moment(...args);
+    // Parse with the locale-aware build first: momentTz wraps a separate, English-only moment build.
+    // Like momentTz.tz(), start with UTC wall-clock parts and apply the zone's parsing rules only when
+    // the input does not already identify an instant (an offset, timestamp or existing moment).
+    const parsed = moment.utc(...args);
+    if (!parsed.isValid()) {
+      return parsed;
     }
-    return momentTimezone(timezone)(zoned.valueOf());
+    if (!moment.isMoment(args[0]) && momentTz.tz.needsOffset(parsed)) {
+      parsed.add(momentTz.tz.zone(timezone).parse(parsed), 'minutes');
+    }
+    return momentTimezone(timezone)(parsed.valueOf());
   };
 }
 
