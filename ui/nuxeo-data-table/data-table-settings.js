@@ -161,18 +161,32 @@ import '../nuxeo-button-styles.js';
     }
 
     toggleColsSettingsPopup() {
-      this.$$('#columnsSettingsPopup').toggle();
+      const dialog = this.$$('#columnsSettingsPopup');
+      if (!dialog.opened) {
+        this._editing = true;
+        this._changedWhileEditing = false;
+      }
+      dialog.toggle();
     }
 
     _columnDisplayChanged(change) {
       if (change.path.endsWith('hidden')) {
-        this.dispatchEvent(
-          new CustomEvent('settings-changed', {
-            composed: true,
-            bubbles: true,
-          }),
-        );
+        // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then
+        if (this._editing) {
+          this._changedWhileEditing = true;
+          return;
+        }
+        this._fireSettingsChanged();
       }
+    }
+
+    _fireSettingsChanged() {
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     }
 
     _resetSettings() {
@@ -184,6 +198,11 @@ import '../nuxeo-button-styles.js';
     _onSettingsClosed() {
       if (this.columns.every((column) => column.hidden)) {
         this._resetSettings();
+      }
+      this._editing = false;
+      if (this._changedWhileEditing) {
+        this._changedWhileEditing = false;
+        this._fireSettingsChanged();
       }
     }
 

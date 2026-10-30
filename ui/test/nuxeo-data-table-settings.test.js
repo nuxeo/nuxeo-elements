@@ -59,6 +59,46 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
+  suite('saving when the dialog closes', () => {
+    const toggle = (idx) => element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
+
+    test('should not fire settings-changed while the dialog is open', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      toggle(2);
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should fire settings-changed once when the dialog closes after changes', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      toggle(2);
+      element._onSettingsClosed();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should not fire settings-changed when the dialog closes without changes', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element._onSettingsClosed();
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should fire at once again after the dialog is closed', () => {
+      element.toggleColsSettingsPopup();
+      element._onSettingsClosed();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      expect(spy).to.have.been.calledOnce;
+    });
+  });
+
   suite('_resetSettings', () => {
     test('should reset hidden to hiddenBack for each column', () => {
       element.columns = [
