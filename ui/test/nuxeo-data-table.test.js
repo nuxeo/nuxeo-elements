@@ -1056,6 +1056,22 @@ suite('nuxeo-data-table', () => {
       expect(headerRow.querySelector('nuxeo-data-table-settings').getAttribute('role')).to.equal('columnheader');
     });
 
+    // WEBUI-1380
+    test('passes the column settings scope to the settings dialog and back', async () => {
+      const settings = table.querySelector('nuxeo-data-table-settings');
+      expect(table.settingsScopeEnabled).to.be.false;
+      expect(settings.scopeEnabled).to.be.false;
+
+      table.settingsScopeEnabled = true;
+      table.settingsScope = 'document';
+      await flush();
+      expect(settings.scopeEnabled).to.be.true;
+      expect(settings.scope).to.equal('document');
+
+      settings.scope = 'all';
+      expect(table.settingsScope).to.equal('all');
+    });
+
     // ELEMENTS-2005
     test('body cells stay exposed as cells', () => {
       const bodyCells = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-cell'));
