@@ -25,7 +25,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
-import { momentTimezoneParser } from '../nuxeo-timezone.js';
 
 {
   /**
@@ -113,11 +112,9 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
 
         /**
          * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Valid values are:
+         * Currently valid values are:
          * - empty: local time will be used, as read from the browser (this is the default)
          * - Etc/UTC: time specified by the user is assumed to be in UTC
-         * - any IANA zone (e.g. Europe/Paris, Asia/Kolkata): the date is both read and displayed in that zone,
-         *   honoring DST and sub-hour offsets; an unknown zone falls back to the browser's local time
          */
         timezone: {
           type: String,
@@ -267,7 +264,8 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
     }
 
     _moment(...args) {
-      return momentTimezoneParser(this.timezone)(...args);
+      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
+      return fn(...args);
     }
 
     _computeDateAriaLabel(label) {

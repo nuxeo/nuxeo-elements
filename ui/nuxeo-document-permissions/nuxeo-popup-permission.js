@@ -358,16 +358,11 @@ import '../nuxeo-button-styles.js';
       const dateBased = this.selectedTimeFrame === 'datebased';
 
       if (this.params.begin && dateBased) {
-        this.params.begin = this.params.begin.length > 0 ? moment(new Date(this.params.begin)).format() : null;
+        this.params.begin = this._serializePermissionDate(this.params.begin, this.ace && this.ace.begin);
       }
 
       if (this.params.end && dateBased) {
-        this.params.end =
-          this.params.end.length > 0
-            ? moment(new Date(this.params.end))
-                .endOf('day')
-                .format()
-            : null;
+        this.params.end = this._serializePermissionDate(this.params.end, this.ace && this.ace.end, true);
       }
 
       if (this.params.end === null && this.shareWithExternal) {
@@ -385,6 +380,18 @@ import '../nuxeo-button-styles.js';
       if (togglePopup) {
         this.togglePopup();
       }
+    }
+
+    _serializePermissionDate(value, original, endOfDay = false) {
+      if (!value) {
+        return null;
+      }
+      // Editing an ACE must preserve its exact access window when the calendar day was not changed.
+      if (this.updatingACE && original && value === moment(new Date(original)).format('YYYY-MM-DD')) {
+        return original;
+      }
+      const date = moment(new Date(value));
+      return (endOfDay ? date.endOf('day') : date).format();
     }
 
     handleResponse() {

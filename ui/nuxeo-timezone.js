@@ -72,7 +72,10 @@ export function momentTimezone(timezone) {
     const m = moment(...args);
     // `Zone#utcOffset` returns the offset in minutes to add to local time to get UTC (i.e. the negated offset),
     // computed at the given instant so DST and sub-hour offsets are taken into account.
-    return m.utcOffset(-zone.utcOffset(m.valueOf()));
+    m.utcOffset(-zone.utcOffset(m.valueOf()), false, true);
+    m.zoneAbbr = () => zone.abbr(m.valueOf());
+    m.zoneName = () => zone.abbr(m.valueOf());
+    return m;
   };
 }
 

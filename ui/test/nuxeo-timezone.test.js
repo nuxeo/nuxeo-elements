@@ -63,6 +63,23 @@ suite('nuxeo-timezone', () => {
       expect(fn(instant).format('YYYY-MM-DD HH:mm')).to.equal('2024-01-15 17:30');
     });
 
+    test('formats named-zone abbreviations across DST and locales', () => {
+      moment.locale('fr');
+      const ny = momentTimezone('America/New_York');
+      expect(ny(instant).format('z zz')).to.equal('EST EST');
+      expect(ny('2024-07-15T12:00:00Z').format('z zz')).to.equal('EDT EDT');
+      expect(momentTimezone('Asia/Kolkata')(instant).format('z')).to.equal('IST');
+      expect(ny(instant).format('LL')).to.equal('15 janvier 2024');
+    });
+
+    test('interprets historic sub-16-minute offsets as minutes', () => {
+      expect(momentTimezone('Europe/Paris')('1900-01-01T12:00:00Z').format('HH:mm')).to.equal('12:09');
+      expect(momentTimezone('Europe/Madrid')('1899-06-01T12:00:00Z').format('YYYY-MM-DD HH:mm')).to.equal(
+        '1899-06-01 11:45',
+      );
+      expect(momentTimezone('Europe/London')('1840-01-01T12:00:00Z').format('HH:mm')).to.equal('11:58');
+    });
+
     test('honors DST in both directions', () => {
       const paris = momentTimezone('Europe/Paris');
       // Winter: CET (UTC+1).

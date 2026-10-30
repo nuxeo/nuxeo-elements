@@ -181,59 +181,17 @@ suite('nuxeo-date-picker – extra branches', () => {
       expect(m.isValid()).to.be.true;
     });
 
-    test('renders an absolute instant in a named IANA zone', async () => {
-      const kolkata = await makeDatePicker('Asia/Kolkata');
-      // Asia/Kolkata is UTC+5:30, so 23:30 UTC on the 15th is already the 16th there.
-      expect(kolkata._moment('2024-01-15T23:30:00.000Z').format('YYYY-MM-DD HH:mm')).to.equal('2024-01-16 05:00');
-    });
-
-    test('reads a typed date as wall-clock time in a named IANA zone', async () => {
-      const kolkata = await makeDatePicker('Asia/Kolkata');
-      expect(kolkata._moment('2024-01-15').toJSON()).to.equal('2024-01-14T18:30:00.000Z');
-    });
-
-    test('falls back to local time for an unknown zone', async () => {
-      const warn = sinon.stub(console, 'warn');
-      try {
-        const bogus = await makeDatePicker('Picker/NoSuchZone');
-        expect(bogus._moment('2024-06-15').toJSON()).to.equal(moment('2024-06-15').toJSON());
-      } finally {
-        warn.restore();
-      }
-    });
-
-    test('keeps the selected locale when a named IANA zone is configured', async () => {
-      const paris = await makeDatePicker('Europe/Paris');
-      moment.locale('fr');
-      expect(paris._moment('2024-01-15T12:00:00.000Z').format('LL')).to.equal('15 janvier 2024');
-    });
-  });
-
-  suite('named IANA timezone round-trip', () => {
-    // Guards the mismatch this feature exists to remove: display widgets honored a configured zone
-    // while the picker silently fell back to browser-local time, so the two could show different days.
-    test('shows the configured zone date for an instant that falls on another day locally', async () => {
-      const kolkata = await makeDatePicker('Asia/Kolkata');
-      kolkata.value = '2024-01-15T23:30:00.000Z';
-      await flush();
-      expect(getInput(kolkata).value).to.equal('2024-01-16');
-    });
-
-    test('stores the instant matching the configured zone when a date is typed', async () => {
-      const kolkata = await makeDatePicker('Asia/Kolkata');
-      getInput(kolkata).value = '2024-01-16';
-      await flush();
-      expect(kolkata.value).to.equal('2024-01-15T18:30:00.000Z');
-    });
-
-    test('round-trips a value through the input without drifting', async () => {
-      const chatham = await makeDatePicker('Pacific/Chatham');
-      chatham.value = '2024-01-15T23:30:00.000Z';
-      await flush();
-      const shown = getInput(chatham).value;
-      getInput(chatham).value = shown;
-      await flush();
-      expect(getInput(chatham).value).to.equal(shown);
+    ['America/New_York', 'Asia/Tokyo', 'Pacific/Chatham'].forEach((zone) => {
+      test('preserves browser-local picker semantics with ' + zone + ' configured', async () => {
+        const picker = await makeDatePicker(zone);
+        const instant = '2026-01-20T05:00:00.000Z';
+        expect(picker._moment(instant).format('YYYY-MM-DD HH:mm')).to.equal(moment(instant).format('YYYY-MM-DD HH:mm'));
+        expect(picker._moment('2026-01-20').toJSON()).to.equal(moment('2026-01-20').toJSON());
+        picker.value = instant;
+        await flush();
+        expect(getInput(picker).value).to.equal(moment(instant).format('YYYY-MM-DD'));
+        expect(picker.value).to.equal(instant);
+      });
     });
   });
 
