@@ -132,6 +132,30 @@ suite('nuxeo-timezone', () => {
   });
 
   suite('momentTimezoneParser', () => {
+    test('parses localized numeric and month-name formats in the configured zone', () => {
+      moment.locale('fr');
+      const paris = momentTimezoneParser('Europe/Paris');
+      expect(paris('01/02/2024', 'L', true).toJSON()).to.equal('2024-01-31T23:00:00.000Z');
+      expect(paris('15 juillet 2024', 'LL', true).toJSON()).to.equal('2024-07-14T22:00:00.000Z');
+      expect(paris('31/02/2024', 'L', true).isValid()).to.be.false;
+    });
+
+    test('preserves absolute inputs while parsing with a selected locale', () => {
+      moment.locale('fr');
+      const paris = momentTimezoneParser('Europe/Paris');
+      expect(paris(instant).toJSON()).to.equal(instant);
+      expect(paris(moment(instant)).toJSON()).to.equal(instant);
+      expect(paris(new Date(instant)).toJSON()).to.equal(instant);
+      expect(paris(Date.parse(instant)).toJSON()).to.equal(instant);
+      expect(paris(`${Date.parse(instant)}`, 'x', true).toJSON()).to.equal(instant);
+    });
+
+    test('uses the timezone database rules for nonexistent and repeated wall-clock times', () => {
+      const ny = momentTimezoneParser('America/New_York');
+      expect(ny('2024-03-10 02:30', 'YYYY-MM-DD HH:mm', true).toJSON()).to.equal('2024-03-10T07:30:00.000Z');
+      expect(ny('2024-11-03 01:30', 'YYYY-MM-DD HH:mm', true).toJSON()).to.equal('2024-11-03T05:30:00.000Z');
+    });
+
     test('keeps named-zone abbreviations and the selected locale after parsing', () => {
       moment.locale('fr');
       const ny = momentTimezoneParser('America/New_York');
