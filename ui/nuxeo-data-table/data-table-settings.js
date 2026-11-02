@@ -176,14 +176,14 @@ import '../nuxeo-button-styles.js';
 
     /**
      * `true` while the dialog is open with column changes made by the user that are still to be saved: changes undone
-     * since, or columns restored by code, don't count.
+     * since, or columns restored by code before the user's first change, don't count.
      */
     get pendingChanges() {
       return Boolean(this._editing && this._userChanged && this._visibility() !== this._openedWith);
     }
 
-    _visibility() {
-      return JSON.stringify((this.columns || []).map((column) => Boolean(column.hidden)));
+    _visibility(toggled) {
+      return JSON.stringify((this.columns || []).map((column) => Boolean(column.hidden) !== (column === toggled)));
     }
 
     _columnDisplayChanged(change) {
@@ -193,11 +193,18 @@ import '../nuxeo-button-styles.js';
       }
     }
 
-    _columnToggled() {
+    _columnToggled(e) {
+      if (!this._userChanged) {
+        // compare with the columns shown just before this first change, which may have been restored by code
+        this._openedWith = this._visibility(e.model.column);
+      }
       this._userChanged = true;
     }
 
     _resetClicked() {
+      if (!this._userChanged) {
+        this._openedWith = this._visibility();
+      }
       this._userChanged = true;
       this._resetSettings();
     }
@@ -240,12 +247,17 @@ import '../nuxeo-button-styles.js';
         return;
       }
       this.scope = scope;
+      const { pendingChanges } = this;
+      if (!pendingChanges) {
+        // the columns of the new scope may be restored next, so the user's next change starts from them
+        this._userChanged = false;
+      }
       this.dispatchEvent(
         new CustomEvent('settings-scope-selected', {
           composed: true,
           bubbles: true,
           // tells whether column changes made in the open dialog are still to be saved
-          detail: { scope, pendingChanges: this.pendingChanges },
+          detail: { scope, pendingChanges },
         }),
       );
     }
