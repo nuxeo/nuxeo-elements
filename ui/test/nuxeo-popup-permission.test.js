@@ -51,6 +51,33 @@ suite('nuxeo-popup-permission', () => {
     );
   });
 
+  test('preserves the access window after returning to the original calendar days', () => {
+    const begin = '2026-11-01T02:00:00.000Z';
+    const end = '2026-12-31T23:30:00.000Z';
+    el.ace = { id: 'ace-1', username: 'members', permission: 'Read', begin, end };
+    el._computeParams(el.ace, false);
+    el.params.begin = moment(begin)
+      .add(1, 'day')
+      .startOf('day')
+      .toJSON();
+    expect(el._serializePermissionDate(el.params.begin, begin)).not.to.equal(begin);
+    el.params.begin = moment(begin)
+      .startOf('day')
+      .toJSON();
+    el.params.end = moment(end)
+      .startOf('day')
+      .toJSON();
+    const execute = sinon.stub(el.$.replaceOp, 'execute').resolves();
+    try {
+      el._doSend(false);
+      expect(el.params.begin).to.equal(begin);
+      expect(el.params.end).to.equal(end);
+      expect(execute.calledOnce).to.be.true;
+    } finally {
+      execute.restore();
+    }
+  });
+
   test('preserves the original access window when retrying a failed update', async () => {
     const begin = '2026-11-01T02:00:00.000Z';
     const end = '2026-12-31T23:30:00.000Z';

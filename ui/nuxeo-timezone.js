@@ -125,7 +125,7 @@ export function momentTimezoneParser(timezone) {
     if (!moment.isMoment(args[0]) && momentTz.tz.needsOffset(parsed)) {
       parsed.add(momentTz.tz.zone(timezone).parse(parsed), 'minutes');
     }
-    return momentTimezone(timezone)(parsed.valueOf());
+    return momentTimezone(timezone)(parsed);
   };
 }
 

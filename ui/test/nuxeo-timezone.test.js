@@ -132,6 +132,21 @@ suite('nuxeo-timezone', () => {
   });
 
   suite('momentTimezoneParser', () => {
+    test('preserves an explicit parsing locale and a Moment input locale', () => {
+      moment.locale('en');
+      const paris = momentTimezoneParser('Europe/Paris');
+      const explicit = paris('15 juillet 2024', 'LL', 'fr', true);
+      expect(explicit.toJSON()).to.equal('2024-07-14T22:00:00.000Z');
+      expect(explicit.format('LL')).to.equal('15 juillet 2024');
+      const input = moment(instant).locale('fr');
+      const converted = paris(input);
+      expect(converted.toJSON()).to.equal(instant);
+      expect(converted.locale()).to.equal('fr');
+      expect(converted.format('LL')).to.equal('15 janvier 2024');
+      expect(moment.locale()).to.equal('en');
+      expect(input.toJSON()).to.equal(instant);
+    });
+
     test('parses localized numeric and month-name formats in the configured zone', () => {
       moment.locale('fr');
       const paris = momentTimezoneParser('Europe/Paris');
