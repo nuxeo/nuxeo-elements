@@ -242,41 +242,100 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _addedTagHandler(entry) {
-      if (this.document) {
-        this.$.addTagOp.params = { tags: entry.id };
-        this.$.addTagOp.execute().then((response) => {
-          if (!response || response.properties['nxtag:tags'].length < 0) {
-            return;
+      if (!this.document) {
+        return;
+      }
+      // Pasting "a,b,c" adds several tags in the same tick: collect them and send a single request.
+      if (!this._pendingAddedTags) {
+        const entries = [];
+        const doc = this.document;
+        this._pendingAddedTags = entries;
+        this._enqueueTagOp(() => {
+          if (this._pendingAddedTags === entries) {
+            this._pendingAddedTags = null;
           }
-          const lenArr = response.properties['nxtag:tags'].length;
-          const { label } = response.properties['nxtag:tags'][lenArr - 1];
-          entry.item.displayLabel = label;
-          this.shadowRoot.querySelector('#s2').value[lenArr - 1] = label;
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.addedToDocument', label);
-          this.$.toast.open();
-          const lastSelectedItem = this.$.s2._selectivity.el.firstElementChild.querySelectorAll(
-            '.selectivity-multiple-selected-item',
-          )[lenArr - 1];
-          if (lastSelectedItem) {
-            const textNode = lastSelectedItem.childNodes[1];
-            if (textNode.nodeType === Node.TEXT_NODE) {
-              textNode.textContent = label;
-            }
-          }
+          return this._addTags(doc, entries);
         });
+      }
+      this._pendingAddedTags.push(entry);
+    }
+
+    _addTags(doc, entries) {
+      this.$.addTagOp.input = doc.uid;
+      this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
+      return this.$.addTagOp.execute().then((response) => {
+        if (this.document === doc) {
+          this._onTagsAdded(entries, response);
+        }
+      });
+    }
+
+    _onTagsAdded(entries, response) {
+      if (!response || !response.properties || !Array.isArray(response.properties['nxtag:tags'])) {
+        return;
+      }
+      const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
+      const value = Array.isArray(this.$.s2.value) ? this.$.s2.value : [];
+      const ids = entries.map((entry) => entry.id);
+      const previousLabels = value.filter((id) => !ids.includes(id));
+      // The server may sanitize a label, so a tag that is not returned as-is maps to the next label
+      // this request added, in request order.
+      const addedLabels = serverLabels.filter((label) => !previousLabels.includes(label) && !ids.includes(label));
+      const labels = entries.map((entry) => {
+        const label = serverLabels.includes(entry.id) ? entry.id : addedLabels.shift() || entry.id;
+        entry.item.displayLabel = label;
+        if (label !== entry.id) {
+          const index = value.indexOf(entry.id);
+          if (index !== -1) {
+            value[index] = label;
+          }
+          this._relabelSelectedItem(entry.id, label);
+        }
+        return label;
+      });
+      this.$.toast.hide();
+      this.$.toast.text =
+        labels.length > 1
+          ? this.i18n('tags.multipleAddedToDocument', labels.join(', '))
+          : this.i18n('tags.addedToDocument', labels[0]);
+      this.$.toast.open();
+    }
+
+    _relabelSelectedItem(id, label) {
+      const selectivity = this.$.s2._selectivity;
+      if (!selectivity || !selectivity.el) {
+        return;
+      }
+      const item = Array.from(selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).find(
+        (el) => el.getAttribute('data-item-id') === id,
+      );
+      const textNode = item && item.childNodes[1];
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        textNode.textContent = label;
       }
     }
 
     _removedTagHandler(entry) {
       if (this.document) {
-        this.$.removeTagOp.params = { tags: entry.id };
-        this.$.removeTagOp.execute().then(() => {
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
-          this.$.toast.open();
+        const doc = this.document;
+        // Tags added after this removal must be sent after it, so they start a new batch.
+        this._pendingAddedTags = null;
+        this._enqueueTagOp(() => {
+          this.$.removeTagOp.input = doc.uid;
+          this.$.removeTagOp.params = { tags: entry.id };
+          return this.$.removeTagOp.execute().then(() => {
+            this.$.toast.hide();
+            this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
+            this.$.toast.open();
+          });
         });
       }
+    }
+
+    // nuxeo-operation aborts its in-flight request on each execute(), so tag operations must run one at a time.
+    // A failed operation is already reported by nuxeo-operation and must not block the next ones.
+    _enqueueTagOp(op) {
+      this._tagOpQueue = (this._tagOpQueue || Promise.resolve()).then(op).catch(() => {});
     }
 
     _initSelection(element, callback) {

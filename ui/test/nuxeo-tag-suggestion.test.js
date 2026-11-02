@@ -98,6 +98,136 @@ suite('nuxeo-tag-suggestion extras', () => {
     });
   });
 
+  suite('adding and removing tags on a document', () => {
+    const entry = (id) => {
+      return { id, item: { id, displayLabel: id } };
+    };
+    const tagsResponse = (...labels) => {
+      return {
+        properties: {
+          'nxtag:tags': labels.map((label) => {
+            return { label, username: 'Administrator' };
+          }),
+        },
+      };
+    };
+    const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+    const settle = async () => {
+      await wait();
+      await el._tagOpQueue;
+    };
+    const paste = async (text) => {
+      const input = el.$.s2.shadowRoot.querySelector('.selectivity-multiple-input');
+      input.value = text;
+      input.dispatchEvent(new Event('paste', { bubbles: true, composed: true }));
+      await wait(50);
+    };
+    const chips = () =>
+      Array.from(el.$.s2._selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).map((item) =>
+        item.textContent.trim(),
+      );
+    let addExecute;
+    let removeExecute;
+    let sentTags;
+
+    setup(async () => {
+      el = await fixture(
+        html`
+          <nuxeo-tag-suggestion allow-new-tags></nuxeo-tag-suggestion>
+        `,
+      );
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['existing'] } };
+      sentTags = [];
+      addExecute = sinon.stub(el.$.addTagOp, 'execute');
+      addExecute.callsFake(() => {
+        sentTags.push(el.$.addTagOp.params.tags);
+        return Promise.resolve(tagsResponse('existing', ...el.$.addTagOp.params.tags.split(',')));
+      });
+      removeExecute = sinon.stub(el.$.removeTagOp, 'execute').resolves({});
+    });
+
+    test('sends all the pasted comma-separated tags in a single request', async () => {
+      await paste('tag1,tag2,tag3,tag4');
+      await settle();
+      expect(sentTags).to.deep.equal(['tag1,tag2,tag3,tag4']);
+      expect(el.$.addTagOp.input).to.equal('doc-1');
+      expect(chips()).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
+      expect(el.value).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
+      expect(el.$.toast.text).to.contain('tags.multipleAddedToDocument');
+    });
+
+    test('keeps the single tag message when one tag is added', async () => {
+      await paste('tag1');
+      await settle();
+      expect(sentTags).to.deep.equal(['tag1']);
+      expect(chips()).to.deep.equal(['existing', 'tag1']);
+      expect(el.$.toast.text).to.contain('tags.addedToDocument');
+    });
+
+    test('shows the label sanitized by the server on the matching tag', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'tag1', 'clean', 'tag3')));
+      await paste('tag1,dirty,tag3');
+      await settle();
+      expect(chips()).to.deep.equal(['existing', 'tag1', 'clean', 'tag3']);
+      expect(el.value).to.deep.equal(['existing', 'tag1', 'clean', 'tag3']);
+    });
+
+    test('runs tag operations one at a time so none is aborted', async () => {
+      let resolveAdd;
+      addExecute.callsFake(() => {
+        sentTags.push(el.$.addTagOp.params.tags);
+        return new Promise((resolve) => {
+          resolveAdd = resolve;
+        });
+      });
+      el._addedTagHandler(entry('tag1'));
+      el._removedTagHandler(entry('existing'));
+      await wait();
+      expect(addExecute.callCount).to.equal(1);
+      expect(removeExecute.callCount).to.equal(0);
+      resolveAdd(tagsResponse('existing', 'tag1'));
+      await settle();
+      expect(removeExecute.callCount).to.equal(1);
+      expect(el.$.removeTagOp.params).to.deep.equal({ tags: 'existing' });
+    });
+
+    test('sends a tag added after a removal after that removal', async () => {
+      const calls = [];
+      addExecute.callsFake(() => {
+        calls.push(`add ${el.$.addTagOp.params.tags}`);
+        return Promise.resolve(tagsResponse('existing'));
+      });
+      removeExecute.callsFake(() => {
+        calls.push(`remove ${el.$.removeTagOp.params.tags}`);
+        return Promise.resolve({});
+      });
+      el._addedTagHandler(entry('tag1'));
+      el._removedTagHandler(entry('tag2'));
+      el._addedTagHandler(entry('tag2'));
+      await settle();
+      await settle();
+      expect(calls).to.deep.equal(['add tag1', 'remove tag2', 'add tag2']);
+    });
+
+    test('keeps processing queued operations after a failure', async () => {
+      addExecute.rejects(new Error('boom'));
+      el._addedTagHandler(entry('tag1'));
+      el._removedTagHandler(entry('existing'));
+      await settle();
+      expect(removeExecute.callCount).to.equal(1);
+    });
+
+    test('does not update the tags when the document changed meanwhile', async () => {
+      const added = entry('dirty');
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('clean')));
+      el._addedTagHandler(added);
+      el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
+      await settle();
+      expect(el.$.addTagOp.input).to.equal('doc-1');
+      expect(added.item.displayLabel).to.equal('dirty');
+    });
+  });
+
   suite('_removedTagHandler', () => {
     test('does nothing when no document', () => {
       el.document = null;
