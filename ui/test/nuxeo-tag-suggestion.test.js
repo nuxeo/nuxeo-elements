@@ -164,71 +164,41 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(el.$.toast.text).to.contain('tags.addedToDocument');
     });
 
-    test('shows the label sanitized by the server on the matching tag', async () => {
-      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'tag1', 'clean', 'tag3')));
-      await paste('tag1,dirty,tag3');
-      await settle();
-      expect(chips()).to.deep.equal(['existing', 'tag1', 'clean', 'tag3']);
-      expect(el.value).to.deep.equal(['existing', 'tag1', 'clean', 'tag3']);
-    });
-
-    test('matches sanitized labels returned in a different order', async () => {
-      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'ab', 'mytag')));
-      await paste('my tag,a%b');
-      await settle();
-      expect(chips()).to.deep.equal(['existing', 'mytag', 'ab']);
-      expect(el.value).to.deep.equal(['existing', 'mytag', 'ab']);
-    });
-
-    test('matches a sanitized label that collides with an existing tag', async () => {
-      el.document = { uid: 'doc-1', contextParameters: { tags: ['mytag'] } };
-      addExecute.callsFake(() => Promise.resolve(tagsResponse('mytag', 'othertag')));
-      await paste('my tag,other tag');
-      await settle();
-      expect(chips()).to.deep.equal(['mytag', 'mytag', 'othertag']);
-    });
-
-    test('reserves labels returned as-is before matching sanitized ones', async () => {
-      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'my-tag', 'mytag')));
-      await paste('my tag,my-tag');
-      await settle();
-      expect(chips()).to.deep.equal(['existing', 'mytag', 'my-tag']);
-    });
-
+    // Expected labels follow AbstractTagService#cleanLabel: lowercase, then remove spaces, "/", "\", "'" and "%".
     [
-      ['a-b', 'ab'],
-      ['ab', 'a-b'],
-    ].forEach((order) => {
-      test(`keeps distinct tags with the same letters apart (${order.join(', ')})`, async () => {
-        addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', ...order)));
-        await paste('a%b,a-b');
+      {
+        paste: "plain,my tag,a%b,it's",
+        server: ['ab', 'plain', 'its', 'mytag'],
+        chips: ['plain', 'mytag', 'ab', 'its'],
+      },
+      { paste: 'my tag,a%b', server: ['ab', 'mytag'], chips: ['mytag', 'ab'] },
+      { paste: 'my tag,my-tag', server: ['my-tag', 'mytag'], chips: ['mytag', 'my-tag'] },
+      { paste: 'a%b,a-b', server: ['a-b', 'ab'], chips: ['ab', 'a-b'] },
+      { paste: 'a%b,a-b', server: ['ab', 'a-b'], chips: ['ab', 'a-b'] },
+      { paste: 'a%b,ab', server: ['a-b', 'ab'], chips: ['ab', 'ab'] },
+      { paste: 'a%b,a/b', server: ['a-b', 'ab'], chips: ['ab', 'ab'] },
+      { paste: 'a%b,a/b', server: ['ab', 'a-b'], chips: ['ab', 'ab'] },
+      { paste: 'a-%b,a%b', server: ['a-b', 'ab'], chips: ['a-b', 'ab'] },
+      { paste: 'my tag,my%tag', server: ['mytag'], chips: ['mytag', 'mytag'] },
+      { paste: 'my tag,other tag', server: ['mytag', 'othertag'], chips: ['mytag', 'othertag'] },
+    ].forEach(({ paste: text, server, chips: expected }) => {
+      test(`shows the label stored by the server when pasting "${text}" (${server.join(', ')})`, async () => {
+        addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', ...server)));
+        await paste(text);
         await settle();
-        expect(chips()).to.deep.equal(['existing', 'ab', 'a-b']);
+        expect(chips()).to.deep.equal(['existing', ...expected]);
+        expect(el.value).to.deep.equal(['existing', ...expected]);
       });
     });
 
-    test('keeps the tags of each document apart when switching documents', async () => {
-      const resolvers = [];
-      addExecute.callsFake(
-        () =>
-          new Promise((resolve) => {
-            resolvers.push(resolve);
-          }),
-      );
-      el._addedTagHandler(entry('tag1'));
-      await wait();
-      el.document = { uid: 'doc-2', contextParameters: { tags: ['a-b'] } };
-      const added = entry('a%b');
-      el._addedTagHandler(added);
-      resolvers[0](tagsResponse('existing', 'tag1'));
-      await wait();
-      await wait();
-      resolvers[1](tagsResponse('a-b', 'ab'));
+    test('keeps the typed label when the stored one cannot be told apart', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'ab%c', 'abc')));
+      await paste('a b%c');
       await settle();
-      expect(added.item.displayLabel).to.equal('ab');
+      expect(chips()).to.deep.equal(['existing', 'a b%c']);
     });
 
-    test('ignores a removal queued while an addition is pending when matching labels', async () => {
+    test('shows the stored label when a removal is queued while the tag is being added', async () => {
       let resolveAdd;
       addExecute.callsFake(
         () =>
@@ -239,7 +209,6 @@ suite('nuxeo-tag-suggestion extras', () => {
       const added = entry('my tag');
       el._addedTagHandler(added);
       await wait();
-      el.$.s2.value = ['my tag'];
       el._removedTagHandler(entry('existing'));
       resolveAdd(tagsResponse('existing', 'mytag'));
       await settle();
