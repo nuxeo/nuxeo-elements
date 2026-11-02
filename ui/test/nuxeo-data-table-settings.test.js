@@ -60,7 +60,11 @@ suite('nuxeo-data-table-settings', () => {
   });
 
   suite('saving when the dialog closes', () => {
-    const toggle = (idx) => element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
+    // what the column checkbox does when the user clicks it
+    const toggle = (idx) => {
+      element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
+      element._columnToggled();
+    };
 
     test('should not fire settings-changed while the dialog is open', () => {
       element.toggleColsSettingsPopup();
@@ -98,6 +102,49 @@ suite('nuxeo-data-table-settings', () => {
       toggle(1);
       element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
       expect(spy.firstCall.args[0].detail).to.deep.equal({ scope: 'document', pendingChanges: true });
+    });
+
+    test('should mark a change as pending when the user clicks a column checkbox', async () => {
+      element.toggleColsSettingsPopup();
+      await flush();
+      element.shadowRoot.querySelector('paper-checkbox').click();
+      expect(element.pendingChanges).to.be.true;
+    });
+
+    test('should not count a change the user undid', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      toggle(1);
+      expect(element.pendingChanges).to.be.false;
+      element._onSettingsClosed();
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should not count columns restored by code while the dialog is open', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element.set('columns.1.hidden', true);
+      expect(element.pendingChanges).to.be.false;
+      element._onSettingsClosed();
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('should count Reset as a user change when it changes the columns', () => {
+      element.set('columns.1.hidden', true);
+      element.toggleColsSettingsPopup();
+      element._resetClicked();
+      expect(element.columns[1].hidden).to.be.false;
+      expect(element.pendingChanges).to.be.true;
+    });
+
+    test('should report no pending changes once the dialog is closed', () => {
+      element.toggleColsSettingsPopup();
+      toggle(1);
+      element._onSettingsClosed();
+      expect(element.pendingChanges).to.be.false;
     });
 
     test('should fire at once again after the dialog is closed', () => {
