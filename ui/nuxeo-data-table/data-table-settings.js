@@ -78,7 +78,7 @@ import '../nuxeo-button-styles.js';
                         <td>
                           <paper-checkbox
                             noink
-                            checked="{{!column.hidden}}"
+                            checked="[[!column.hidden]]"
                             on-change="_columnToggled"
                           ></paper-checkbox>
                         </td>
@@ -177,7 +177,7 @@ import '../nuxeo-button-styles.js';
 
     /**
      * `true` while the dialog is open with column changes made by the user that are still to be saved: changes undone
-     * since, or columns restored by code before the user's first change, don't count. Once a scope is picked with
+     * since, or columns restored by code while none are pending, don't count. Once a scope is picked with
      * changes pending, they stay pending, as what is saved then may differ from the opening columns.
      */
     get pendingChanges() {
@@ -186,31 +186,47 @@ import '../nuxeo-button-styles.js';
       );
     }
 
-    _visibility(toggled) {
-      return JSON.stringify((this.columns || []).map((column) => Boolean(column.hidden) !== (column === toggled)));
+    _visibility(changedIdx) {
+      return JSON.stringify((this.columns || []).map((column, idx) => Boolean(column.hidden) !== (idx === changedIdx)));
     }
 
     _columnDisplayChanged(change) {
-      // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then
-      if (change.path.endsWith('hidden') && !this._editing) {
-        this._fireSettingsChanged();
+      if (!change.path.endsWith('hidden')) {
+        return;
       }
+      if (!this._editing) {
+        this._fireSettingsChanged();
+      } else if (!this._byUser && !this._pendingBefore(change.path)) {
+        // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then.
+        // Columns restored by code while no change is pending become what the user's changes are compared with.
+        this._openedWith = this._visibility();
+        this._userChanged = false;
+      }
+    }
+
+    // whether user changes were pending just before the column at `path` changed
+    _pendingBefore(path) {
+      const idx = Number(path.split('.')[1].replace('#', ''));
+      return Boolean(this._userChanged && (this._keepPending || this._visibility(idx) !== this._openedWith));
     }
 
     _columnToggled(e) {
-      if (!this._userChanged) {
-        // compare with the columns shown just before this first change, which may have been restored by code
-        this._openedWith = this._visibility(e.model.column);
-      }
-      this._userChanged = true;
+      const idx = this.columns.indexOf(e.model.column);
+      this._userChange(() => this.set(`columns.${idx}.hidden`, !e.target.checked));
     }
 
     _resetClicked() {
-      if (!this._userChanged) {
-        this._openedWith = this._visibility();
+      this._userChange(() => this._resetSettings());
+    }
+
+    _userChange(change) {
+      this._byUser = true;
+      try {
+        change();
+      } finally {
+        this._byUser = false;
       }
       this._userChanged = true;
-      this._resetSettings();
     }
 
     _fireSettingsChanged() {
