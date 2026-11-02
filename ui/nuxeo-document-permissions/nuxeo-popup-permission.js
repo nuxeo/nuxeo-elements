@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-autogrow-textarea/iron-autogrow-textarea.js';
@@ -358,16 +359,11 @@ import '../nuxeo-button-styles.js';
       const dateBased = this.selectedTimeFrame === 'datebased';
 
       if (this.params.begin && dateBased) {
-        this.params.begin = this.params.begin.length > 0 ? moment(new Date(this.params.begin)).format() : null;
+        this.params.begin = this._serializePermissionDate(this.params.begin, this.ace && this.ace.begin);
       }
 
       if (this.params.end && dateBased) {
-        this.params.end =
-          this.params.end.length > 0
-            ? moment(new Date(this.params.end))
-                .endOf('day')
-                .format()
-            : null;
+        this.params.end = this._serializePermissionDate(this.params.end, this.ace && this.ace.end, true);
       }
 
       if (this.params.end === null && this.shareWithExternal) {
@@ -385,6 +381,25 @@ import '../nuxeo-button-styles.js';
       if (togglePopup) {
         this.togglePopup();
       }
+    }
+
+    _serializePermissionDate(value, original, endOfDay = false) {
+      if (!value) {
+        return null;
+      }
+      // Editing an ACE must preserve its exact access window when the calendar day was not changed.
+      // The initial day comes from _computeParams; ISO picker values use UTC only for Etc/UTC.
+      const pickerMoment = config.get('timezone') === 'Etc/UTC' ? moment.utc : moment;
+      if (
+        this.updatingACE &&
+        original &&
+        (value === original ||
+          pickerMoment(value).format('YYYY-MM-DD') === moment(new Date(original)).format('YYYY-MM-DD'))
+      ) {
+        return original;
+      }
+      const date = moment(new Date(value));
+      return (endOfDay ? date.endOf('day') : date).format();
     }
 
     handleResponse() {
