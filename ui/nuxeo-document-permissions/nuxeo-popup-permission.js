@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-autogrow-textarea/iron-autogrow-textarea.js';
@@ -387,10 +388,13 @@ import '../nuxeo-button-styles.js';
         return null;
       }
       // Editing an ACE must preserve its exact access window when the calendar day was not changed.
+      // The initial day comes from _computeParams; ISO picker values use UTC only for Etc/UTC.
+      const pickerMoment = config.get('timezone') === 'Etc/UTC' ? moment.utc : moment;
       if (
         this.updatingACE &&
         original &&
-        (value === original || moment(value).format('YYYY-MM-DD') === moment(new Date(original)).format('YYYY-MM-DD'))
+        (value === original ||
+          pickerMoment(value).format('YYYY-MM-DD') === moment(new Date(original)).format('YYYY-MM-DD'))
       ) {
         return original;
       }

@@ -9,6 +9,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 */
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-permissions/nuxeo-popup-permission.js';
 
@@ -23,6 +24,31 @@ suite('nuxeo-popup-permission', () => {
 
   test('returns a local permission label by default', () => {
     expect(el._computeNewPermissionLabel(false)).to.equal(el.i18n('popupPermission.newLocalPermission'));
+  });
+
+  test('keeps UTC picker edits distinct from the initial day in a UTC-minus-five browser', () => {
+    const originalTimezone = config.get('timezone');
+    const format = moment.fn.format;
+    // Model the browser-local calendar day independently of the test runner's host timezone.
+    const localDay = sinon.stub(moment.fn, 'format').callsFake(function formatInBrowser(pattern) {
+      const date = pattern === 'YYYY-MM-DD' && !this.isUTC() ? this.clone().utcOffset(-300) : this;
+      return format.call(date, pattern);
+    });
+    try {
+      config.set('timezone', 'Etc/UTC');
+      const begin = '2026-01-20T05:00:00.000Z';
+      el.ace = { id: 'ace-1', username: 'members', permission: 'Read', begin, end: null };
+      el._computeParams(el.ace, false);
+      expect(el.params.begin).to.equal('2026-01-20');
+      expect(el._serializePermissionDate('2026-01-21T00:00:00.000Z', begin)).to.equal(
+        moment(new Date('2026-01-21T00:00:00.000Z')).format(),
+      );
+      expect(el._serializePermissionDate('2026-01-20T00:00:00.000Z', begin)).to.equal(begin);
+      expect(el._serializePermissionDate(begin, begin)).to.equal(begin);
+    } finally {
+      localDay.restore();
+      config.set('timezone', originalTimezone);
+    }
   });
 
   test('returns an external permission label when sharing externally', () => {
