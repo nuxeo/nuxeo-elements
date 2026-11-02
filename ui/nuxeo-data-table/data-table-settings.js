@@ -170,22 +170,20 @@ import '../nuxeo-button-styles.js';
         this._editing = true;
         this._userChanged = false;
         this._openedWith = this._visibility();
-        this._savedWith = undefined;
+        this._keepPending = false;
       }
       dialog.toggle();
     }
 
     /**
      * `true` while the dialog is open with column changes made by the user that are still to be saved: changes undone
-     * since, or columns restored by code before the user's first change, don't count. Changing back the columns that
-     * "this document only" saved counts.
+     * since, or columns restored by code before the user's first change, don't count. Once a scope is picked with
+     * changes pending, they stay pending, as what is saved then may differ from the opening columns.
      */
     get pendingChanges() {
-      if (!this._editing || !this._userChanged) {
-        return false;
-      }
-      const visibility = this._visibility();
-      return visibility !== this._openedWith || (this._savedWith !== undefined && visibility !== this._savedWith);
+      return Boolean(
+        this._editing && this._userChanged && (this._keepPending || this._visibility() !== this._openedWith),
+      );
     }
 
     _visibility(toggled) {
@@ -238,7 +236,7 @@ import '../nuxeo-button-styles.js';
       const changed = this.pendingChanges;
       this._editing = false;
       this._userChanged = false;
-      this._savedWith = undefined;
+      this._keepPending = false;
       if (changed) {
         this._fireSettingsChanged();
       }
@@ -256,13 +254,12 @@ import '../nuxeo-button-styles.js';
       }
       this.scope = scope;
       const { pendingChanges } = this;
-      if (!pendingChanges) {
+      if (pendingChanges) {
+        // what is shown is saved when the dialog closes, even if changed back meanwhile
+        this._keepPending = true;
+      } else {
         // the columns of the new scope may be restored next, so the user's next change starts from them
         this._userChanged = false;
-        this._savedWith = undefined;
-      } else if (scope === 'document') {
-        // "this document only" saves the shown columns at once; the changes stay pending for all documents
-        this._savedWith = this._visibility();
       }
       this.dispatchEvent(
         new CustomEvent('settings-scope-selected', {
