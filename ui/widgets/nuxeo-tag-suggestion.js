@@ -265,15 +265,35 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     _addTags(doc, entries) {
       this.$.addTagOp.input = doc.uid;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
-      return this.$.addTagOp.execute().then((response) => {
-        const tags = response && response.properties && response.properties['nxtag:tags'];
-        if (Array.isArray(tags) && this.document && this.document.uid === doc.uid) {
-          this._onTagsAdded(
-            entries,
-            tags.map((tag) => tag.label),
-          );
-        }
-      });
+      return this.$.addTagOp.execute().then(
+        (response) => {
+          const tags = response && response.properties && response.properties['nxtag:tags'];
+          if (Array.isArray(tags) && this._isCurrentDocument(doc)) {
+            this._onTagsAdded(
+              entries,
+              tags.map((tag) => tag.label),
+            );
+          }
+        },
+        () => {
+          // Roll the chips back to what the server has and tell the user the tags were not saved.
+          if (this._isCurrentDocument(doc)) {
+            const ids = entries.map((entry) => entry.id);
+            this.value = (this.value || []).filter((id) => !ids.includes(id));
+            this._showToast(this.i18n('tags.addToDocumentFailed', ids.join(', ')));
+          }
+        },
+      );
+    }
+
+    _isCurrentDocument(doc) {
+      return !!this.document && this.document.uid === doc.uid;
+    }
+
+    _showToast(text) {
+      this.$.toast.hide();
+      this.$.toast.text = text;
+      this.$.toast.open();
     }
 
     _onTagsAdded(entries, serverLabels) {
@@ -290,12 +310,11 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         }
         return label;
       });
-      this.$.toast.hide();
-      this.$.toast.text =
+      this._showToast(
         labels.length > 1
           ? this.i18n('tags.multipleAddedToDocument', labels.join(', '))
-          : this.i18n('tags.addedToDocument', labels[0]);
-      this.$.toast.open();
+          : this.i18n('tags.addedToDocument', labels[0]),
+      );
     }
 
     /**
@@ -309,7 +328,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         return id;
       }
       const lowerCase = String(id).toLowerCase();
-      const withoutPercent = lowerCase.replace(/%/g, '');
+      const withoutPercent = lowerCase.replaceAll('%', '');
       const forms = new Set([
         lowerCase,
         withoutPercent,
@@ -342,17 +361,25 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         this._enqueueTagOp(() => {
           this.$.removeTagOp.input = doc.uid;
           this.$.removeTagOp.params = { tags: entry.id };
-          return this.$.removeTagOp.execute().then(() => {
-            this.$.toast.hide();
-            this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
-            this.$.toast.open();
-          });
+          return this.$.removeTagOp.execute().then(
+            () => this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel)),
+            () => {
+              // The tag is still on the document, so show it again and tell the user it was not removed.
+              if (this._isCurrentDocument(doc)) {
+                const value = this.value || [];
+                if (!value.includes(entry.id)) {
+                  this.value = [...value, entry.id];
+                }
+                this._showToast(this.i18n('tags.removeFromDocumentFailed', entry.item.displayLabel));
+              }
+            },
+          );
         });
       }
     }
 
     // nuxeo-operation aborts its in-flight request on each execute(), so tag operations must run one at a time.
-    // A failed operation is already reported by nuxeo-operation and must not block the next ones.
+    // Each operation handles its own failure; an unexpected error must not block the next ones.
     _enqueueTagOp(op) {
       this._tagOpQueue = (this._tagOpQueue || Promise.resolve()).then(op).catch(() => {});
     }
