@@ -226,7 +226,8 @@ import '../nuxeo-button-styles.js';
 
     _onSettingsClosed() {
       if (this.columns.every((column) => column.hidden)) {
-        this._resetSettings();
+        // counted as a change, as the hidden columns may already be saved for this document
+        this._resetClicked();
       }
       const changed = this.pendingChanges;
       this._editing = false;

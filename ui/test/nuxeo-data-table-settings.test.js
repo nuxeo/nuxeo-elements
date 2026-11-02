@@ -187,6 +187,23 @@ suite('nuxeo-data-table-settings', () => {
       expect(spy).to.have.been.calledOnce;
     });
 
+    test('should save the default columns when all were hidden and saved for this document only', async () => {
+      element.scopeEnabled = true;
+      element.toggleColsSettingsPopup();
+      await flush();
+      element.columns.forEach((column, idx) => {
+        if (!column.hidden) {
+          toggle(idx);
+        }
+      });
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element._onSettingsClosed();
+      expect(element.columns.some((column) => !column.hidden)).to.be.true;
+      expect(spy).to.have.been.calledOnce;
+    });
+
     test('should keep changes pending after picking all documents', async () => {
       element.scopeEnabled = true;
       element.scope = 'document';
