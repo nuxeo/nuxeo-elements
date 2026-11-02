@@ -284,6 +284,37 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(removeExecute.callCount).to.equal(1);
     });
 
+    test('removes the pasted tags and tells the user when they could not be saved', async () => {
+      addExecute.rejects(new Error('boom'));
+      await paste('tag1,tag2');
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing']);
+      expect(chips()).to.deep.equal(['existing']);
+      expect(removeExecute.callCount).to.equal(0);
+      expect(el.$.toast.text).to.contain('tags.addToDocumentFailed');
+    });
+
+    test('shows a tag again and tells the user when it could not be removed', async () => {
+      removeExecute.rejects(new Error('boom'));
+      el.$.s2.value = [];
+      el._removedTagHandler(entry('existing'));
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing']);
+      expect(chips()).to.deep.equal(['existing']);
+      expect(addExecute.callCount).to.equal(0);
+      expect(el.$.toast.text).to.contain('tags.removeFromDocumentFailed');
+    });
+
+    test('does not roll back tags of another document after a failure', async () => {
+      addExecute.rejects(new Error('boom'));
+      el._addedTagHandler(entry('tag1'));
+      el.document = { uid: 'doc-2', contextParameters: { tags: ['other'] } };
+      await settle();
+      expect(el.value).to.deep.equal(['other']);
+    });
+
     test('does not update the tags when the document changed meanwhile', async () => {
       const added = entry('dirty');
       addExecute.callsFake(() => Promise.resolve(tagsResponse('clean')));
