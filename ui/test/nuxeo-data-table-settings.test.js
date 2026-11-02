@@ -63,7 +63,7 @@ suite('nuxeo-data-table-settings', () => {
     // what the column checkbox does when the user clicks it
     const toggle = (idx) => {
       element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
-      element._columnToggled();
+      element._columnToggled({ model: { column: element.columns[idx] } });
     };
 
     test('should not fire settings-changed while the dialog is open', () => {
@@ -137,6 +137,35 @@ suite('nuxeo-data-table-settings', () => {
       element.toggleColsSettingsPopup();
       element._resetClicked();
       expect(element.columns[1].hidden).to.be.false;
+      expect(element.pendingChanges).to.be.true;
+    });
+
+    test('should save a change back to the opening columns after a scope switch restored others', async () => {
+      element.scopeEnabled = true;
+      element.set('columns.1.hidden', true);
+      element.toggleColsSettingsPopup();
+      await flush();
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      // the columns saved for the new scope are restored by code
+      element.set('columns.1.hidden', false);
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      expect(element.pendingChanges).to.be.true;
+      element._onSettingsClosed();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should start from the restored columns after a change undone before a scope switch', async () => {
+      element.scopeEnabled = true;
+      element.set('columns.1.hidden', true);
+      element.toggleColsSettingsPopup();
+      await flush();
+      toggle(1);
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      element.set('columns.1.hidden', false);
+      toggle(1);
       expect(element.pendingChanges).to.be.true;
     });
 
