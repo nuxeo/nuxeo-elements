@@ -276,11 +276,11 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       }
       const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
       const value = Array.isArray(this.$.s2.value) ? this.$.s2.value : [];
-      const ids = entries.map((entry) => entry.id);
-      const previousLabels = value.filter((id) => !ids.includes(id));
+      const ids = new Set(entries.map((entry) => entry.id));
+      const previousLabels = new Set(value.filter((id) => !ids.has(id)));
       // The server may sanitize a label, so a tag that is not returned as-is maps to the next label
       // this request added, in request order.
-      const addedLabels = serverLabels.filter((label) => !previousLabels.includes(label) && !ids.includes(label));
+      const addedLabels = serverLabels.filter((label) => !previousLabels.has(label) && !ids.has(label));
       const labels = entries.map((entry) => {
         const label = serverLabels.includes(entry.id) ? entry.id : addedLabels.shift() || entry.id;
         entry.item.displayLabel = label;
@@ -307,7 +307,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         return;
       }
       const item = Array.from(selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).find(
-        (el) => el.getAttribute('data-item-id') === id,
+        (el) => el.dataset.itemId === id,
       );
       const textNode = item && item.childNodes[1];
       if (textNode && textNode.nodeType === Node.TEXT_NODE) {
