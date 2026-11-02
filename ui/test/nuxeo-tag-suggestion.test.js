@@ -188,6 +188,46 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(chips()).to.deep.equal(['mytag', 'mytag', 'othertag']);
     });
 
+    test('reserves labels returned as-is before matching sanitized ones', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'my-tag', 'mytag')));
+      await paste('my tag,my-tag');
+      await settle();
+      expect(chips()).to.deep.equal(['existing', 'mytag', 'my-tag']);
+    });
+
+    [
+      ['a-b', 'ab'],
+      ['ab', 'a-b'],
+    ].forEach((order) => {
+      test(`keeps distinct tags with the same letters apart (${order.join(', ')})`, async () => {
+        addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', ...order)));
+        await paste('a%b,a-b');
+        await settle();
+        expect(chips()).to.deep.equal(['existing', 'ab', 'a-b']);
+      });
+    });
+
+    test('keeps the tags of each document apart when switching documents', async () => {
+      const resolvers = [];
+      addExecute.callsFake(
+        () =>
+          new Promise((resolve) => {
+            resolvers.push(resolve);
+          }),
+      );
+      el._addedTagHandler(entry('tag1'));
+      await wait();
+      el.document = { uid: 'doc-2', contextParameters: { tags: ['a-b'] } };
+      const added = entry('a%b');
+      el._addedTagHandler(added);
+      resolvers[0](tagsResponse('existing', 'tag1'));
+      await wait();
+      await wait();
+      resolvers[1](tagsResponse('a-b', 'ab'));
+      await settle();
+      expect(added.item.displayLabel).to.equal('ab');
+    });
+
     test('ignores a removal queued while an addition is pending when matching labels', async () => {
       let resolveAdd;
       addExecute.callsFake(
