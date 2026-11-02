@@ -303,30 +303,36 @@ import { escapeHTML } from './nuxeo-selectivity.js';
 
     /**
      * Finds the label the server stored for each added tag. The server may sanitize a label (e.g. "My Tag" is
-     * stored as "mytag") and does not keep the tags in insertion order, so a tag that is not returned as-is is
-     * matched on its letters and digits. A tag that still cannot be matched keeps its label, unless it is the
-     * only one left and the server stored exactly one other new label.
+     * stored as "mytag") and does not keep the tags in insertion order, so:
+     * 1. a tag returned as-is keeps its label, and that label is reserved for it;
+     * 2. another tag takes the only unreserved label with the same letters and digits, preferring a label
+     *    this request added over an existing one;
+     * 3. if a single tag is left and the server stored a single other new label, they are paired.
+     * Any other tag keeps its label rather than taking a guessed one.
      */
     _matchServerLabels(entries, serverLabels, previousLabels) {
       const serverLabelSet = new Set(serverLabels);
       const isNew = (label) => previousLabels && !previousLabels.has(label);
-      const matched = new Set();
-      const labels = entries.map((entry) => {
-        if (serverLabelSet.has(entry.id)) {
-          matched.add(entry.id);
-          return entry.id;
+      const labels = entries.map((entry) => (serverLabelSet.has(entry.id) ? entry.id : null));
+      const reserved = new Set(labels.filter(Boolean));
+      entries.forEach((entry, i) => {
+        if (labels[i]) {
+          return;
         }
         const key = this._tagKey(entry.id);
-        const candidates = key ? serverLabels.filter((label) => this._tagKey(label) === key) : [];
-        const label = candidates.find((candidate) => isNew(candidate) && !matched.has(candidate)) || candidates[0];
-        if (label) {
-          matched.add(label);
+        const candidates = key
+          ? serverLabels.filter((label) => !reserved.has(label) && this._tagKey(label) === key)
+          : [];
+        const newCandidates = candidates.filter(isNew);
+        const pick = newCandidates.length > 0 ? newCandidates : candidates;
+        if (pick.length === 1) {
+          [labels[i]] = pick;
+          reserved.add(pick[0]);
         }
-        return label;
       });
       const unmatched = labels.reduce((indexes, label, i) => (label ? indexes : [...indexes, i]), []);
       if (unmatched.length === 1) {
-        const remaining = serverLabels.filter((label) => isNew(label) && !matched.has(label));
+        const remaining = serverLabels.filter((label) => isNew(label) && !reserved.has(label));
         if (remaining.length === 1) {
           [labels[unmatched[0]]] = remaining;
         }
@@ -345,13 +351,17 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       return Array.isArray(tags) ? tags.map((tag) => tag.label) : null;
     }
 
+    // The tags known to be on the server, per document: a response for one document must not replace another's.
     _getConfirmedTags(uid) {
-      const confirmed = this._confirmedTags;
-      return confirmed && confirmed.uid === uid ? new Set(confirmed.labels) : null;
+      const labels = this._confirmedTags && this._confirmedTags.get(uid);
+      return labels ? new Set(labels) : null;
     }
 
     _setConfirmedTags(uid, labels) {
-      this._confirmedTags = { uid, labels: new Set(labels) };
+      if (!this._confirmedTags) {
+        this._confirmedTags = new Map();
+      }
+      this._confirmedTags.set(uid, new Set(labels));
     }
 
     _relabelSelectedItem(id, label) {
