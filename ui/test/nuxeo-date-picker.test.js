@@ -180,6 +180,19 @@ suite('nuxeo-date-picker – extra branches', () => {
       const m = el._moment('2024-06-15');
       expect(m.isValid()).to.be.true;
     });
+
+    ['America/New_York', 'Asia/Tokyo', 'Pacific/Chatham'].forEach((zone) => {
+      test('preserves browser-local picker semantics with ' + zone + ' configured', async () => {
+        const picker = await makeDatePicker(zone);
+        const instant = '2026-01-20T05:00:00.000Z';
+        expect(picker._moment(instant).format('YYYY-MM-DD HH:mm')).to.equal(moment(instant).format('YYYY-MM-DD HH:mm'));
+        expect(picker._moment('2026-01-20').toJSON()).to.equal(moment('2026-01-20').toJSON());
+        picker.value = instant;
+        await flush();
+        expect(getInput(picker).value).to.equal(moment(instant).format('YYYY-MM-DD'));
+        expect(picker.value).to.equal(instant);
+      });
+    });
   });
 
   suite('_valueChanged', () => {
