@@ -76,7 +76,11 @@ import '../nuxeo-button-styles.js';
                     <template>
                       <tr aria-label$="[[column.name]]">
                         <td>
-                          <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
+                          <paper-checkbox
+                            noink
+                            checked="{{!column.hidden}}"
+                            on-change="_columnToggled"
+                          ></paper-checkbox>
                         </td>
                         <td>
                           [[column.name]]
@@ -107,7 +111,7 @@ import '../nuxeo-button-styles.js';
           </div>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink on-click="_resetSettings" class="secondary"
+              <paper-button noink on-click="_resetClicked" class="secondary"
                 >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
               >
             </div>
@@ -164,20 +168,38 @@ import '../nuxeo-button-styles.js';
       const dialog = this.$$('#columnsSettingsPopup');
       if (!dialog.opened) {
         this._editing = true;
-        this._changedWhileEditing = false;
+        this._userChanged = false;
+        this._openedWith = this._visibility();
       }
       dialog.toggle();
     }
 
+    /**
+     * `true` while the dialog is open with column changes made by the user that are still to be saved: changes undone
+     * since, or columns restored by code, don't count.
+     */
+    get pendingChanges() {
+      return Boolean(this._editing && this._userChanged && this._visibility() !== this._openedWith);
+    }
+
+    _visibility() {
+      return JSON.stringify((this.columns || []).map((column) => Boolean(column.hidden)));
+    }
+
     _columnDisplayChanged(change) {
-      if (change.path.endsWith('hidden')) {
-        // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then
-        if (this._editing) {
-          this._changedWhileEditing = true;
-          return;
-        }
+      // While the dialog is open, changes show at once but are saved when it closes, with the scope chosen then
+      if (change.path.endsWith('hidden') && !this._editing) {
         this._fireSettingsChanged();
       }
+    }
+
+    _columnToggled() {
+      this._userChanged = true;
+    }
+
+    _resetClicked() {
+      this._userChanged = true;
+      this._resetSettings();
     }
 
     _fireSettingsChanged() {
@@ -199,9 +221,10 @@ import '../nuxeo-button-styles.js';
       if (this.columns.every((column) => column.hidden)) {
         this._resetSettings();
       }
+      const changed = this.pendingChanges;
       this._editing = false;
-      if (this._changedWhileEditing) {
-        this._changedWhileEditing = false;
+      this._userChanged = false;
+      if (changed) {
         this._fireSettingsChanged();
       }
     }
@@ -222,7 +245,7 @@ import '../nuxeo-button-styles.js';
           composed: true,
           bubbles: true,
           // tells whether column changes made in the open dialog are still to be saved
-          detail: { scope, pendingChanges: Boolean(this._editing && this._changedWhileEditing) },
+          detail: { scope, pendingChanges: this.pendingChanges },
         }),
       );
     }
