@@ -246,43 +246,43 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         return;
       }
       // Pasting "a,b,c" adds several tags in the same tick: collect them and send a single request.
-      if (!this._pendingAddedTags) {
-        const entries = [];
-        const doc = this.document;
-        this._pendingAddedTags = entries;
+      // A batch belongs to one document, so a tag added after switching documents starts a new one.
+      const doc = this.document;
+      let batch = this._pendingAddBatch;
+      if (!batch || batch.doc.uid !== doc.uid) {
+        batch = { doc, entries: [] };
+        this._pendingAddBatch = batch;
         this._enqueueTagOp(() => {
-          if (this._pendingAddedTags === entries) {
-            this._pendingAddedTags = null;
+          if (this._pendingAddBatch === batch) {
+            this._pendingAddBatch = null;
           }
-          return this._addTags(doc, entries);
+          return this._addTags(batch.doc, batch.entries);
         });
       }
-      this._pendingAddedTags.push(entry);
+      batch.entries.push(entry);
     }
 
     _addTags(doc, entries) {
+      // Operations run one at a time, so the confirmed tags are those left by the previous operation.
+      const previousLabels = this._getConfirmedTags(doc.uid);
       this.$.addTagOp.input = doc.uid;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
       return this.$.addTagOp.execute().then((response) => {
-        if (this.document === doc) {
-          this._onTagsAdded(entries, response);
+        const serverLabels = this._getResponseTags(response);
+        if (!serverLabels) {
+          return;
+        }
+        this._setConfirmedTags(doc.uid, serverLabels);
+        if (this.document && this.document.uid === doc.uid) {
+          this._onTagsAdded(entries, serverLabels, previousLabels);
         }
       });
     }
 
-    _onTagsAdded(entries, response) {
-      if (!response || !response.properties || !Array.isArray(response.properties['nxtag:tags'])) {
-        return;
-      }
-      const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
+    _onTagsAdded(entries, serverLabels, previousLabels) {
       const value = Array.isArray(this.$.s2.value) ? this.$.s2.value : [];
-      const ids = new Set(entries.map((entry) => entry.id));
-      const previousLabels = new Set(value.filter((id) => !ids.has(id)));
-      // The server may sanitize a label, so a tag that is not returned as-is maps to the next label
-      // this request added, in request order.
-      const addedLabels = serverLabels.filter((label) => !previousLabels.has(label) && !ids.has(label));
-      const labels = entries.map((entry) => {
-        const label = serverLabels.includes(entry.id) ? entry.id : addedLabels.shift() || entry.id;
+      const labels = this._matchServerLabels(entries, serverLabels, previousLabels).map((label, i) => {
+        const entry = entries[i];
         entry.item.displayLabel = label;
         if (label !== entry.id) {
           const index = value.indexOf(entry.id);
@@ -299,6 +299,59 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           ? this.i18n('tags.multipleAddedToDocument', labels.join(', '))
           : this.i18n('tags.addedToDocument', labels[0]);
       this.$.toast.open();
+    }
+
+    /**
+     * Finds the label the server stored for each added tag. The server may sanitize a label (e.g. "My Tag" is
+     * stored as "mytag") and does not keep the tags in insertion order, so a tag that is not returned as-is is
+     * matched on its letters and digits. A tag that still cannot be matched keeps its label, unless it is the
+     * only one left and the server stored exactly one other new label.
+     */
+    _matchServerLabels(entries, serverLabels, previousLabels) {
+      const serverLabelSet = new Set(serverLabels);
+      const isNew = (label) => previousLabels && !previousLabels.has(label);
+      const matched = new Set();
+      const labels = entries.map((entry) => {
+        if (serverLabelSet.has(entry.id)) {
+          matched.add(entry.id);
+          return entry.id;
+        }
+        const key = this._tagKey(entry.id);
+        const candidates = key ? serverLabels.filter((label) => this._tagKey(label) === key) : [];
+        const label = candidates.find((candidate) => isNew(candidate) && !matched.has(candidate)) || candidates[0];
+        if (label) {
+          matched.add(label);
+        }
+        return label;
+      });
+      const unmatched = labels.reduce((indexes, label, i) => (label ? indexes : [...indexes, i]), []);
+      if (unmatched.length === 1) {
+        const remaining = serverLabels.filter((label) => isNew(label) && !matched.has(label));
+        if (remaining.length === 1) {
+          [labels[unmatched[0]]] = remaining;
+        }
+      }
+      return labels.map((label, i) => label || entries[i].id);
+    }
+
+    _tagKey(label) {
+      return String(label)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, '');
+    }
+
+    _getResponseTags(response) {
+      const tags = response && response.properties && response.properties['nxtag:tags'];
+      return Array.isArray(tags) ? tags.map((tag) => tag.label) : null;
+    }
+
+    _getConfirmedTags(uid) {
+      const confirmed = this._confirmedTags;
+      return confirmed && confirmed.uid === uid ? new Set(confirmed.labels) : null;
+    }
+
+    _setConfirmedTags(uid, labels) {
+      this._confirmedTags = { uid, labels: new Set(labels) };
     }
 
     _relabelSelectedItem(id, label) {
@@ -319,11 +372,22 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (this.document) {
         const doc = this.document;
         // Tags added after this removal must be sent after it, so they start a new batch.
-        this._pendingAddedTags = null;
+        this._pendingAddBatch = null;
         this._enqueueTagOp(() => {
           this.$.removeTagOp.input = doc.uid;
           this.$.removeTagOp.params = { tags: entry.id };
-          return this.$.removeTagOp.execute().then(() => {
+          return this.$.removeTagOp.execute().then((response) => {
+            const serverLabels = this._getResponseTags(response);
+            if (serverLabels) {
+              this._setConfirmedTags(doc.uid, serverLabels);
+            } else {
+              const confirmed = this._getConfirmedTags(doc.uid);
+              if (confirmed) {
+                confirmed.delete(entry.id);
+                confirmed.delete(entry.item.displayLabel);
+                this._setConfirmedTags(doc.uid, confirmed);
+              }
+            }
             this.$.toast.hide();
             this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
             this.$.toast.open();
@@ -350,6 +414,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (this.document) {
         if (this.document.contextParameters && this.document.contextParameters.tags) {
           this.value = this.document.contextParameters.tags;
+          this._setConfirmedTags(this.document.uid, this.document.contextParameters.tags);
         } else {
           this.value = [];
           console.warn(
