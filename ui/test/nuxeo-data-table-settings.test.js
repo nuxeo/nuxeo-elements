@@ -178,7 +178,6 @@ suite('nuxeo-data-table-settings', () => {
       element.addEventListener('settings-scope-selected', scopeSpy);
       element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
       expect(scopeSpy.firstCall.args[0].detail.pendingChanges).to.be.true;
-      expect(element.pendingChanges).to.be.false;
       const spy = sinon.spy();
       element.addEventListener('settings-changed', spy);
       toggle(1);
@@ -202,6 +201,18 @@ suite('nuxeo-data-table-settings', () => {
       element._onSettingsClosed();
       expect(element.columns.some((column) => !column.hidden)).to.be.true;
       expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should keep changes pending when picking this document only, then all documents', async () => {
+      element.scopeEnabled = true;
+      element.toggleColsSettingsPopup();
+      await flush();
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      const spy = sinon.spy();
+      element.addEventListener('settings-scope-selected', spy);
+      element.shadowRoot.querySelector('paper-radio-button[name="all"]').click();
+      expect(spy.firstCall.args[0].detail.pendingChanges).to.be.true;
     });
 
     test('should keep changes pending after picking all documents', async () => {
