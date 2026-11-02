@@ -62,8 +62,8 @@ suite('nuxeo-data-table-settings', () => {
   suite('saving when the dialog closes', () => {
     // what the column checkbox does when the user clicks it
     const toggle = (idx) => {
-      element.set(`columns.${idx}.hidden`, !element.columns[idx].hidden);
-      element._columnToggled({ model: { column: element.columns[idx] } });
+      const column = element.columns[idx];
+      element._columnToggled({ model: { column }, target: { checked: column.hidden } });
     };
 
     test('should not fire settings-changed while the dialog is open', () => {
@@ -228,6 +228,21 @@ suite('nuxeo-data-table-settings', () => {
       element.addEventListener('settings-changed', spy);
       element._onSettingsClosed();
       expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should save a change back to the opening columns after a net-zero change while columns load', async () => {
+      element.scopeEnabled = true;
+      element.set('columns.1.hidden', true);
+      element.scope = 'document';
+      element.toggleColsSettingsPopup();
+      await flush();
+      element.shadowRoot.querySelector('paper-radio-button[name="all"]').click();
+      toggle(2);
+      toggle(2);
+      // the shared columns arrive
+      element.set('columns.1.hidden', false);
+      toggle(1);
+      expect(element.pendingChanges).to.be.true;
     });
 
     test('should keep changes pending after picking all documents', async () => {
