@@ -172,6 +172,64 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(el.value).to.deep.equal(['existing', 'tag1', 'clean', 'tag3']);
     });
 
+    test('matches sanitized labels returned in a different order', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'ab', 'mytag')));
+      await paste('my tag,a%b');
+      await settle();
+      expect(chips()).to.deep.equal(['existing', 'mytag', 'ab']);
+      expect(el.value).to.deep.equal(['existing', 'mytag', 'ab']);
+    });
+
+    test('matches a sanitized label that collides with an existing tag', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['mytag'] } };
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('mytag', 'othertag')));
+      await paste('my tag,other tag');
+      await settle();
+      expect(chips()).to.deep.equal(['mytag', 'mytag', 'othertag']);
+    });
+
+    test('ignores a removal queued while an addition is pending when matching labels', async () => {
+      let resolveAdd;
+      addExecute.callsFake(
+        () =>
+          new Promise((resolve) => {
+            resolveAdd = resolve;
+          }),
+      );
+      const added = entry('my tag');
+      el._addedTagHandler(added);
+      await wait();
+      el.$.s2.value = ['my tag'];
+      el._removedTagHandler(entry('existing'));
+      resolveAdd(tagsResponse('existing', 'mytag'));
+      await settle();
+      expect(added.item.displayLabel).to.equal('mytag');
+    });
+
+    test('starts a new batch when tags are added to another document', async () => {
+      const calls = [];
+      let resolveRemove;
+      removeExecute.callsFake(
+        () =>
+          new Promise((resolve) => {
+            resolveRemove = resolve;
+          }),
+      );
+      addExecute.callsFake(() => {
+        calls.push(`${el.$.addTagOp.input} ${el.$.addTagOp.params.tags}`);
+        return Promise.resolve(tagsResponse());
+      });
+      el._removedTagHandler(entry('existing'));
+      await wait();
+      el._addedTagHandler(entry('a1'));
+      el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
+      el._addedTagHandler(entry('b1'));
+      resolveRemove({});
+      await settle();
+      await settle();
+      expect(calls).to.deep.equal(['doc-1 a1', 'doc-2 b1']);
+    });
+
     test('runs tag operations one at a time so none is aborted', async () => {
       let resolveAdd;
       addExecute.callsFake(() => {
