@@ -169,6 +169,34 @@ suite('nuxeo-data-table-settings', () => {
       expect(element.pendingChanges).to.be.true;
     });
 
+    test('should save a change undone after picking this document only, which saved it', async () => {
+      element.scopeEnabled = true;
+      element.toggleColsSettingsPopup();
+      await flush();
+      toggle(1);
+      const scopeSpy = sinon.spy();
+      element.addEventListener('settings-scope-selected', scopeSpy);
+      element.shadowRoot.querySelector('paper-radio-button[name="document"]').click();
+      expect(scopeSpy.firstCall.args[0].detail.pendingChanges).to.be.true;
+      expect(element.pendingChanges).to.be.false;
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      expect(element.pendingChanges).to.be.true;
+      element._onSettingsClosed();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should keep changes pending after picking all documents', async () => {
+      element.scopeEnabled = true;
+      element.scope = 'document';
+      element.toggleColsSettingsPopup();
+      await flush();
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="all"]').click();
+      expect(element.pendingChanges).to.be.true;
+    });
+
     test('should report no pending changes once the dialog is closed', () => {
       element.toggleColsSettingsPopup();
       toggle(1);

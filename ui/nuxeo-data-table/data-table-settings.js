@@ -248,8 +248,10 @@ import '../nuxeo-button-styles.js';
       }
       this.scope = scope;
       const { pendingChanges } = this;
-      if (!pendingChanges) {
-        // the columns of the new scope may be restored next, so the user's next change starts from them
+      // The user's next change starts from what is shown then: without pending changes the columns of the new scope may
+      // be restored, and "this document only" saves the shown columns at once. For all documents, pending changes stay
+      // pending, to be saved for all documents of the type when the dialog closes.
+      if (!pendingChanges || scope === 'document') {
         this._userChanged = false;
       }
       this.dispatchEvent(
