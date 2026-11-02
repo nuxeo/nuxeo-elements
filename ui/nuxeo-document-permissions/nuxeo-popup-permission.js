@@ -390,7 +390,7 @@ import '../nuxeo-button-styles.js';
       if (
         this.updatingACE &&
         original &&
-        (value === original || value === moment(new Date(original)).format('YYYY-MM-DD'))
+        (value === original || moment(value).format('YYYY-MM-DD') === moment(new Date(original)).format('YYYY-MM-DD'))
       ) {
         return original;
       }
