@@ -215,6 +215,21 @@ suite('nuxeo-data-table-settings', () => {
       expect(spy.firstCall.args[0].detail.pendingChanges).to.be.true;
     });
 
+    test('should save a change undone after picking all documents', async () => {
+      element.scopeEnabled = true;
+      element.scope = 'document';
+      element.toggleColsSettingsPopup();
+      await flush();
+      toggle(1);
+      element.shadowRoot.querySelector('paper-radio-button[name="all"]').click();
+      toggle(1);
+      expect(element.pendingChanges).to.be.true;
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element._onSettingsClosed();
+      expect(spy).to.have.been.calledOnce;
+    });
+
     test('should keep changes pending after picking all documents', async () => {
       element.scopeEnabled = true;
       element.scope = 'document';
