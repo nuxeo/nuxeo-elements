@@ -249,61 +249,60 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     _addedTagHandler(entry) {
       if (this.document) {
         // Pasting "a,b,c" adds one tag per token in the same tick: send them in a single request.
-        if (!this._addedTags) {
-          this._addedTags = [];
-          queueMicrotask(() => this._addTags());
+        // A batch belongs to the document it was started on.
+        if (!this._addedTags || this._addedTags.uid !== this.document.uid) {
+          const batch = { uid: this.document.uid, entries: [] };
+          this._addedTags = batch;
+          queueMicrotask(() => this._addTags(batch));
         }
-        this._addedTags.push(entry);
+        this._addedTags.entries.push(entry);
       }
     }
 
-    _addTags() {
-      const entries = this._addedTags;
-      this._addedTags = null;
-      const doc = this.document;
-      if (!doc) {
+    _addTags(batch) {
+      if (this._addedTags === batch) {
+        this._addedTags = null;
+      }
+      // Discard the batch if the document changed since it was queued.
+      if (!this.document || this.document.uid !== batch.uid) {
         return;
       }
+      const { uid, entries } = batch;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
       this.$.addTagOp.execute().then((response) => {
-        if (!response || !response.properties || !this.document || this.document.uid !== doc.uid) {
+        if (!response || !response.properties || !this.document || this.document.uid !== uid) {
           return;
         }
         // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
         const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
-        let label;
+        const labels = this._getStoredLabels(entries, serverLabels);
         entries.forEach((entry) => {
-          label = this._getStoredLabel(entry.id, serverLabels);
+          const label = labels.get(entry);
           entry.item.displayLabel = label;
           if (label !== entry.id) {
             this._relabelSelectedItem(entry.id, label);
           }
         });
         this.$.toast.hide();
-        this.$.toast.text = this.i18n('tags.addedToDocument', label);
+        this.$.toast.text = this.i18n('tags.addedToDocument', labels.get(entries[entries.length - 1]));
         this.$.toast.open();
       });
     }
 
     /**
-     * Returns the label the server stored for a tag. The server lowercases the label and, when tag sanitization is
-     * enabled, removes spaces, "/", "\", "'" and "%" (see AbstractTagService#cleanLabel). The tag keeps its label when
-     * it was stored as-is, or when none or several of these forms were returned.
+     * Returns the label the server stored for each added entry. An entry stored as-is keeps its label. When exactly one
+     * entry was not stored as-is and exactly one server label is not shown yet, that label is the one stored for it.
+     * Otherwise the pairing would be a guess (the server does not keep insertion order), so the label is left as typed.
      */
-    _getStoredLabel(id, serverLabels) {
-      if (serverLabels.includes(id)) {
-        return id;
+    _getStoredLabels(entries, serverLabels) {
+      const labels = new Map(entries.map((entry) => [entry, entry.id]));
+      const shown = this.$.s2.value || [];
+      const unmatched = entries.filter((entry) => !serverLabels.includes(entry.id));
+      const unseen = serverLabels.filter((label) => !shown.includes(label));
+      if (unmatched.length === 1 && unseen.length === 1) {
+        labels.set(unmatched[0], unseen[0]);
       }
-      const lowerCase = String(id).toLowerCase();
-      const withoutPercent = lowerCase.replaceAll('%', '');
-      const forms = new Set([
-        lowerCase,
-        withoutPercent,
-        lowerCase.replace(/[ /\\']/g, ''),
-        withoutPercent.replace(/[ /\\']/g, ''),
-      ]);
-      const stored = [...forms].filter((form) => serverLabels.includes(form));
-      return stored.length === 1 ? stored[0] : id;
+      return labels;
     }
 
     _relabelSelectedItem(id, label) {
