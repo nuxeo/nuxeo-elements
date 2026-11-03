@@ -281,10 +281,12 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         () => {
           // Remove the chips of the tags that were not saved, unless the user edited them again meanwhile.
           if (this._isCurrentDocument(doc)) {
-            const ids = entries
-              .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !this._isStoredTag(doc.uid, entry))
-              .map((entry) => entry.id);
-            this.value = (this.value || []).filter((id) => !ids.includes(id));
+            const ids = new Set(
+              entries
+                .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !this._isStoredTag(doc.uid, entry))
+                .map((entry) => entry.id),
+            );
+            this.value = (this.value || []).filter((id) => !ids.has(id));
             this._showToast(this.i18n('tags.addToDocumentFailed', entries.map((entry) => entry.id).join(', ')));
           }
         },
