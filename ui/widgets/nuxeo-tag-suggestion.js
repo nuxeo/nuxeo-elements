@@ -248,6 +248,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       // Pasting "a,b,c" adds several tags in the same tick: collect them and send a single request.
       // A batch belongs to one document, so a tag added after switching documents starts a new one.
       const doc = this.document;
+      entry.revision = this._nextTagRevision(doc.uid, entry.id);
       let batch = this._pendingAddBatch;
       if (!batch || batch.doc.uid !== doc.uid) {
         batch = { doc, entries: [] };
@@ -268,22 +269,57 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       return this.$.addTagOp.execute().then(
         (response) => {
           const tags = response && response.properties && response.properties['nxtag:tags'];
-          if (Array.isArray(tags) && this._isCurrentDocument(doc)) {
-            this._onTagsAdded(
-              entries,
-              tags.map((tag) => tag.label),
-            );
+          if (!Array.isArray(tags)) {
+            return;
+          }
+          const labels = tags.map((tag) => tag.label);
+          this._storedTags.set(doc.uid, new Set(labels));
+          if (this._isCurrentDocument(doc)) {
+            this._onTagsAdded(entries, labels);
           }
         },
         () => {
-          // Roll the chips back to what the server has and tell the user the tags were not saved.
+          // Remove the chips of the tags that were not saved, unless the user edited them again meanwhile.
           if (this._isCurrentDocument(doc)) {
-            const ids = entries.map((entry) => entry.id);
+            const ids = entries
+              .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !this._isStoredTag(doc.uid, entry))
+              .map((entry) => entry.id);
             this.value = (this.value || []).filter((id) => !ids.includes(id));
-            this._showToast(this.i18n('tags.addToDocumentFailed', ids.join(', ')));
+            this._showToast(this.i18n('tags.addToDocumentFailed', entries.map((entry) => entry.id).join(', ')));
           }
         },
       );
+    }
+
+    /*
+     * The tags known to be on the server, per document: the tags enricher, then every add response and successful
+     * removal. A failed operation only rolls its chip back when the server state is known and no later edit of the
+     * same tag is queued, since that edit decides what the server ends up with.
+     */
+    get _storedTags() {
+      if (!this.__storedTags) {
+        this.__storedTags = new Map();
+      }
+      return this.__storedTags;
+    }
+
+    _isStoredTag(uid, entry) {
+      const stored = this._storedTags.get(uid);
+      return !!stored && (stored.has(entry.id) || stored.has(entry.item.displayLabel));
+    }
+
+    _nextTagRevision(uid, id) {
+      if (!this._tagRevisions) {
+        this._tagRevisions = new Map();
+      }
+      const key = `${uid}\u0000${id}`;
+      const revision = (this._tagRevisions.get(key) || 0) + 1;
+      this._tagRevisions.set(key, revision);
+      return revision;
+    }
+
+    _isLatestTagEdit(uid, entry) {
+      return !!this._tagRevisions && this._tagRevisions.get(`${uid}\u0000${entry.id}`) === entry.revision;
     }
 
     _isCurrentDocument(doc) {
@@ -356,18 +392,30 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     _removedTagHandler(entry) {
       if (this.document) {
         const doc = this.document;
+        const removal = { id: entry.id, item: entry.item, revision: this._nextTagRevision(doc.uid, entry.id) };
         // Tags added after this removal must be sent after it, so they start a new batch.
         this._pendingAddBatch = null;
         this._enqueueTagOp(() => {
           this.$.removeTagOp.input = doc.uid;
           this.$.removeTagOp.params = { tags: entry.id };
           return this.$.removeTagOp.execute().then(
-            () => this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel)),
             () => {
-              // The tag is still on the document, so show it again and tell the user it was not removed.
+              const stored = this._storedTags.get(doc.uid);
+              if (stored) {
+                stored.delete(entry.id);
+                stored.delete(entry.item.displayLabel);
+              }
+              this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel));
+            },
+            () => {
+              // Show the chip again if the tag is known to still be on the server and was not edited again meanwhile.
               if (this._isCurrentDocument(doc)) {
                 const value = this.value || [];
-                if (!value.includes(entry.id)) {
+                if (
+                  this._isLatestTagEdit(doc.uid, removal) &&
+                  this._isStoredTag(doc.uid, removal) &&
+                  !value.includes(entry.id)
+                ) {
                   this.value = [...value, entry.id];
                 }
                 this._showToast(this.i18n('tags.removeFromDocumentFailed', entry.item.displayLabel));
@@ -396,6 +444,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (this.document) {
         if (this.document.contextParameters && this.document.contextParameters.tags) {
           this.value = this.document.contextParameters.tags;
+          this._storedTags.set(this.document.uid, new Set(this.document.contextParameters.tags));
         } else {
           this.value = [];
           console.warn(

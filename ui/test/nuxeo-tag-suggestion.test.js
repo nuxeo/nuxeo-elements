@@ -307,6 +307,72 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(el.$.toast.text).to.contain('tags.removeFromDocumentFailed');
     });
 
+    // Simulates the user adding/removing a chip: updates the selection, then notifies the widget like selectivity.
+    const addChip = (id) => {
+      const added = entry(id);
+      el.value = [...(el.value || []), id];
+      el._addedTagHandler(added);
+      return added;
+    };
+    const removeChip = (id) => {
+      el.value = (el.value || []).filter((value) => value !== id);
+      el._removedTagHandler(entry(id));
+    };
+
+    test('keeps a re-added tag when its first add fails', async () => {
+      let rejectFirstAdd;
+      addExecute.onFirstCall().returns(
+        new Promise((resolve, reject) => {
+          rejectFirstAdd = reject;
+        }),
+      );
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'a')));
+      addChip('a');
+      await wait();
+      removeChip('a');
+      addChip('a');
+      rejectFirstAdd(new Error('boom'));
+      await settle();
+      await settle();
+      await settle();
+      expect(addExecute.callCount).to.equal(2);
+      expect(el.value).to.deep.equal(['existing', 'a']);
+    });
+
+    test('does not show a removed tag again when a later removal of it succeeds', async () => {
+      let call = 0;
+      removeExecute.callsFake(() => {
+        call += 1;
+        return call === 1 ? Promise.reject(new Error('boom')) : Promise.resolve({});
+      });
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing')));
+      removeChip('existing');
+      addChip('existing');
+      removeChip('existing');
+      await settle();
+      await settle();
+      await settle();
+      expect(el.value).to.deep.equal([]);
+    });
+
+    test('does not show a tag again when neither its add nor its removal was saved', async () => {
+      let rejectAdd;
+      addExecute.returns(
+        new Promise((resolve, reject) => {
+          rejectAdd = reject;
+        }),
+      );
+      removeExecute.rejects(new Error('boom'));
+      addChip('x');
+      await wait();
+      removeChip('x');
+      rejectAdd(new Error('boom'));
+      await settle();
+      await settle();
+      expect(removeExecute.callCount).to.equal(1);
+      expect(el.value).to.deep.equal(['existing']);
+    });
+
     test('does not roll back tags of another document after a failure', async () => {
       addExecute.rejects(new Error('boom'));
       el._addedTagHandler(entry('tag1'));
