@@ -197,6 +197,41 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(chips()).to.deep.equal(['ab', 'my tag', 'a%b']);
     });
 
+    test('does not give a label to a tag when a removal overlaps its request', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab', 'old'] } };
+      sinon.stub(el.$.removeTagOp, 'execute').returns(new Promise(() => {}));
+      let resolveAdd;
+      addExecute.returns(
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        }),
+      );
+      await paste('a%b');
+      el.$.s2._selectivity.remove('old');
+      // "a%b" is stored as the existing "ab", and the removed "old" is still on the server in this response.
+      resolveAdd(tagsResponse('ab', 'old'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'a%b']);
+    });
+
+    test('does not give a label to a tag when the chip of a pending add was removed', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab'] } };
+      sinon.stub(el.$.removeTagOp, 'execute').returns(new Promise(() => {}));
+      addExecute.onCall(0).returns(new Promise(() => {}));
+      let resolveSecond;
+      addExecute.onCall(1).returns(
+        new Promise((resolve) => {
+          resolveSecond = resolve;
+        }),
+      );
+      await paste('my tag');
+      el.$.s2._selectivity.remove('my tag');
+      await paste('a%b');
+      resolveSecond(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'a%b']);
+    });
+
     test('does not send the tags queued for a previous document to the new one', async () => {
       el._addedTagHandler({ id: 'tag1', item: {} });
       el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
