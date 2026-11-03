@@ -133,20 +133,28 @@ suite('nuxeo-tag-suggestion extras', () => {
     });
 
     test('sends all the pasted comma-separated tags in a single request', async () => {
+      const i18n = sinon.spy((key) => key);
+      el.i18n = i18n;
       await paste('tag1,tag2,tag3,tag4');
       await wait();
       expect(addExecute.callCount).to.equal(1);
+      expect(i18n).to.have.been.calledWith('tags.multipleAddedToDocument', 'tag1, tag2, tag3, tag4');
       expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag1,tag2,tag3,tag4' });
       expect(chips()).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
       expect(el.value).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
-      expect(el.$.toast.text).to.contain('tags.addedToDocument');
+      expect(el.$.toast.text).to.contain('tags.multipleAddedToDocument');
     });
 
     test('sends a single added tag on its own', async () => {
+      const i18n = sinon.spy((key) => key);
+      el.i18n = i18n;
       await paste('tag1');
       await wait();
+      expect(i18n).to.have.been.calledWith('tags.addedToDocument', 'tag1');
       expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag1' });
       expect(chips()).to.deep.equal(['existing', 'tag1']);
+      expect(el.$.toast.text).to.contain('tags.addedToDocument');
+      expect(el.$.toast.text).to.not.contain('multiple');
     });
 
     test('shows the label stored by the server on the matching tag', async () => {

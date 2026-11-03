@@ -270,7 +270,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       const { uid, entries } = batch;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
       this.$.addTagOp.execute().then((response) => {
-        if (!response || !response.properties || !this.document || this.document.uid !== uid) {
+        if (!response?.properties || this.document?.uid !== uid) {
           return;
         }
         // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
@@ -284,7 +284,11 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           }
         });
         this.$.toast.hide();
-        this.$.toast.text = this.i18n('tags.addedToDocument', labels.get(entries[entries.length - 1]));
+        const added = entries.map((entry) => labels.get(entry));
+        this.$.toast.text =
+          added.length > 1
+            ? this.i18n('tags.multipleAddedToDocument', added.join(', '))
+            : this.i18n('tags.addedToDocument', added[0]);
         this.$.toast.open();
       });
     }
