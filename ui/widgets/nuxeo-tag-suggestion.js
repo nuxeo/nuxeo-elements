@@ -269,42 +269,68 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       }
       const { uid, entries } = batch;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
-      this.$.addTagOp.execute().then((response) => {
-        if (!response || !response.properties || !this.document || this.document.uid !== uid) {
-          return;
-        }
-        // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
-        const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
-        const labels = this._getStoredLabels(entries, serverLabels);
-        entries.forEach((entry) => {
-          const label = labels.get(entry);
-          entry.item.displayLabel = label;
-          if (label !== entry.id) {
-            this._relabelSelectedItem(entry.id, label);
+      const token = this._beginTagOp();
+      this.$.addTagOp
+        .execute()
+        .then((response) => {
+          if (!response || !response.properties || !this.document || this.document.uid !== uid) {
+            return;
           }
-        });
-        this.$.toast.hide();
-        const added = entries.map((entry) => labels.get(entry));
-        this.$.toast.text =
-          added.length > 1
-            ? this.i18n('tags.multipleAddedToDocument', added.join(', '))
-            : this.i18n('tags.addedToDocument', added[0]);
-        this.$.toast.open();
-      });
+          // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
+          const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
+          const labels = this._getStoredLabels(entries, serverLabels, this._isTagOpAlone(token));
+          entries.forEach((entry) => {
+            const label = labels.get(entry);
+            entry.item.displayLabel = label;
+            if (label !== entry.id) {
+              this._relabelSelectedItem(entry.id, label);
+            }
+          });
+          this.$.toast.hide();
+          const added = entries.map((entry) => labels.get(entry));
+          this.$.toast.text =
+            added.length > 1
+              ? this.i18n('tags.multipleAddedToDocument', added.join(', '))
+              : this.i18n('tags.addedToDocument', added[0]);
+          this.$.toast.open();
+        })
+        .finally(() => this._endTagOp());
+    }
+
+    /**
+     * Tag add and remove requests are counted so that a response can tell whether another one overlapped its request.
+     */
+    _beginTagOp() {
+      this._tagOps = this._tagOps || { started: 0, settled: 0 };
+      this._tagOps.started++;
+      const { started, settled } = this._tagOps;
+      // `idle` is true when no other tag request was still pending when this one started.
+      return { started, settled, idle: started - settled === 1 };
+    }
+
+    _endTagOp() {
+      this._tagOps.settled++;
+    }
+
+    /**
+     * True when no other tag request was pending when the given one started, and none started or finished since.
+     */
+    _isTagOpAlone(token) {
+      return token.idle && this._tagOps.started === token.started && this._tagOps.settled === token.settled;
     }
 
     /**
      * Returns the label the server stored for each added entry. An entry stored as-is keeps its label. When exactly one
      * entry was not stored as-is and exactly one server label is not shown yet, that label is the one stored for it.
      * Otherwise the pairing would be a guess (the server does not keep insertion order), so the label is left as typed.
-     * It is also left as typed while another chip is not confirmed by the server yet (for example another add still in
-     * flight), because an unseen label could then belong to that chip instead.
+     * It is also left as typed when another tag request overlapped this one, or while another chip is not confirmed by
+     * the server yet, because an unseen label could then belong to another change instead.
      */
-    _getStoredLabels(entries, serverLabels) {
+    _getStoredLabels(entries, serverLabels, alone) {
       const labels = new Map(entries.map((entry) => [entry, entry.id]));
       const shown = this.$.s2.value || [];
-      const addedIds = entries.map((entry) => entry.id);
-      if (!shown.every((id) => addedIds.includes(id) || serverLabels.includes(id))) {
+      const addedIds = new Set(entries.map((entry) => entry.id));
+      if (!alone || !shown.every((id) => addedIds.has(id) || serverLabels.includes(id))) {
         return labels;
       }
       const unmatched = entries.filter((entry) => !serverLabels.includes(entry.id));
@@ -335,11 +361,15 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     _removedTagHandler(entry) {
       if (this.document) {
         this.$.removeTagOp.params = { tags: entry.id };
-        this.$.removeTagOp.execute().then(() => {
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
-          this.$.toast.open();
-        });
+        this._beginTagOp();
+        this.$.removeTagOp
+          .execute()
+          .then(() => {
+            this.$.toast.hide();
+            this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
+            this.$.toast.open();
+          })
+          .finally(() => this._endTagOp());
       }
     }
 
