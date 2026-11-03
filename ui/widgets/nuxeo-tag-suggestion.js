@@ -20,6 +20,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@nuxeo/nuxeo-elements/nuxeo-document.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-toast/paper-toast.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
@@ -80,6 +81,8 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]"></nuxeo-operation>
 
         <nuxeo-operation id="removeTagOp" op="Services.UntagDocument" input="[[document.uid]]"></nuxeo-operation>
+
+        <nuxeo-document id="tagsDoc" enrichers="tags" schemas="dublincore"></nuxeo-document>
 
         <paper-toast id="toast"></paper-toast>
       `;
@@ -248,7 +251,6 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       // Pasting "a,b,c" adds several tags in the same tick: collect them and send a single request.
       // A batch belongs to one document, so a tag added after switching documents starts a new one.
       const doc = this.document;
-      entry.revision = this._nextTagRevision(doc.uid, entry.id);
       let batch = this._pendingAddBatch;
       if (!batch || batch.doc.uid !== doc.uid) {
         batch = { doc, entries: [] };
@@ -270,67 +272,63 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         (response) => {
           const tags = response && response.properties && response.properties['nxtag:tags'];
           if (!Array.isArray(tags)) {
+            this._uncertainTags.add(doc.uid);
             return;
           }
           const labels = tags.map((tag) => tag.label);
-          this._storedTags.set(doc.uid, new Set(labels));
+          this._serverTags.set(doc.uid, new Set(labels));
           if (this._isCurrentDocument(doc)) {
-            this._onTagsAdded(doc, entries, labels);
+            const added = entries.map((entry) => this._getStoredLabel(entry.id, labels));
+            this._showToast(
+              added.length > 1
+                ? this.i18n('tags.multipleAddedToDocument', added.join(', '))
+                : this.i18n('tags.addedToDocument', added[0]),
+            );
           }
         },
         () => {
-          // Remove the chips of the tags that were not saved, unless the user edited them again meanwhile. Only a
-          // chip whose own label is on the server is kept: "my tag" is not saved just because "mytag" exists.
+          this._uncertainTags.add(doc.uid);
           if (this._isCurrentDocument(doc)) {
-            const stored = this._storedTags.get(doc.uid);
-            const ids = new Set(
-              entries
-                .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !(stored && stored.has(entry.id)))
-                .map((entry) => entry.id),
-            );
-            this.value = (this.value || []).filter((id) => !ids.has(id));
             this._showToast(this.i18n('tags.addToDocumentFailed', entries.map((entry) => entry.id).join(', ')));
           }
         },
       );
     }
 
-    /*
-     * The tags known to be on the server, per document: the tags enricher, then every add response and successful
-     * removal. A failed operation only rolls its chip back when the server state is known and no later edit of the
-     * same tag is queued, since that edit decides what the server ends up with.
-     */
-    get _storedTags() {
-      if (!this.__storedTags) {
-        this.__storedTags = new Map();
+    _removedTagHandler(entry) {
+      if (!this.document) {
+        return;
       }
-      return this.__storedTags;
-    }
-
-    // The label under which the server is known to keep this tag, if any.
-    _getStoredTag(uid, entry) {
-      const stored = this._storedTags.get(uid);
-      if (!stored) {
-        return null;
-      }
-      const label = [entry.id, entry.item.displayLabel]
-        .map((id) => this._getStoredLabel(id, [...stored]))
-        .find((id) => stored.has(id));
-      return label || null;
-    }
-
-    _nextTagRevision(uid, id) {
-      if (!this._tagRevisions) {
-        this._tagRevisions = new Map();
-      }
-      const key = `${uid}\u0000${id}`;
-      const revision = (this._tagRevisions.get(key) || 0) + 1;
-      this._tagRevisions.set(key, revision);
-      return revision;
-    }
-
-    _isLatestTagEdit(uid, entry) {
-      return !!this._tagRevisions && this._tagRevisions.get(`${uid}\u0000${entry.id}`) === entry.revision;
+      const doc = this.document;
+      // Tags added after this removal must be sent after it, so they start a new batch.
+      this._pendingAddBatch = null;
+      this._enqueueTagOp(() => {
+        this.$.removeTagOp.input = doc.uid;
+        this.$.removeTagOp.params = { tags: entry.id };
+        return this.$.removeTagOp.execute().then(
+          () => {
+            // The response has no body: the server removed the cleaned form of the label. Only a label that is its
+            // own cleaned form tells for sure which tag that was; otherwise the tags are read again.
+            const tags = this._serverTags.get(doc.uid);
+            if (tags) {
+              tags.delete(this._getStoredLabel(entry.id, [...tags]));
+            }
+            const forms = this._getLabelForms(entry.id);
+            if (!tags || forms.size > 1 || !forms.has(entry.id)) {
+              this._uncertainTags.add(doc.uid);
+            }
+            if (this._isCurrentDocument(doc)) {
+              this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel));
+            }
+          },
+          () => {
+            this._uncertainTags.add(doc.uid);
+            if (this._isCurrentDocument(doc)) {
+              this._showToast(this.i18n('tags.removeFromDocumentFailed', entry.item.displayLabel));
+            }
+          },
+        );
+      });
     }
 
     _isCurrentDocument(doc) {
@@ -343,28 +341,23 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       this.$.toast.open();
     }
 
-    _onTagsAdded(doc, entries, serverLabels) {
-      const renamed = new Map();
-      const labels = entries.map((entry) => {
-        const label = this._getStoredLabel(entry.id, serverLabels);
-        entry.item.displayLabel = label;
-        // A chip re-added after this request was sent belongs to the newer edit, which renames it when it is saved.
-        if (label !== entry.id && this._isLatestTagEdit(doc.uid, entry)) {
-          renamed.set(entry.id, label);
-        }
-        return label;
-      });
-      if (renamed.size > 0) {
-        // Show the tags as the server stored them. Setting the value rebuilds the chips, so their ids are the stored
-        // labels used by later operations; tags stored under the same label are shown once, as on the server.
-        const value = (this.value || []).map((id) => renamed.get(id) || id);
-        this.value = value.filter((id, index) => value.indexOf(id) === index);
+    /**
+     * The tags on the server as far as the widget knows, per document: from the tags enricher, then every add
+     * response and successful removal; a failed operation leaves them unchanged. After a failure or anything unclear,
+     * the document is marked uncertain and its tags are read again from the server once no operation is left.
+     */
+    get _serverTags() {
+      if (!this.__serverTags) {
+        this.__serverTags = new Map();
       }
-      this._showToast(
-        labels.length > 1
-          ? this.i18n('tags.multipleAddedToDocument', labels.join(', '))
-          : this.i18n('tags.addedToDocument', labels[0]),
-      );
+      return this.__serverTags;
+    }
+
+    get _uncertainTags() {
+      if (!this.__uncertainTags) {
+        this.__uncertainTags = new Set();
+      }
+      return this.__uncertainTags;
     }
 
     /**
@@ -377,56 +370,78 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (serverLabels.includes(id)) {
         return id;
       }
+      const stored = [...this._getLabelForms(id)].filter((label) => serverLabels.includes(label));
+      return stored.length === 1 ? stored[0] : id;
+    }
+
+    // The labels the server may store for a tag, depending on whether sanitization and wildcards are enabled.
+    _getLabelForms(id) {
       const lowerCase = String(id).toLowerCase();
       const withoutPercent = lowerCase.replaceAll('%', '');
-      const forms = new Set([
+      return new Set([
         lowerCase,
         withoutPercent,
         lowerCase.replace(/[ /\\']/g, ''),
         withoutPercent.replace(/[ /\\']/g, ''),
       ]);
-      const stored = [...forms].filter((label) => serverLabels.includes(label));
-      return stored.length === 1 ? stored[0] : id;
     }
 
-    _removedTagHandler(entry) {
-      if (this.document) {
-        const doc = this.document;
-        const removal = { id: entry.id, item: entry.item, revision: this._nextTagRevision(doc.uid, entry.id) };
-        // Tags added after this removal must be sent after it, so they start a new batch.
-        this._pendingAddBatch = null;
-        this._enqueueTagOp(() => {
-          this.$.removeTagOp.input = doc.uid;
-          this.$.removeTagOp.params = { tags: entry.id };
-          return this.$.removeTagOp.execute().then(
-            () => {
-              const stored = this._storedTags.get(doc.uid);
-              const storedTag = this._getStoredTag(doc.uid, removal);
-              if (stored && storedTag) {
-                stored.delete(storedTag);
-              }
-              this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel));
-            },
-            () => {
-              // Show the chip again if the tag is known to still be on the server and was not edited again meanwhile.
-              if (this._isCurrentDocument(doc)) {
-                const value = this.value || [];
-                const storedTag = this._isLatestTagEdit(doc.uid, removal) && this._getStoredTag(doc.uid, removal);
-                if (storedTag && !value.includes(storedTag)) {
-                  this.value = [...value, storedTag];
-                }
-                this._showToast(this.i18n('tags.removeFromDocumentFailed', entry.item.displayLabel));
-              }
-            },
-          );
-        });
-      }
-    }
-
-    // nuxeo-operation aborts its in-flight request on each execute(), so tag operations must run one at a time.
-    // Each operation handles its own failure; an unexpected error must not block the next ones.
+    /*
+     * nuxeo-operation aborts its in-flight request on each execute(), so tag operations run one at a time. The chips
+     * are updated optimistically while the user edits; once no operation is left, they are set to the tags the server
+     * actually has, whatever order the edits, failures and label sanitization happened in.
+     */
     _enqueueTagOp(op) {
-      this._tagOpQueue = (this._tagOpQueue || Promise.resolve()).then(op).catch(() => {});
+      this._pendingTagOps = (this._pendingTagOps || 0) + 1;
+      this._tagOpQueue = (this._tagOpQueue || Promise.resolve())
+        .then(op)
+        .catch(() => {})
+        .then(() => {
+          this._pendingTagOps -= 1;
+          return this._pendingTagOps === 0 ? this._syncTags() : undefined;
+        })
+        .catch(() => {});
+    }
+
+    _syncTags() {
+      const doc = this.document;
+      if (!doc) {
+        return undefined;
+      }
+      const showKnownTags = () => {
+        const known = this._serverTags.get(doc.uid);
+        // A tag edited meanwhile is synchronized once its own operation completes.
+        if (known && !this._pendingTagOps && this._isCurrentDocument(doc)) {
+          this._showServerTags([...known]);
+        }
+      };
+      if (!this._uncertainTags.has(doc.uid)) {
+        showKnownTags();
+        return undefined;
+      }
+      this.$.tagsDoc.docId = doc.uid;
+      return this.$.tagsDoc.get().then(
+        (fetched) => {
+          const tags = fetched && fetched.contextParameters && fetched.contextParameters.tags;
+          if (Array.isArray(tags) && !this._pendingTagOps) {
+            this._serverTags.set(doc.uid, new Set(tags));
+            this._uncertainTags.delete(doc.uid);
+          }
+          showKnownTags();
+        },
+        // The tags could not be read: show the ones the widget knows, which leave out the failed changes.
+        showKnownTags,
+      );
+    }
+
+    // Shows the server tags, keeping the order of the chips; tags stored under the same label are shown once.
+    _showServerTags(labels) {
+      const current = this.value || [];
+      const shown = current.map((id) => this._getStoredLabel(id, labels)).filter((id) => labels.includes(id));
+      const value = [...new Set([...shown, ...labels])];
+      if (value.length !== current.length || value.some((id, index) => id !== current[index])) {
+        this.value = value;
+      }
     }
 
     _initSelection(element, callback) {
@@ -441,7 +456,16 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (this.document) {
         if (this.document.contextParameters && this.document.contextParameters.tags) {
           this.value = this.document.contextParameters.tags;
-          this._storedTags.set(this.document.uid, new Set(this.document.contextParameters.tags));
+          const { uid } = this.document;
+          if (!this._pendingTagOps || !this._serverTags.has(uid)) {
+            this._serverTags.set(uid, new Set(this.document.contextParameters.tags));
+          }
+          if (this._pendingTagOps) {
+            // The document may have been read before the pending tag operations completed.
+            this._uncertainTags.add(uid);
+          } else {
+            this._uncertainTags.delete(uid);
+          }
         } else {
           this.value = [];
           console.warn(
