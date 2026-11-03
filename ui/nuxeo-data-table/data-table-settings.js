@@ -45,22 +45,29 @@ import '../nuxeo-button-styles.js';
           }
 
           .scope {
-            margin: 0 24px 16px;
+            margin: 0 0 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--nuxeo-border);
           }
 
           .scope[hidden] {
             display: none;
           }
 
+          /* styled like the dialog title, but may wrap for long translations */
           .scope-label {
-            font-weight: 600;
-            margin-bottom: 4px;
+            @apply --paper-font-title;
+            @apply --paper-dialog-title;
+            white-space: normal;
+            margin-bottom: 16px;
           }
 
+          /* sized and spaced like the column checkboxes above */
           .scope paper-radio-group {
             display: flex;
             flex-direction: column;
-            --paper-radio-group-item-padding: 4px 0;
+            --paper-radio-group-item-padding: 2px 0;
+            --paper-radio-button-size: 18px;
           }
         </style>
 
