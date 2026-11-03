@@ -150,11 +150,27 @@ suite('nuxeo-tag-suggestion extras', () => {
     });
 
     test('shows the label stored by the server on the matching tag', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('mytag', 'existing', 'tag2')));
+      await paste('my tag,tag2');
+      await wait();
+      expect(chips()).to.deep.equal(['existing', 'mytag', 'tag2']);
+      expect(el.value).to.deep.equal(['existing', 'mytag', 'tag2']);
+    });
+
+    test('keeps the typed labels when the stored ones cannot be paired with certainty', async () => {
       addExecute.callsFake(() => Promise.resolve(tagsResponse('ab', 'existing', 'mytag')));
       await paste('my tag,a%b');
       await wait();
-      expect(chips()).to.deep.equal(['existing', 'mytag', 'ab']);
-      expect(el.value).to.deep.equal(['existing', 'mytag', 'ab']);
+      expect(chips()).to.deep.equal(['existing', 'my tag', 'a%b']);
+    });
+
+    test('does not send the tags queued for a previous document to the new one', async () => {
+      el._addedTagHandler({ id: 'tag1', item: {} });
+      el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
+      el._addedTagHandler({ id: 'tag2', item: { displayLabel: 'tag2' } });
+      await wait();
+      expect(addExecute.callCount).to.equal(1);
+      expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag2' });
     });
 
     test('does not abort a previous tag request', () => {
