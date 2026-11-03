@@ -175,11 +175,11 @@ suite('nuxeo-tag-suggestion extras', () => {
       { paste: 'my tag,my-tag', server: ['my-tag', 'mytag'], chips: ['mytag', 'my-tag'] },
       { paste: 'a%b,a-b', server: ['a-b', 'ab'], chips: ['ab', 'a-b'] },
       { paste: 'a%b,a-b', server: ['ab', 'a-b'], chips: ['ab', 'a-b'] },
-      { paste: 'a%b,ab', server: ['a-b', 'ab'], chips: ['ab', 'ab'] },
-      { paste: 'a%b,a/b', server: ['a-b', 'ab'], chips: ['ab', 'ab'] },
-      { paste: 'a%b,a/b', server: ['ab', 'a-b'], chips: ['ab', 'ab'] },
+      { paste: 'a%b,ab', server: ['a-b', 'ab'], chips: ['ab'] },
+      { paste: 'a%b,a/b', server: ['a-b', 'ab'], chips: ['ab'] },
+      { paste: 'a%b,a/b', server: ['ab', 'a-b'], chips: ['ab'] },
       { paste: 'a-%b,a%b', server: ['a-b', 'ab'], chips: ['a-b', 'ab'] },
-      { paste: 'my tag,my%tag', server: ['mytag'], chips: ['mytag', 'mytag'] },
+      { paste: 'my tag,my%tag', server: ['mytag'], chips: ['mytag'] },
       { paste: 'my tag,other tag', server: ['mytag', 'othertag'], chips: ['mytag', 'othertag'] },
     ].forEach(({ paste: text, server, chips: expected }) => {
       test(`shows the label stored by the server when pasting "${text}" (${server.join(', ')})`, async () => {
@@ -370,6 +370,115 @@ suite('nuxeo-tag-suggestion extras', () => {
       await settle();
       await settle();
       expect(removeExecute.callCount).to.equal(1);
+      expect(el.value).to.deep.equal(['existing']);
+    });
+
+    // Removes a chip through selectivity, which notifies the widget with the item it currently holds.
+    const clickRemove = (label) => {
+      const item = Array.from(el.$.s2._selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).find(
+        (chip) => chip.textContent.trim() === label,
+      );
+      item.querySelector('.selectivity-multiple-selected-item-remove').click();
+    };
+
+    test('uses the stored label as the chip id once a sanitized tag is saved', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'mytag')));
+      await paste('my tag');
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing', 'mytag']);
+      expect(
+        Array.from(el.$.s2._selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).map(
+          (item) => item.dataset.itemId,
+        ),
+      ).to.deep.equal(['existing', 'mytag']);
+    });
+
+    test('shows the stored label again each time removing a sanitized tag fails', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'mytag')));
+      removeExecute.rejects(new Error('boom'));
+      await paste('my tag');
+      await settle();
+      clickRemove('mytag');
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing', 'mytag']);
+      clickRemove('mytag');
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing', 'mytag']);
+      expect(chips()).to.deep.equal(['existing', 'mytag']);
+    });
+
+    test('shows the stored label when a sanitized tag removed before its add completed cannot be removed', async () => {
+      let resolveAdd;
+      addExecute.returns(
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        }),
+      );
+      removeExecute.rejects(new Error('boom'));
+      addChip('my tag');
+      await wait();
+      removeChip('my tag');
+      resolveAdd(tagsResponse('existing', 'mytag'));
+      await settle();
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['existing', 'mytag']);
+    });
+
+    test('keeps a queued sanitized tag consistent after an earlier add failed', async () => {
+      let rejectFirstAdd;
+      addExecute.onFirstCall().returns(
+        new Promise((resolve, reject) => {
+          rejectFirstAdd = reject;
+        }),
+      );
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', 'mytag')));
+      removeExecute.rejects(new Error('boom'));
+      addChip('x');
+      await wait();
+      removeChip('existing');
+      addChip('my tag');
+      rejectFirstAdd(new Error('boom'));
+      await settle();
+      await settle();
+      await settle();
+      await wait();
+      expect(el.value).to.have.members(['existing', 'mytag']);
+      clickRemove('mytag');
+      await settle();
+      await wait();
+      expect(el.value).to.have.members(['existing', 'mytag']);
+    });
+
+    test('removes a variant of an existing tag when it could not be added', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['mytag'] } };
+      addExecute.rejects(new Error('boom'));
+      addChip('my tag');
+      await settle();
+      await wait();
+      expect(el.value).to.deep.equal(['mytag']);
+    });
+
+    test('lets a re-added sanitized tag roll back when an earlier add of it completes first', async () => {
+      let resolveFirstAdd;
+      addExecute.onFirstCall().returns(
+        new Promise((resolve) => {
+          resolveFirstAdd = resolve;
+        }),
+      );
+      addExecute.onSecondCall().rejects(new Error('boom'));
+      addChip('my tag');
+      await wait();
+      removeChip('my tag');
+      addChip('my tag');
+      resolveFirstAdd(tagsResponse('existing', 'mytag'));
+      await settle();
+      await settle();
+      await settle();
+      await wait();
       expect(el.value).to.deep.equal(['existing']);
     });
 
