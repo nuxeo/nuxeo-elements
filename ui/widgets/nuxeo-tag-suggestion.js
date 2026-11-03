@@ -270,7 +270,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       const { uid, entries } = batch;
       this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
       this.$.addTagOp.execute().then((response) => {
-        if (!response?.properties || this.document?.uid !== uid) {
+        if (!response || !response.properties || !this.document || this.document.uid !== uid) {
           return;
         }
         // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
@@ -297,10 +297,16 @@ import { escapeHTML } from './nuxeo-selectivity.js';
      * Returns the label the server stored for each added entry. An entry stored as-is keeps its label. When exactly one
      * entry was not stored as-is and exactly one server label is not shown yet, that label is the one stored for it.
      * Otherwise the pairing would be a guess (the server does not keep insertion order), so the label is left as typed.
+     * It is also left as typed while another chip is not confirmed by the server yet (for example another add still in
+     * flight), because an unseen label could then belong to that chip instead.
      */
     _getStoredLabels(entries, serverLabels) {
       const labels = new Map(entries.map((entry) => [entry, entry.id]));
       const shown = this.$.s2.value || [];
+      const addedIds = entries.map((entry) => entry.id);
+      if (!shown.every((id) => addedIds.includes(id) || serverLabels.includes(id))) {
+        return labels;
+      }
       const unmatched = entries.filter((entry) => !serverLabels.includes(entry.id));
       const unseen = serverLabels.filter((label) => !shown.includes(label));
       if (unmatched.length === 1 && unseen.length === 1) {

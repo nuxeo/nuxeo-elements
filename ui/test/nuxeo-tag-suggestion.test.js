@@ -172,6 +172,31 @@ suite('nuxeo-tag-suggestion extras', () => {
       expect(chips()).to.deep.equal(['existing', 'my tag', 'a%b']);
     });
 
+    test('does not give a label to a tag when another add is still unconfirmed', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab'] } };
+      let resolveFirst;
+      let resolveSecond;
+      addExecute.onCall(0).returns(
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        }),
+      );
+      addExecute.onCall(1).returns(
+        new Promise((resolve) => {
+          resolveSecond = resolve;
+        }),
+      );
+      await paste('my tag');
+      await paste('a%b');
+      // "a%b" is stored as the existing "ab": the only unseen label is the one of the pending "my tag".
+      resolveSecond(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'my tag', 'a%b']);
+      resolveFirst(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'my tag', 'a%b']);
+    });
+
     test('does not send the tags queued for a previous document to the new one', async () => {
       el._addedTagHandler({ id: 'tag1', item: {} });
       el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
