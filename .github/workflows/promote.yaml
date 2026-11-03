@@ -67,20 +67,33 @@ jobs:
           tag_name: v${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
 
+      # 3.1.x is lower than the 2025.x versions already published, and npm refuses to apply the
+      # implicit "latest" tag then. Always publish with an explicit tag: "latest" stays on 2025.x.
+      - name: Resolve the npm dist-tag
+        run: |
+          case "$VERSION" in
+            2025.*) echo "NPM_TAG=latest" >> $GITHUB_ENV ;;
+            3.1.*) echo "NPM_TAG=lts-2023" >> $GITHUB_ENV ;;
+            *)
+              echo "::error::No npm dist-tag is mapped for version $VERSION"
+              exit 1
+              ;;
+          esac
+
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/ (dry run)
         if: ${{ github.event.inputs.dryRun == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
-          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag "$NPM_TAG" --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
 
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/
         if: ${{ github.event.inputs.dryRun == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
-          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
-      
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag "$NPM_TAG" --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
+
       - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GIT_ADMIN_TOKEN }}
