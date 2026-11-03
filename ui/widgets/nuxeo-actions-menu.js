@@ -177,10 +177,7 @@ import './nuxeo-tooltip.js';
                 // we don't want to move the action back if the event is comming from a non-dialog element
                 return;
               }
-              path = path.slice(
-                0,
-                path.findIndex((el) => el === action),
-              );
+              path = path.slice(0, path.indexOf(action));
               if (path.filter((el) => el.tagName === 'NUXEO-DIALOG' || el.tagName === 'PAPER-DIALOG').length > 1) {
                 // nor if it comes from an inner dialog
                 return;
@@ -317,7 +314,7 @@ import './nuxeo-tooltip.js';
           dropdownElements.map((list) => list.removeAttribute('tabindex'));
         }, 0);
       }
-      if (e && e.type && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
+      if (e && e.type && e.composedPath().some((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
         return; // skip events from within reparented actions
       }
       this.__layoutDebouncer = Debouncer.debounce(this.__layoutDebouncer, microTask, () => {

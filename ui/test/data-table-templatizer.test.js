@@ -79,21 +79,12 @@ suite('DataTableTemplatizerBehavior extras', () => {
   suite('_itemPathChanged', () => {
     test('calls notifyPath on instance', () => {
       const instance = { notifyPath: sinon.spy() };
-      const ctx = { _parentProps: null };
-      impl._itemPathChanged.call(ctx, instance, { path: 'item.name', value: 'x' });
+      impl._itemPathChanged(instance, { path: 'item.name', value: 'x' });
       expect(instance.notifyPath).to.have.been.calledWith('item.name', 'x');
     });
 
-    test('initializes _parentProps if undefined', () => {
-      const instance = { notifyPath: sinon.spy() };
-      const ctx = {};
-      impl._itemPathChanged.call(ctx, instance, { path: 'item.x', value: 1 });
-      expect(ctx._parentProps).to.be.an('object');
-    });
-
     test('does nothing when instance is null', () => {
-      const ctx = {};
-      impl._itemPathChanged.call(ctx, null, { path: 'item.x', value: 1 });
+      impl._itemPathChanged(null, { path: 'item.x', value: 1 });
     });
   });
 

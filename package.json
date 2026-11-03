@@ -14,7 +14,7 @@
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "postinstall": "check-engine --ignore",
@@ -139,13 +139,13 @@
     "nuxeo": "^4.0.3"
   },
   "overrides": {
-    "axios": "1.18.0",
-    "brace-expansion@1": "1.1.18",
-    "brace-expansion@2": "2.1.4",
-    "brace-expansion@5": "5.0.9",
-    "js-yaml@4": "4.3.1",
+    "axios": "1.20.0",
+    "brace-expansion@5": "5.0.12",
+    "follow-redirects": "1.16.1",
+    "js-yaml@4": "4.3.2",
     "parse-url": "8.1.0",
     "serialize-javascript": "7.0.5",
+    "smol-toml": "1.9.0",
     "tar": "7.5.22"
   }
 }

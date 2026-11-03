@@ -5,7 +5,7 @@
 Nuxeo Elements is the shared web components library for the Nuxeo content services platform, built with **Polymer 3** (legacy `Polymer({…})` factory pattern and class-based `Nuxeo.Element`). It provides data access, UI, dataviz, and testing components consumed by **Nuxeo Web UI** and third-party applications. Licensed Apache 2.0, owned by Hyland Software.
 
 - **Runtime**: Browser (no server-side JS in production)
-- **Node**: ≥ 18
+- **Node**: ≥ 22.13 (CI runs 24)
 - **Build**: No bundler (library consumed via npm)
 - **Package manager**: npm (no yarn/pnpm)
 - **Monorepo**: Lerna workspaces (`core`, `ui`, `dataviz`, `testing-helpers`, `storybook`)
@@ -99,8 +99,9 @@ test/                → Shared test setup
 
 ## CI / GitHub Actions
 
-- **Workflows**: lint → test → storybook → build (tag + publish) (sequential gates)
-- **Node version**: 22 in CI
+- **Dev branch flow (`develop-2025`, `develop-2023`)**: `develop.yaml` starts lint, test and storybook in parallel; Sonar and CodeQL trigger themselves on the same push. No publish step. Ticket PRs target these branches.
+- **Release branch flow (`lts-2025`, `maintenance-3.1.x`)**: `main.yaml` starts lint, test, storybook and sonar in parallel, then build (tag + publish), which depends on all four.
+- **Node version**: 24 in CI
 - **Installs**: CI uses `npm ci --ignore-scripts` for deterministic, lockfile-based installs (the `--ignore-scripts` flag skips dependency lifecycle hooks for supply-chain safety; the unit-test browser is installed via the `pretest` hook). `package-lock.json` is committed and must stay in sync with `package.json`.
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`
 - **Cross-repo**: Changes can trigger nuxeo-web-ui builds
