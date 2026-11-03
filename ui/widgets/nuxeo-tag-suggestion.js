@@ -275,15 +275,17 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           const labels = tags.map((tag) => tag.label);
           this._storedTags.set(doc.uid, new Set(labels));
           if (this._isCurrentDocument(doc)) {
-            this._onTagsAdded(entries, labels);
+            this._onTagsAdded(doc, entries, labels);
           }
         },
         () => {
-          // Remove the chips of the tags that were not saved, unless the user edited them again meanwhile.
+          // Remove the chips of the tags that were not saved, unless the user edited them again meanwhile. Only a
+          // chip whose own label is on the server is kept: "my tag" is not saved just because "mytag" exists.
           if (this._isCurrentDocument(doc)) {
+            const stored = this._storedTags.get(doc.uid);
             const ids = new Set(
               entries
-                .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !this._isStoredTag(doc.uid, entry))
+                .filter((entry) => this._isLatestTagEdit(doc.uid, entry) && !(stored && stored.has(entry.id)))
                 .map((entry) => entry.id),
             );
             this.value = (this.value || []).filter((id) => !ids.has(id));
@@ -305,9 +307,16 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       return this.__storedTags;
     }
 
-    _isStoredTag(uid, entry) {
+    // The label under which the server is known to keep this tag, if any.
+    _getStoredTag(uid, entry) {
       const stored = this._storedTags.get(uid);
-      return !!stored && (stored.has(entry.id) || stored.has(entry.item.displayLabel));
+      if (!stored) {
+        return null;
+      }
+      const label = [entry.id, entry.item.displayLabel]
+        .map((id) => this._getStoredLabel(id, [...stored]))
+        .find((id) => stored.has(id));
+      return label || null;
     }
 
     _nextTagRevision(uid, id) {
@@ -334,20 +343,23 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       this.$.toast.open();
     }
 
-    _onTagsAdded(entries, serverLabels) {
-      const value = Array.isArray(this.$.s2.value) ? this.$.s2.value : [];
+    _onTagsAdded(doc, entries, serverLabels) {
+      const renamed = new Map();
       const labels = entries.map((entry) => {
         const label = this._getStoredLabel(entry.id, serverLabels);
         entry.item.displayLabel = label;
-        if (label !== entry.id) {
-          const index = value.indexOf(entry.id);
-          if (index !== -1) {
-            value[index] = label;
-          }
-          this._relabelSelectedItem(entry.id, label);
+        // A chip re-added after this request was sent belongs to the newer edit, which renames it when it is saved.
+        if (label !== entry.id && this._isLatestTagEdit(doc.uid, entry)) {
+          renamed.set(entry.id, label);
         }
         return label;
       });
+      if (renamed.size > 0) {
+        // Show the tags as the server stored them. Setting the value rebuilds the chips, so their ids are the stored
+        // labels used by later operations; tags stored under the same label are shown once, as on the server.
+        const value = (this.value || []).map((id) => renamed.get(id) || id);
+        this.value = value.filter((id, index) => value.indexOf(id) === index);
+      }
       this._showToast(
         labels.length > 1
           ? this.i18n('tags.multipleAddedToDocument', labels.join(', '))
@@ -377,20 +389,6 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       return stored.length === 1 ? stored[0] : id;
     }
 
-    _relabelSelectedItem(id, label) {
-      const selectivity = this.$.s2._selectivity;
-      if (!selectivity || !selectivity.el) {
-        return;
-      }
-      const item = Array.from(selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).find(
-        (el) => el.dataset.itemId === id,
-      );
-      const textNode = item && item.childNodes[1];
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-        textNode.textContent = label;
-      }
-    }
-
     _removedTagHandler(entry) {
       if (this.document) {
         const doc = this.document;
@@ -403,9 +401,9 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           return this.$.removeTagOp.execute().then(
             () => {
               const stored = this._storedTags.get(doc.uid);
-              if (stored) {
-                stored.delete(entry.id);
-                stored.delete(entry.item.displayLabel);
+              const storedTag = this._getStoredTag(doc.uid, removal);
+              if (stored && storedTag) {
+                stored.delete(storedTag);
               }
               this._showToast(this.i18n('tags.removedFromDocument', entry.item.displayLabel));
             },
@@ -413,12 +411,9 @@ import { escapeHTML } from './nuxeo-selectivity.js';
               // Show the chip again if the tag is known to still be on the server and was not edited again meanwhile.
               if (this._isCurrentDocument(doc)) {
                 const value = this.value || [];
-                if (
-                  this._isLatestTagEdit(doc.uid, removal) &&
-                  this._isStoredTag(doc.uid, removal) &&
-                  !value.includes(entry.id)
-                ) {
-                  this.value = [...value, entry.id];
+                const storedTag = this._isLatestTagEdit(doc.uid, removal) && this._getStoredTag(doc.uid, removal);
+                if (storedTag && !value.includes(storedTag)) {
+                  this.value = [...value, storedTag];
                 }
                 this._showToast(this.i18n('tags.removeFromDocumentFailed', entry.item.displayLabel));
               }
