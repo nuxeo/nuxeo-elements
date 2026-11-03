@@ -59,12 +59,30 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
+  // what the column checkbox does when the user clicks it
+  const toggle = (idx) => {
+    const column = element.columns[idx];
+    element._columnToggled({ model: { column }, target: { checked: column.hidden } });
+  };
+
+  suite('saving without the choice of where changes apply', () => {
+    test('should fire settings-changed at each change while the dialog is open, as before', () => {
+      element.toggleColsSettingsPopup();
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      toggle(1);
+      expect(spy.callCount).to.equal(1);
+      toggle(2);
+      expect(spy.callCount).to.equal(2);
+      element._onSettingsClosed();
+      expect(spy.callCount).to.equal(2);
+    });
+  });
+
   suite('saving when the dialog closes', () => {
-    // what the column checkbox does when the user clicks it
-    const toggle = (idx) => {
-      const column = element.columns[idx];
-      element._columnToggled({ model: { column }, target: { checked: column.hidden } });
-    };
+    setup(() => {
+      element.scopeEnabled = true;
+    });
 
     test('should not fire settings-changed while the dialog is open', () => {
       element.toggleColsSettingsPopup();
@@ -94,7 +112,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should tell whether column changes are pending when a scope is picked', async () => {
-      element.scopeEnabled = true;
       element.toggleColsSettingsPopup();
       await flush();
       const spy = sinon.spy();
@@ -141,7 +158,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should save a change back to the opening columns after a scope switch restored others', async () => {
-      element.scopeEnabled = true;
       element.set('columns.1.hidden', true);
       element.toggleColsSettingsPopup();
       await flush();
@@ -157,7 +173,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should start from the restored columns after a change undone before a scope switch', async () => {
-      element.scopeEnabled = true;
       element.set('columns.1.hidden', true);
       element.toggleColsSettingsPopup();
       await flush();
@@ -170,7 +185,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should save a change undone after picking this document only, which saved it', async () => {
-      element.scopeEnabled = true;
       element.toggleColsSettingsPopup();
       await flush();
       toggle(1);
@@ -187,7 +201,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should save the default columns when all were hidden and saved for this document only', async () => {
-      element.scopeEnabled = true;
       element.toggleColsSettingsPopup();
       await flush();
       element.columns.forEach((column, idx) => {
@@ -204,7 +217,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should keep changes pending when picking this document only, then all documents', async () => {
-      element.scopeEnabled = true;
       element.toggleColsSettingsPopup();
       await flush();
       toggle(1);
@@ -216,7 +228,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should save a change undone after picking all documents', async () => {
-      element.scopeEnabled = true;
       element.scope = 'document';
       element.toggleColsSettingsPopup();
       await flush();
@@ -231,7 +242,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should save a change back to the opening columns after a net-zero change while columns load', async () => {
-      element.scopeEnabled = true;
       element.set('columns.1.hidden', true);
       element.scope = 'document';
       element.toggleColsSettingsPopup();
@@ -246,7 +256,6 @@ suite('nuxeo-data-table-settings', () => {
     });
 
     test('should keep changes pending after picking all documents', async () => {
-      element.scopeEnabled = true;
       element.scope = 'document';
       element.toggleColsSettingsPopup();
       await flush();

@@ -173,7 +173,9 @@ import '../nuxeo-button-styles.js';
 
     toggleColsSettingsPopup() {
       const dialog = this.$$('#columnsSettingsPopup');
-      if (!dialog.opened) {
+      // with the choice of where they apply, column changes are saved when the dialog closes, with the choice made then;
+      // otherwise they are saved at once
+      if (!dialog.opened && this.scopeEnabled) {
         this._editing = true;
         this._userChanged = false;
         this._openedWith = this._visibility();
