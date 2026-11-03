@@ -77,7 +77,12 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         >
         </nuxeo-selectivity>
 
-        <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation
+          id="addTagOp"
+          op="Services.TagDocument"
+          input="[[document.uid]]"
+          uncancelable
+        ></nuxeo-operation>
 
         <nuxeo-operation id="removeTagOp" op="Services.UntagDocument" input="[[document.uid]]"></nuxeo-operation>
 
@@ -243,28 +248,78 @@ import { escapeHTML } from './nuxeo-selectivity.js';
 
     _addedTagHandler(entry) {
       if (this.document) {
-        this.$.addTagOp.params = { tags: entry.id };
-        this.$.addTagOp.execute().then((response) => {
-          if (!response || response.properties['nxtag:tags'].length < 0) {
-            return;
-          }
-          const lenArr = response.properties['nxtag:tags'].length;
-          const { label } = response.properties['nxtag:tags'][lenArr - 1];
+        // Pasting "a,b,c" adds one tag per token in the same tick: send them in a single request.
+        if (!this._addedTags) {
+          this._addedTags = [];
+          queueMicrotask(() => this._addTags());
+        }
+        this._addedTags.push(entry);
+      }
+    }
+
+    _addTags() {
+      const entries = this._addedTags;
+      this._addedTags = null;
+      const doc = this.document;
+      if (!doc) {
+        return;
+      }
+      this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
+      this.$.addTagOp.execute().then((response) => {
+        if (!response || !response.properties || !this.document || this.document.uid !== doc.uid) {
+          return;
+        }
+        // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
+        const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
+        let label;
+        entries.forEach((entry) => {
+          label = this._getStoredLabel(entry.id, serverLabels);
           entry.item.displayLabel = label;
-          this.shadowRoot.querySelector('#s2').value[lenArr - 1] = label;
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.addedToDocument', label);
-          this.$.toast.open();
-          const lastSelectedItem = this.$.s2._selectivity.el.firstElementChild.querySelectorAll(
-            '.selectivity-multiple-selected-item',
-          )[lenArr - 1];
-          if (lastSelectedItem) {
-            const textNode = lastSelectedItem.childNodes[1];
-            if (textNode.nodeType === Node.TEXT_NODE) {
-              textNode.textContent = label;
-            }
+          if (label !== entry.id) {
+            this._relabelSelectedItem(entry.id, label);
           }
         });
+        this.$.toast.hide();
+        this.$.toast.text = this.i18n('tags.addedToDocument', label);
+        this.$.toast.open();
+      });
+    }
+
+    /**
+     * Returns the label the server stored for a tag. The server lowercases the label and, when tag sanitization is
+     * enabled, removes spaces, "/", "\", "'" and "%" (see AbstractTagService#cleanLabel). The tag keeps its label when
+     * it was stored as-is, or when none or several of these forms were returned.
+     */
+    _getStoredLabel(id, serverLabels) {
+      if (serverLabels.includes(id)) {
+        return id;
+      }
+      const lowerCase = String(id).toLowerCase();
+      const withoutPercent = lowerCase.replaceAll('%', '');
+      const forms = new Set([
+        lowerCase,
+        withoutPercent,
+        lowerCase.replace(/[ /\\']/g, ''),
+        withoutPercent.replace(/[ /\\']/g, ''),
+      ]);
+      const stored = [...forms].filter((form) => serverLabels.includes(form));
+      return stored.length === 1 ? stored[0] : id;
+    }
+
+    _relabelSelectedItem(id, label) {
+      const value = this.$.s2.value || [];
+      const index = value.indexOf(id);
+      if (index !== -1) {
+        value[index] = label;
+      }
+      const item = Array.from(
+        this.$.s2._selectivity.el.firstElementChild.querySelectorAll('.selectivity-multiple-selected-item'),
+      ).find((el) => el.dataset.itemId === id);
+      if (item) {
+        const textNode = item.childNodes[1];
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          textNode.textContent = label;
+        }
       }
     }
 
