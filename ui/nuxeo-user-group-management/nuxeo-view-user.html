@@ -34,17 +34,27 @@ Used by `nuxeo-user-management`
       :host {
         display: block;
       }
+
+      /* These fields are read-only text, not form controls, so a label element could never
+         be associated with anything here. A description list carries the name/value
+         relationship natively (WCAG 1.3.1), and the aria-labelledby gives each value an
+         explicit accessible name. The inner span elements are kept so that existing value
+         selectors still resolve. UA list margins are reset so the rendering is unchanged. */
+      dl,
+      dd {
+        margin: 0;
+      }
     </style>
-    <div class="layout horizontal">
+    <dl class="layout horizontal">
       <div class="layout vertical flex" name="email">
-        <label>[[i18n('viewUser.email')]]</label>
-        <span>[[user.properties.email]]</span>
+        <dt id="emailLabel">[[i18n('viewUser.email')]]</dt>
+        <dd aria-labelledby="emailLabel"><span>[[user.properties.email]]</span></dd>
       </div>
       <div class="layout vertical flex" name="company">
-        <label>[[i18n('viewUser.company')]]</label>
-        <span>[[user.properties.company]]</span>
+        <dt id="companyLabel">[[i18n('viewUser.company')]]</dt>
+        <dd aria-labelledby="companyLabel"><span>[[user.properties.company]]</span></dd>
       </div>
-    </div>
+    </dl>
   </template>
 
   <script>

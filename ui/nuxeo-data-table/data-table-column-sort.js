@@ -81,7 +81,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
         path: String,
         order: {
-          type: Number,
+          type: String,
           computed: '_order(path, sortOrder, sortOrder.length)',
         },
         sortOrder: Array,
@@ -93,26 +93,32 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _order(path, sortOrder, length) {
-      if (length <= 1) {
+      // `sortOrder` is still unset during the initial property flush and `iron-data-table` also
+      // accepts a null or non-array sort order, which means nothing is sorted. The sequence badge
+      // is only meaningful while several columns are sorted at once.
+      if (!Array.isArray(sortOrder) || length <= 1) {
         return '';
       }
 
-      for (let i = 0; i < length; i++) {
-        if (sortOrder[i].path === path) {
-          return i + 1;
-        }
-      }
+      const index = sortOrder.findIndex((entry) => entry.path === path);
+      return index === -1 ? '' : `${index + 1}`;
     }
 
     _sortOrderChanged(sortOrder) {
-      // TODO: if sortOrder for this column has been removed from outside, direction is not updated.
-      if (sortOrder.base) {
-        sortOrder.base.forEach((sort) => {
-          if (sort.path === this.path) {
-            this.direction = sort.direction;
-          }
-        });
+      // A Polymer wildcard change record always carries a `base` key, so a record without one
+      // was not produced by the observer and says nothing about the current sort order.
+      if (!sortOrder || !('base' in sortOrder)) {
+        return;
       }
+
+      // `sortOrder` may be replaced from outside the element, for instance when a saved content
+      // view is restored, so the direction has to be cleared when this column is no longer part
+      // of it. `iron-data-table` also accepts a null or non-array sort order, which means nothing
+      // is sorted. Leaving the direction stale would keep both the arrow and the aria-label out
+      // of sync.
+      const entries = Array.isArray(sortOrder.base) ? sortOrder.base : [];
+      const sort = entries.find((entry) => entry.path === this.path);
+      this.direction = sort ? sort.direction : null;
     }
 
     _sort() {

@@ -117,9 +117,9 @@ import '../nuxeo-button-styles.js';
       this.$.moveDownOp
         .execute()
         .then(() => {
-          for (let i = 0; i < this._sortedDocuments.length; i++) {
-            this.documents.splice(this.documents.indexOf(this._sortedDocuments[i]), 1);
-            this.documents.splice(this._focusIndex, 0, this._sortedDocuments[i]);
+          for (const sortedDocument of this._sortedDocuments) {
+            this.documents.splice(this.documents.indexOf(sortedDocument), 1);
+            this.documents.splice(this._focusIndex, 0, sortedDocument);
           }
           this._sortedDocuments = [];
           this.dispatchEvent(

@@ -250,7 +250,7 @@ import './nuxeo-resource.js';
         }
       }
       if (sourceUrl) {
-        const splitter = documentProp[sourceUrl].indexOf('?') > -1 ? '&' : '?';
+        const splitter = documentProp[sourceUrl].includes('?') ? '&' : '?';
         documentProp.viewUrl = `${documentProp[sourceUrl]}${splitter}clientReason=view`;
         documentProp.downloadUrl = `${documentProp[sourceUrl]}${splitter}clientReason=download`;
       }
@@ -261,8 +261,7 @@ import './nuxeo-resource.js';
       if (this.documentData) {
         if (this.documentData.contextParameters) {
           const documentContextParams = this.documentData.contextParameters;
-          documentProps.push(documentContextParams.preview);
-          documentProps.push(documentContextParams.renditions);
+          documentProps.push(documentContextParams.preview, documentContextParams.renditions);
         }
 
         if (this.documentData.properties) {
