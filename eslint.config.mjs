@@ -7,6 +7,56 @@ import globals from 'globals';
 import uiConfig from './ui/eslint.config.mjs';
 import datavizDemoConfig from './dataviz/demo/eslint.config.mjs';
 
+// Syntax that polymer-analyzer 3.2.4 (babylon 7.0.0-beta.47) cannot parse. A file using any of it is
+// dropped by `polymer analyze` and by the Nuxeo Web UI Designer catalog generator, together with the
+// elements it defines (WEBUI-1922, WEBUI-2418). Use explicit guards instead, e.g. `a && a.b`, an
+// explicit `!== undefined && !== null` check, or `catch (e)`.
+// Keep in sync with the same list in nuxeo-web-ui's eslint.config.mjs.
+const polymerAnalyzerUnsupportedSyntax = [
+  {
+    selector: 'ChainExpression',
+    message: 'Optional chaining (?.) is not supported by polymer-analyzer. Use explicit && guards.',
+  },
+  {
+    selector: "LogicalExpression[operator='??']",
+    message: 'Nullish coalescing (??) is not supported by polymer-analyzer. Use an explicit null/undefined check.',
+  },
+  {
+    selector: 'CatchClause[param=null]',
+    message: 'Optional catch binding is not supported by polymer-analyzer. Use catch (e).',
+  },
+  {
+    selector: 'AssignmentExpression[operator=/^(\\|\\||&&|\\?\\?)=$/]',
+    message: 'Logical assignment (||=, &&=, ??=) is not supported by polymer-analyzer.',
+  },
+  { selector: 'PropertyDefinition', message: 'Class fields are not supported by polymer-analyzer.' },
+  { selector: 'StaticBlock', message: 'Class static blocks are not supported by polymer-analyzer.' },
+  { selector: 'PrivateIdentifier', message: 'Private #members are not supported by polymer-analyzer.' },
+  { selector: 'Literal[bigint]', message: 'BigInt literals are not supported by polymer-analyzer.' },
+  {
+    selector: 'Literal[raw=/^[0-9][0-9a-fA-FxXoObB.]*_[0-9a-fA-F_.]*$/]',
+    message: 'Numeric separators are not supported by polymer-analyzer.',
+  },
+  { selector: 'ExportAllDeclaration[exported]', message: '`export * as ns` is not supported by polymer-analyzer.' },
+  {
+    selector: 'ImportDeclaration[attributes.length>0]',
+    message: 'Import attributes are not supported by polymer-analyzer.',
+  },
+  {
+    selector: 'ExportNamedDeclaration[attributes.length>0]',
+    message: 'Export attributes are not supported by polymer-analyzer.',
+  },
+  {
+    selector: 'Program > ExpressionStatement > AwaitExpression',
+    message: 'Top-level await is not supported by polymer-analyzer.',
+  },
+  {
+    selector: 'Program > VariableDeclaration > VariableDeclarator > AwaitExpression',
+    message: 'Top-level await is not supported by polymer-analyzer.',
+  },
+  { selector: 'Literal[regex.flags=/[dv]/]', message: 'Regex d/v flags are not supported by polymer-analyzer.' },
+];
+
 export default [
   // Global ignores (replaces .eslintignore)
   {
@@ -156,6 +206,16 @@ export default [
       'wc/guard-define-call': 'warn',
       'wc/require-listener-teardown': 'warn',
       'wc/tag-name-matches-class': 'warn',
+    },
+  },
+
+  // Source shipped to consumers (and read by `polymer analyze` / the Designer catalog generator) must not
+  // use syntax polymer-analyzer cannot parse. Vendored code (ui/viewers/pdfjs) is already ignored globally.
+  {
+    files: ['core/**/*.{js,html}', 'dataviz/**/*.{js,html}', 'ui/**/*.{js,html}'],
+    ignores: ['**/test/**', '**/demo/**', '**/*.test.js'],
+    rules: {
+      'no-restricted-syntax': ['error', ...polymerAnalyzerUnsupportedSyntax],
     },
   },
 
