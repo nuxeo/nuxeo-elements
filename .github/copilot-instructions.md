@@ -71,7 +71,7 @@ test/                → Shared test setup
 - **ESLint**: Flat config (`eslint.config.mjs`), `eslint-plugin-html` for `.html` files
 - **Max line length**: 120 characters
 - **`Nuxeo` global**: Declared as `writable` in ESLint
-- **No optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source — Polymer lint/analyze cannot parse it and elements go missing from `analysis.json`. Use `(obj && obj.prop)` or similar explicit guards instead.
+- **No `?.`, `??`, `catch { }`, `||=`/`&&=`/`??=`, class fields, private `#` members or other post-ES2019 syntax** in `core/`, `ui/`, or `dataviz/` source — Polymer lint/analyze (and the Web UI Designer catalog) cannot parse it and elements go missing from `analysis.json`. ESLint (`no-restricted-syntax`) enforces it. Use `(obj && obj.prop)`, an explicit `!== undefined && !== null` check or `catch (e)` instead.
 - Always run `npm run format` before committing
 
 ### Naming
