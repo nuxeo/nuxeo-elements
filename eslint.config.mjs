@@ -34,7 +34,9 @@ const polymerAnalyzerUnsupportedSyntax = [
   { selector: 'PrivateIdentifier', message: 'Private #members are not supported by polymer-analyzer.' },
   { selector: 'Literal[bigint]', message: 'BigInt literals are not supported by polymer-analyzer.' },
   {
-    selector: 'Literal[raw=/^[0-9][0-9a-fA-FxXoObB.]*_[0-9a-fA-F_.]*$/]',
+    // Any numeric literal whose source text contains `_` (`1_000`, `.1_2`, `1_000e-2`, `0b1_0`); the type check keeps
+    // string literals such as 'a_b' out of it. BigInt literals are covered by the selector above.
+    selector: 'Literal[value=type(number)][raw=/_/]',
     message: 'Numeric separators are not supported by polymer-analyzer.',
   },
   { selector: 'ExportAllDeclaration[exported]', message: '`export * as ns` is not supported by polymer-analyzer.' },
@@ -43,16 +45,18 @@ const polymerAnalyzerUnsupportedSyntax = [
     message: 'Import attributes are not supported by polymer-analyzer.',
   },
   {
-    selector: 'ExportNamedDeclaration[attributes.length>0]',
+    selector: ':matches(ExportNamedDeclaration, ExportAllDeclaration)[attributes.length>0]',
     message: 'Export attributes are not supported by polymer-analyzer.',
   },
   {
-    selector: 'Program > ExpressionStatement > AwaitExpression',
+    // Any `await` with no function around it, wherever it sits in the expression (`wrap(await f())`,
+    // `export const v = await f()`, `(await f()).x`); awaits inside functions are fine.
+    selector: 'AwaitExpression:not(:function AwaitExpression)',
     message: 'Top-level await is not supported by polymer-analyzer.',
   },
   {
-    selector: 'Program > VariableDeclaration > VariableDeclarator > AwaitExpression',
-    message: 'Top-level await is not supported by polymer-analyzer.',
+    selector: 'ForOfStatement[await=true]:not(:function ForOfStatement)',
+    message: 'Top-level for await is not supported by polymer-analyzer.',
   },
   { selector: 'Literal[regex.flags=/[dv]/]', message: 'Regex d/v flags are not supported by polymer-analyzer.' },
 ];
