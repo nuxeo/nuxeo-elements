@@ -476,5 +476,19 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(get.callCount).to.equal(1);
       expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
     });
+    test('a type-only suggestion picked during a pending lookup keeps its label', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, { jdoe });
+      widget.value = ['jdoe'];
+      await timePasses(1);
+      const result = { id: 'bmartin', type: 'USER_TYPE', displayLabel: 'Bob Martin' };
+      widget.$.s2._selectivity.add({ id: 'bmartin', text: 'Bob Martin', item: result });
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
+    });
   });
 });

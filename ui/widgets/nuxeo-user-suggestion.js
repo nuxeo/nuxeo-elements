@@ -280,7 +280,8 @@ import './nuxeo-user-group-formatter.js';
     }
 
     _resolveEntry(item) {
-      if (item && item['entity-type']) {
+      // REST entities, and suggestion results (which may only carry `type`) are already resolved
+      if (item && typeof item === 'object' && (item['entity-type'] || item.id)) {
         return item;
       }
       if (typeof item === 'string') {
@@ -432,7 +433,8 @@ import './nuxeo-user-group-formatter.js';
       (Array.isArray(data) ? data : [data]).forEach((item) => {
         // dropdown results are wrapped by selectivity as { id, text, item: entity }
         const entity = item && item.item ? item.item : item;
-        if (entity && entity['entity-type']) {
+        // suggestion results may only carry `type` (USER_TYPE / GROUP_TYPE): keep any object, not just REST entities
+        if (entity && typeof entity === 'object') {
           current.set(this._idFunction(entity), entity);
         }
       });
