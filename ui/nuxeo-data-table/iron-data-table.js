@@ -847,7 +847,7 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Flags the table and its columns as required from the `required` widgets of the row form.
+     * Flags columns as required from the `required` widgets of the row form.
      *
      * Layouts generated for a multivalued property flag the entry widget inside
      * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
@@ -855,10 +855,8 @@ function hasRowDetailTemplate(node) {
      * Columns are matched to entry widgets by name; a table with a single column always holds the
      * entries of a scalar multivalued property, where the column name is the field label.
      *
-     * The same signal makes the table itself required: the entries are the property's value, so a
-     * table with no row leaves a required property empty. Without it the layout reported no failure
-     * at all and the save was refused with no reason given (WEBUI-180). It is kept apart from the
-     * public `required` so markup that never set it keeps rendering as before.
+     * Required row fields constrain individual entries, not the number of rows. Only the table's
+     * own `required` property makes an empty table invalid (WEBUI-2377).
      *
      * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
      * flagged and clears them once they no longer match. A `required` set explicitly on a column is
@@ -867,11 +865,6 @@ function hasRowDetailTemplate(node) {
     _updateRequiredColumns() {
       const form = this.getContentChildren('#form')[0];
       const requiredWidgets = form ? Array.from((form.shadowRoot || form).querySelectorAll('[required]')) : [];
-      const formRequired = requiredWidgets.length > 0;
-      if (this._formRequired !== formRequired) {
-        this._formRequired = formRequired;
-        this._syncAriaValidationState();
-      }
       if (!this.columns || this.columns.length === 0) {
         return;
       }
@@ -1663,13 +1656,6 @@ function hasRowDetailTemplate(node) {
        is empty when it has no row, so the state belongs on the table that holds them. */
     _ariaValidationControl() {
       return this.$.table;
-    }
-
-    /* Override method from Nuxeo.WidgetValidationBehavior. A layout generated for a multivalued
-       property flags the entry widget of the row form rather than the table (see
-       `_updateRequiredColumns`), so honour that too. */
-    _isWidgetRequired() {
-      return !!this.required || !!this._formRequired;
     }
 
     /* Override method from Nuxeo.WidgetValidationBehavior. */

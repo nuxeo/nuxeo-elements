@@ -74,8 +74,7 @@ export const WidgetValidationBehavior = {
 
   /**
    * Whether the host must hold a value. Hosts that carry the flag somewhere other than their own
-   * `required` property override this - a layout generated for a multivalued property flags the
-   * entry widget of the row form, not the table holding the entries.
+   * `required` property override this.
    *
    * @return {boolean} True when a value is mandatory.
    */
