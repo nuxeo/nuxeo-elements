@@ -285,8 +285,9 @@ import './nuxeo-user-group-formatter.js';
         return item;
       }
       if (typeof item === 'string') {
-        if (this._entityCache.get(item)) {
-          return this._entityCache.get(item);
+        const cached = this._entityCache.get(this._cacheKey(item));
+        if (cached) {
+          return cached;
         }
         // the internal refresh below re-resolves every entry: do not start new lookups from it, otherwise a transient
         // failure next to a resolved id would loop (failed lookup -> refresh -> lookup ...)
@@ -347,6 +348,12 @@ import './nuxeo-user-group-formatter.js';
       return ['user', 'group'];
     }
 
+    // the same id can name a user and a group: key lookups by what is looked up, so changing `search-type`,
+    // `params.searchType` or `prefixed` never reuses an entity of the wrong type
+    _cacheKey(id) {
+      return `${this.prefixed ? 'prefixed' : 'plain'}|${this._entityTypes(id).join(',')}|${id}`;
+    }
+
     _bareId(id) {
       return this.prefixed ? id.replace(/^(user|group):/, '') : id;
     }
@@ -397,21 +404,26 @@ import './nuxeo-user-group-formatter.js';
 
     async _resolveLabels() {
       const ids = (Array.isArray(this.value) ? this.value : [this.value]).filter(
-        (id) => typeof id === 'string' && id && !this._entityCache.has(id) && !this._pendingIds.has(id),
+        (id) =>
+          typeof id === 'string' &&
+          id &&
+          !this._entityCache.has(this._cacheKey(id)) &&
+          !this._pendingIds.has(this._cacheKey(id)),
       );
       if (!ids.length) {
         return;
       }
-      ids.forEach((id) => this._pendingIds.add(id));
+      ids.forEach((id) => this._pendingIds.add(this._cacheKey(id)));
       await Promise.all(
         ids.map(async (id) => {
+          const key = this._cacheKey(id);
           try {
             // null (unknown id, e.g. a deleted user) is cached: the id itself stays displayed
-            this._entityCache.set(id, await this._fetchEntity(id));
+            this._entityCache.set(key, await this._fetchEntity(id));
           } catch (_e) {
             // transient failure: not cached, so the lookup is retried next time the value is set
           } finally {
-            this._pendingIds.delete(id);
+            this._pendingIds.delete(key);
           }
         }),
       );
@@ -424,7 +436,7 @@ import './nuxeo-user-group-formatter.js';
       const selectivity = this.$.s2 && this.$.s2._selectivity;
       const { value } = this;
       const ids = Array.isArray(value) ? value : [value];
-      if (!selectivity || !ids.some((id) => this._entityCache.get(id))) {
+      if (!selectivity || !ids.some((id) => this._entityCache.get(this._cacheKey(id)))) {
         return;
       }
       // entries picked from the dropdown meanwhile are full entities that never went through the cache: keep them
@@ -438,7 +450,7 @@ import './nuxeo-user-group-formatter.js';
           current.set(this._idFunction(entity), entity);
         }
       });
-      const hydrate = (id) => this._entityCache.get(id) || current.get(id) || id;
+      const hydrate = (id) => this._entityCache.get(this._cacheKey(id)) || current.get(id) || id;
       const hydrated = Array.isArray(value) ? value.map(hydrate) : hydrate(value);
       this._hydrating = true;
       try {

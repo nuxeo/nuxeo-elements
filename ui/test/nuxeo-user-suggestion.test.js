@@ -490,5 +490,26 @@ suite('nuxeo-user-suggestion extras', () => {
       await timePasses(200);
       expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
     });
+    test('changing search-type does not reuse an entity of the other type', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const user = { 'entity-type': 'user', id: 'support', properties: { firstName: 'Sam', lastName: 'Port' } };
+      const group = { 'entity-type': 'group', id: 'support', grouplabel: 'Support team' };
+      const entities = { support: user };
+      stubGet(widget, entities);
+      widget.value = 'support';
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['Sam Port']);
+      entities.support = group;
+      widget.searchType = 'GROUP_TYPE';
+      widget.value = '';
+      widget.value = 'support';
+      await timePasses(200);
+      expect(widget.$.entityResource.path).to.equal('group/support');
+      expect(labels(widget)).to.deep.equal(['Support team']);
+    });
   });
 });
