@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "2025.23.0-rc.1",
+  "version": "2025.23.0",
   "workspaces": [
     "core",
     "dataviz",
