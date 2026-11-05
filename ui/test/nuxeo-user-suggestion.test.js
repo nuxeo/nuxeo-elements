@@ -266,7 +266,8 @@ suite('nuxeo-user-suggestion extras', () => {
         .map((n) => n.textContent.trim())
         .filter(Boolean);
 
-    // Mimics nuxeo-resource: the path is read asynchronously and a new request aborts the previous one.
+    // Mimics nuxeo-resource: the path is read asynchronously, a new request aborts the previous one and errors
+    // carry the HTTP status. `entities` maps an id to its entity, or to a number for an error status.
     const stubGet = (widget, entities) => {
       const resource = widget.$.entityResource;
       let current = 0;
@@ -275,13 +276,17 @@ suite('nuxeo-user-suggestion extras', () => {
         const request = current;
         return new Promise((resolve, reject) => {
           setTimeout(() => {
-            const id = decodeURIComponent(resource.path.split('/')[1]);
+            const [type, encoded] = resource.path.split('/');
+            const id = decodeURIComponent(encoded);
+            const entity = Object.prototype.hasOwnProperty.call(entities, id) ? entities[id] : 404;
             if (request !== current) {
               reject(new Error('aborted'));
-            } else if (Object.prototype.hasOwnProperty.call(entities, id)) {
-              resolve(entities[id]);
+            } else if (typeof entity === 'number') {
+              reject({ status: entity, message: 'error' });
+            } else if (entity['entity-type'] && entity['entity-type'] !== type) {
+              reject({ status: 404, message: 'not found' });
             } else {
-              reject(new Error('404'));
+              resolve(entity);
             }
           }, 5);
         });
@@ -374,6 +379,71 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(labels(widget)).to.deep.equal(['John Doe', 'Administrators']);
       expect(get.callCount).to.equal(2);
       expect(widget.value).to.deep.equal(['user:jdoe', 'group:admins']);
+    });
+    test('honours params.searchType when looking entities up', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple></nuxeo-user-suggestion>
+        `,
+      );
+      widget.params = { searchType: 'GROUP_TYPE' };
+      const get = stubGet(widget, { admins: { 'entity-type': 'group', groupname: 'admins', grouplabel: 'Admins' } });
+      widget.value = ['admins'];
+      await timePasses(200);
+      expect(get.callCount).to.equal(1);
+      expect(widget.$.entityResource.path).to.equal('group/admins');
+      expect(labels(widget)).to.deep.equal(['Admins']);
+    });
+
+    test('non-prefixed group entities without id are hydrated with the requested id', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="GROUP_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, {
+        admins: { 'entity-type': 'group', groupname: 'admins', grouplabel: 'Administrators' },
+        devs: { 'entity-type': 'group', groupname: 'devs', grouplabel: 'Developers' },
+      });
+      widget.value = ['admins', 'devs'];
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['Administrators', 'Developers']);
+      expect(widget.$.s2._selectivity.getValue()).to.deep.equal(['admins', 'devs']);
+    });
+
+    test('transient failures are not cached and are retried later', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const entities = { jdoe: 503 };
+      const get = stubGet(widget, entities);
+      widget.value = ['jdoe'];
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['jdoe']);
+      entities.jdoe = jdoe;
+      widget.value = [];
+      widget.value = ['jdoe'];
+      await timePasses(200);
+      expect(get.callCount).to.equal(2);
+      expect(labels(widget)).to.deep.equal(['John Doe']);
+    });
+
+    test('confirmed missing ids are not looked up again', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const get = stubGet(widget, {});
+      widget.value = ['deleted'];
+      await timePasses(200);
+      widget.value = [];
+      widget.value = ['deleted'];
+      await timePasses(200);
+      expect(get.callCount).to.equal(1);
+      expect(labels(widget)).to.deep.equal(['deleted']);
     });
   });
 });

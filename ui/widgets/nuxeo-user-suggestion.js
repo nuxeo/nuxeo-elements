@@ -331,39 +331,63 @@ import './nuxeo-user-group-formatter.js';
           return ['group'];
         }
       }
-      if (this.searchType === 'USER_TYPE') {
+      // honour `params.searchType`, which overrides the property in the suggestion query
+      const { searchType } = this._computeParams();
+      if (searchType === 'USER_TYPE') {
         return ['user'];
       }
-      if (this.searchType === 'GROUP_TYPE') {
+      if (searchType === 'GROUP_TYPE') {
         return ['group'];
       }
       return ['user', 'group'];
     }
 
+    _bareId(id) {
+      return this.prefixed ? id.replace(/^(user|group):/, '') : id;
+    }
+
     _entityPaths(id) {
-      const bare = this.prefixed ? id.replace(/^(user|group):/, '') : id;
-      return this._entityTypes(id).map((type) => `${type}/${encodeURIComponent(bare)}`);
+      const bare = encodeURIComponent(this._bareId(id));
+      return this._entityTypes(id).map((type) => `${type}/${bare}`);
+    }
+
+    // REST group entities may only expose `groupname`: make sure the entity carries the id it was requested with.
+    _normalizeEntity(entity, id) {
+      const normalized = entity.id
+        ? entity
+        : { ...entity, id: entity.groupname || entity.username || this._bareId(id) };
+      return this.prefixed ? { ...normalized, prefixed_id: id } : normalized;
     }
 
     // `nuxeo-resource` aborts the previous request and reads `path` asynchronously, so lookups must never overlap.
+    // Resolves with the entity, or null when it does not exist (404); rejects on transient failures so they are
+    // retried on a later initialization instead of being cached.
     _fetchEntity(id) {
       const resource = this.$.entityResource;
       const lookup = async () => {
+        let transient = false;
         for (const path of this._entityPaths(id)) {
           resource.path = path;
           try {
             const entity = await resource.get();
             if (entity) {
-              return entity;
+              return this._normalizeEntity(entity, id);
             }
-          } catch (_e) {
-            // not found (e.g. deleted user): try the next type, then fall back to the id
+          } catch (error) {
+            if (!error || error.status !== 404) {
+              transient = true;
+            }
           }
+        }
+        if (transient) {
+          throw new Error(`Unable to resolve ${id}`);
         }
         return null;
       };
-      this._lookupQueue = (this._lookupQueue || Promise.resolve()).then(lookup);
-      return this._lookupQueue;
+      const result = (this._lookupQueue || Promise.resolve()).then(lookup);
+      // keep the queue usable whatever the outcome of this lookup
+      this._lookupQueue = result.catch(() => {});
+      return result;
     }
 
     async _resolveLabels() {
@@ -376,10 +400,14 @@ import './nuxeo-user-group-formatter.js';
       ids.forEach((id) => this._pendingIds.add(id));
       await Promise.all(
         ids.map(async (id) => {
-          const entity = await this._fetchEntity(id);
-          this._pendingIds.delete(id);
-          // unknown ids (e.g. deleted users) keep falling back to the id itself
-          this._entityCache.set(id, entity && this.prefixed ? { ...entity, prefixed_id: id } : entity);
+          try {
+            // null (unknown id, e.g. a deleted user) is cached: the id itself stays displayed
+            this._entityCache.set(id, await this._fetchEntity(id));
+          } catch (_e) {
+            // transient failure: not cached, so the lookup is retried next time the value is set
+          } finally {
+            this._pendingIds.delete(id);
+          }
         }),
       );
       this._hydrateSelection();
