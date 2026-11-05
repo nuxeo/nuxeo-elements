@@ -258,4 +258,76 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(result.customKey).to.equal('val');
     });
   });
+  suite('bare id label resolution', () => {
+    const jdoe = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'John', lastName: 'Doe' } };
+    const bmartin = { 'entity-type': 'user', id: 'bmartin', properties: { firstName: 'Bob', lastName: 'Martin' } };
+    const labels = (widget) =>
+      Array.from(dom(widget.$.s2.root).querySelectorAll('.preserve-white-space'))
+        .map((n) => n.textContent.trim())
+        .filter(Boolean);
+
+    const stubGet = (widget, users) => {
+      const stub = sinon.stub(widget.$.entityResource, 'get').callsFake(() => {
+        const id = widget.$.entityResource.path.split('/')[1];
+        return users[id] ? Promise.resolve(users[id]) : Promise.reject(new Error('404'));
+      });
+      return stub;
+    };
+
+    test('multiple: resolves ids into full names without firing a change', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const get = stubGet(widget, { jdoe, bmartin });
+      const onChange = sinon.spy();
+      widget.addEventListener('value-changed', onChange);
+      widget.value = ['jdoe', 'bmartin'];
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
+      expect(get.callCount).to.equal(2);
+      expect(widget.value).to.deep.equal(['jdoe', 'bmartin']);
+    });
+
+    test('single: resolves the id into a full name', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, { bmartin });
+      widget.value = 'bmartin';
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['Bob Martin']);
+      expect(widget.value).to.equal('bmartin');
+    });
+
+    test('unknown ids fall back to the id and do not throw', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, { jdoe });
+      widget.value = ['jdoe', 'deleted'];
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'deleted']);
+    });
+
+    test('prefixed ids look up the matching user or group', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple prefixed></nuxeo-user-suggestion>
+        `,
+      );
+      const group = { 'entity-type': 'group', id: 'admins', grouplabel: 'Administrators' };
+      const get = stubGet(widget, { jdoe, admins: group });
+      widget.value = ['user:jdoe', 'group:admins'];
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'Administrators']);
+      expect(get.args.length).to.equal(2);
+      expect(widget.value).to.deep.equal(['user:jdoe', 'group:admins']);
+    });
+  });
 });
