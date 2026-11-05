@@ -445,5 +445,19 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(get.callCount).to.equal(1);
       expect(labels(widget)).to.deep.equal(['deleted']);
     });
+    test('a transient failure next to a resolved id does not loop', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const get = stubGet(widget, { jdoe, unavailable: 503 });
+      widget.value = ['jdoe', 'unavailable'];
+      await timePasses(300);
+      expect(get.callCount).to.equal(2);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'unavailable']);
+      await timePasses(200);
+      expect(get.callCount).to.equal(2);
+    });
   });
 });

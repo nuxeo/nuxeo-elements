@@ -287,7 +287,11 @@ import './nuxeo-user-group-formatter.js';
         if (this._entityCache.get(item)) {
           return this._entityCache.get(item);
         }
-        this._scheduleLabelResolution();
+        // the internal refresh below re-resolves every entry: do not start new lookups from it, otherwise a transient
+        // failure next to a resolved id would loop (failed lookup -> refresh -> lookup ...)
+        if (!this._hydrating) {
+          this._scheduleLabelResolution();
+        }
       }
       return this.prefixed ? { id: item, displayLabel: item, prefixed_id: item } : { id: item, displayLabel: item };
     }
@@ -425,7 +429,12 @@ import './nuxeo-user-group-formatter.js';
       const hydrated = Array.isArray(value)
         ? value.map((id) => this._entityCache.get(id) || id)
         : this._entityCache.get(value) || value;
-      selectivity.setValue(hydrated, { triggerChange: false });
+      this._hydrating = true;
+      try {
+        selectivity.setValue(hydrated, { triggerChange: false });
+      } finally {
+        this._hydrating = false;
+      }
     }
 
     _idFunction(item) {
