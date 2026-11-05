@@ -20,6 +20,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-card/paper-card.js';
 import { escapeHTML } from './nuxeo-selectivity.js';
 import './nuxeo-user-group-formatter.js';
@@ -51,6 +52,7 @@ import './nuxeo-user-group-formatter.js';
           }
         </style>
 
+        <nuxeo-resource id="entityResource"></nuxeo-resource>
         <nuxeo-selectivity
           id="s2"
           operation="[[operation]]"
@@ -281,7 +283,99 @@ import './nuxeo-user-group-formatter.js';
       if (item && item['entity-type']) {
         return item;
       }
+      const cached = typeof item === 'string' ? this._entityCache[item] : null;
+      if (cached) {
+        return cached;
+      }
+      if (typeof item === 'string') {
+        this._scheduleLabelResolution();
+      }
       return this.prefixed ? { id: item, displayLabel: item, prefixed_id: item } : { id: item, displayLabel: item };
+    }
+
+    get _entityCache() {
+      if (!this.__entityCache) {
+        this.__entityCache = {};
+      }
+      return this.__entityCache;
+    }
+
+    // Ids handed to the widget (saved searches, layouts, URL params) are bare strings: look up the users / groups
+    // once, in the background, and refresh the selection with the entities so their labels are displayed.
+    _scheduleLabelResolution() {
+      if (this._labelResolutionScheduled) {
+        return;
+      }
+      this._labelResolutionScheduled = true;
+      Promise.resolve().then(() => {
+        this._labelResolutionScheduled = false;
+        this._resolveLabels();
+      });
+    }
+
+    _entityPaths(id) {
+      const prefix = id.startsWith('user:') ? 'user' : id.startsWith('group:') ? 'group' : null;
+      const bare = this.prefixed && prefix ? id.substring(prefix.length + 1) : id;
+      const types =
+        prefix && this.prefixed ? [prefix] : { USER_TYPE: ['user'], GROUP_TYPE: ['group'] }[this.searchType];
+      return (types || ['user', 'group']).map((type) => `${type}/${encodeURIComponent(bare)}`);
+    }
+
+    _fetchEntity(id) {
+      const resource = this.$.entityResource;
+      const attempt = (paths) => {
+        if (!paths.length) {
+          return Promise.resolve(null);
+        }
+        resource.path = paths[0];
+        return resource
+          .get()
+          .then((entity) => entity || attempt(paths.slice(1)))
+          .catch(() => attempt(paths.slice(1)));
+      };
+      return attempt(this._entityPaths(id));
+    }
+
+    _resolveLabels() {
+      const { value } = this;
+      const ids = (Array.isArray(value) ? value : [value]).filter(
+        (id) => typeof id === 'string' && id && !(id in this._entityCache) && !this._pendingIds[id],
+      );
+      if (!ids.length) {
+        return Promise.resolve();
+      }
+      ids.forEach((id) => {
+        this._pendingIds[id] = true;
+      });
+      return Promise.all(
+        ids.map((id) =>
+          this._fetchEntity(id).then((entity) => {
+            delete this._pendingIds[id];
+            // unknown ids (e.g. deleted users) keep falling back to the id itself
+            this._entityCache[id] = entity ? this._withPrefixedId(entity, id) : null;
+          }),
+        ),
+      ).then(() => {
+        const selectivity = this.$.s2 && this.$.s2._selectivity;
+        // only refresh if the value did not change in the meantime, and never mark the form as dirty
+        if (selectivity && this.value === value && ids.some((id) => this._entityCache[id])) {
+          const hydrated = Array.isArray(value)
+            ? value.map((id) => this._entityCache[id] || id)
+            : this._entityCache[value] || value;
+          selectivity.setValue(hydrated, { triggerChange: false });
+        }
+      });
+    }
+
+    get _pendingIds() {
+      if (!this.__pendingIds) {
+        this.__pendingIds = {};
+      }
+      return this.__pendingIds;
+    }
+
+    _withPrefixedId(entity, id) {
+      return this.prefixed ? { ...entity, prefixed_id: id } : entity;
     }
 
     _idFunction(item) {
