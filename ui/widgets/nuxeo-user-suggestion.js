@@ -354,6 +354,10 @@ import './nuxeo-user-group-formatter.js';
       return `${this.prefixed ? 'prefixed' : 'plain'}|${this._entityTypes(id).join(',')}|${id}`;
     }
 
+    _cachedEntity(id) {
+      return typeof id === 'string' ? this._entityCache.get(this._cacheKey(id)) : undefined;
+    }
+
     _bareId(id) {
       return this.prefixed ? id.replace(/^(user|group):/, '') : id;
     }
@@ -436,7 +440,7 @@ import './nuxeo-user-group-formatter.js';
       const selectivity = this.$.s2 && this.$.s2._selectivity;
       const { value } = this;
       const ids = Array.isArray(value) ? value : [value];
-      if (!selectivity || !ids.some((id) => this._entityCache.get(this._cacheKey(id)))) {
+      if (!selectivity || !ids.some((id) => this._cachedEntity(id))) {
         return;
       }
       // entries picked from the dropdown meanwhile are full entities that never went through the cache: keep them
@@ -450,7 +454,12 @@ import './nuxeo-user-group-formatter.js';
           current.set(this._idFunction(entity), entity);
         }
       });
-      const hydrate = (id) => this._entityCache.get(this._cacheKey(id)) || current.get(id) || id;
+      const hydrate = (id) => {
+        if (typeof id !== 'string') {
+          return id; // already an entity
+        }
+        return this._cachedEntity(id) || current.get(id) || id;
+      };
       const hydrated = Array.isArray(value) ? value.map(hydrate) : hydrate(value);
       this._hydrating = true;
       try {
