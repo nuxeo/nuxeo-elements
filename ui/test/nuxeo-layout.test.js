@@ -432,9 +432,8 @@ suite('nuxeo-layout', () => {
     });
   });
 
-  // WEBUI-180: a layout generated for a required multivalued property flags the entry widget of the
-  // row form, which is disabled while the entry dialog is closed. The failure went unreported and
-  // the save was refused without saying why, so the table has to report it on the form's behalf.
+  // The table reports missing rows only when explicitly required. Required row fields remain
+  // disabled while their dialog is closed and must not invalidate an optional table (WEBUI-2377).
   suite('Validation error reporting for required multivalued properties', () => {
     const buildMultivaluedLayout = async (model = '') => {
       const layout = await fixture(html`
@@ -457,6 +456,18 @@ suite('nuxeo-layout', () => {
       expect(errors[0].element).to.equal(table);
       expect(errors[0].message).to.equal('Multi String is required.');
       expect(table.errorMessage).to.equal('Multi String is required.');
+    });
+
+    test('Should allow an empty optional table with a required field in its closed row form', async () => {
+      const layout = await buildMultivaluedLayout('{"title": "a title"}');
+      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
+      table.required = false;
+      await flush();
+
+      const reported = waitForEvent(layout, 'layout-validation-errors');
+      expect(await layout.validate()).to.be.true;
+      expect((await reported).detail.errors).to.be.empty;
+      expect(table.invalid).to.be.false;
     });
 
     test('Should report nothing once the multivalued field has an entry', async () => {
