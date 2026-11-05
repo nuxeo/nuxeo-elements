@@ -511,5 +511,16 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(widget.$.entityResource.path).to.equal('group/support');
       expect(labels(widget)).to.deep.equal(['Support team']);
     });
+    test('prefixed mixed entity and id values resolve the id', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple prefixed></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, { jdoe });
+      widget.value = [{ ...bmartin, prefixed_id: 'user:bmartin' }, 'user:jdoe'];
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['Bob Martin', 'John Doe']);
+    });
   });
 });
