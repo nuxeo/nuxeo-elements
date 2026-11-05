@@ -459,5 +459,21 @@ suite('nuxeo-user-suggestion extras', () => {
       await timePasses(200);
       expect(get.callCount).to.equal(2);
     });
+    test('an entry picked from the dropdown during a pending lookup keeps its full name', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const get = stubGet(widget, { jdoe });
+      widget.value = ['jdoe'];
+      await timePasses(1);
+      // shape of a UserGroup.Suggestion result as added by the dropdown
+      widget.$.s2._selectivity.add({ ...bmartin, type: 'USER_TYPE', displayLabel: 'Bob Martin', text: 'Bob Martin' });
+      expect(widget.value).to.deep.equal(['jdoe', 'bmartin']);
+      await timePasses(200);
+      expect(get.callCount).to.equal(1);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
+    });
   });
 });

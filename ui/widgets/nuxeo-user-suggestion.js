@@ -426,9 +426,16 @@ import './nuxeo-user-group-formatter.js';
       if (!selectivity || !ids.some((id) => this._entityCache.get(id))) {
         return;
       }
-      const hydrated = Array.isArray(value)
-        ? value.map((id) => this._entityCache.get(id) || id)
-        : this._entityCache.get(value) || value;
+      // entries picked from the dropdown meanwhile are full entities that never went through the cache: keep them
+      const current = new Map();
+      const data = selectivity.getData();
+      (Array.isArray(data) ? data : [data]).forEach((item) => {
+        if (item && item['entity-type']) {
+          current.set(this._idFunction(item), item);
+        }
+      });
+      const hydrate = (id) => this._entityCache.get(id) || current.get(id) || id;
+      const hydrated = Array.isArray(value) ? value.map(hydrate) : hydrate(value);
       this._hydrating = true;
       try {
         selectivity.setValue(hydrated, { triggerChange: false });
