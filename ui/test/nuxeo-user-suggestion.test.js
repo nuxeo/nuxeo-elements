@@ -266,12 +266,26 @@ suite('nuxeo-user-suggestion extras', () => {
         .map((n) => n.textContent.trim())
         .filter(Boolean);
 
-    const stubGet = (widget, users) => {
-      const stub = sinon.stub(widget.$.entityResource, 'get').callsFake(() => {
-        const id = widget.$.entityResource.path.split('/')[1];
-        return users[id] ? Promise.resolve(users[id]) : Promise.reject(new Error('404'));
+    // Mimics nuxeo-resource: the path is read asynchronously and a new request aborts the previous one.
+    const stubGet = (widget, entities) => {
+      const resource = widget.$.entityResource;
+      let current = 0;
+      return sinon.stub(resource, 'get').callsFake(() => {
+        current += 1;
+        const request = current;
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            const id = decodeURIComponent(resource.path.split('/')[1]);
+            if (request !== current) {
+              reject(new Error('aborted'));
+            } else if (Object.prototype.hasOwnProperty.call(entities, id)) {
+              resolve(entities[id]);
+            } else {
+              reject(new Error('404'));
+            }
+          }, 5);
+        });
       });
-      return stub;
     };
 
     test('multiple: resolves ids into full names without firing a change', async () => {
@@ -281,13 +295,14 @@ suite('nuxeo-user-suggestion extras', () => {
         `,
       );
       const get = stubGet(widget, { jdoe, bmartin });
+      widget.value = ['jdoe', 'bmartin'];
       const onChange = sinon.spy();
       widget.addEventListener('value-changed', onChange);
-      widget.value = ['jdoe', 'bmartin'];
-      await timePasses(100);
+      await timePasses(200);
       expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
       expect(get.callCount).to.equal(2);
       expect(widget.value).to.deep.equal(['jdoe', 'bmartin']);
+      expect(onChange.callCount).to.equal(0);
     });
 
     test('single: resolves the id into a full name', async () => {
@@ -298,7 +313,7 @@ suite('nuxeo-user-suggestion extras', () => {
       );
       stubGet(widget, { bmartin });
       widget.value = 'bmartin';
-      await timePasses(100);
+      await timePasses(200);
       expect(labels(widget)).to.deep.equal(['Bob Martin']);
       expect(widget.value).to.equal('bmartin');
     });
@@ -311,8 +326,39 @@ suite('nuxeo-user-suggestion extras', () => {
       );
       stubGet(widget, { jdoe });
       widget.value = ['jdoe', 'deleted'];
-      await timePasses(100);
+      await timePasses(200);
       expect(labels(widget)).to.deep.equal(['John Doe', 'deleted']);
+    });
+
+    test('ids named like Object.prototype members are looked up', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      const odd = { 'entity-type': 'user', id: 'constructor', properties: { firstName: 'Odd', lastName: 'Name' } };
+      const get = stubGet(widget, { constructor: odd });
+      widget.value = 'constructor';
+      await timePasses(200);
+      expect(get.callCount).to.equal(1);
+      expect(labels(widget)).to.deep.equal(['Odd Name']);
+    });
+
+    test('replacing the value while a lookup is pending still resolves the selection', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      stubGet(widget, { jdoe, bmartin });
+      widget.value = ['jdoe'];
+      await timePasses(1);
+      widget.value = ['jdoe', 'bmartin'];
+      await timePasses(200);
+      expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
+      widget.value = ['bmartin'];
+      await timePasses(50);
+      expect(labels(widget)).to.deep.equal(['Bob Martin']);
     });
 
     test('prefixed ids look up the matching user or group', async () => {
@@ -324,9 +370,9 @@ suite('nuxeo-user-suggestion extras', () => {
       const group = { 'entity-type': 'group', id: 'admins', grouplabel: 'Administrators' };
       const get = stubGet(widget, { jdoe, admins: group });
       widget.value = ['user:jdoe', 'group:admins'];
-      await timePasses(100);
+      await timePasses(200);
       expect(labels(widget)).to.deep.equal(['John Doe', 'Administrators']);
-      expect(get.args.length).to.equal(2);
+      expect(get.callCount).to.equal(2);
       expect(widget.value).to.deep.equal(['user:jdoe', 'group:admins']);
     });
   });

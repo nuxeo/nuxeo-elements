@@ -283,21 +283,28 @@ import './nuxeo-user-group-formatter.js';
       if (item && item['entity-type']) {
         return item;
       }
-      const cached = typeof item === 'string' ? this._entityCache[item] : null;
-      if (cached) {
-        return cached;
-      }
       if (typeof item === 'string') {
+        if (this._entityCache.get(item)) {
+          return this._entityCache.get(item);
+        }
         this._scheduleLabelResolution();
       }
       return this.prefixed ? { id: item, displayLabel: item, prefixed_id: item } : { id: item, displayLabel: item };
     }
 
+    // Maps are used (rather than plain objects) so ids such as `constructor` are not mistaken for cached entries.
     get _entityCache() {
       if (!this.__entityCache) {
-        this.__entityCache = {};
+        this.__entityCache = new Map();
       }
       return this.__entityCache;
+    }
+
+    get _pendingIds() {
+      if (!this.__pendingIds) {
+        this.__pendingIds = new Set();
+      }
+      return this.__pendingIds;
     }
 
     // Ids handed to the widget (saved searches, layouts, URL params) are bare strings: look up the users / groups
@@ -307,75 +314,90 @@ import './nuxeo-user-group-formatter.js';
         return;
       }
       this._labelResolutionScheduled = true;
-      Promise.resolve().then(() => {
-        this._labelResolutionScheduled = false;
-        this._resolveLabels();
-      });
+      Promise.resolve()
+        .then(() => {
+          this._labelResolutionScheduled = false;
+          return this._resolveLabels();
+        })
+        .catch(() => {});
+    }
+
+    _entityTypes(id) {
+      if (this.prefixed) {
+        if (id.startsWith('user:')) {
+          return ['user'];
+        }
+        if (id.startsWith('group:')) {
+          return ['group'];
+        }
+      }
+      if (this.searchType === 'USER_TYPE') {
+        return ['user'];
+      }
+      if (this.searchType === 'GROUP_TYPE') {
+        return ['group'];
+      }
+      return ['user', 'group'];
     }
 
     _entityPaths(id) {
-      const prefix = id.startsWith('user:') ? 'user' : id.startsWith('group:') ? 'group' : null;
-      const bare = this.prefixed && prefix ? id.substring(prefix.length + 1) : id;
-      const types =
-        prefix && this.prefixed ? [prefix] : { USER_TYPE: ['user'], GROUP_TYPE: ['group'] }[this.searchType];
-      return (types || ['user', 'group']).map((type) => `${type}/${encodeURIComponent(bare)}`);
+      const bare = this.prefixed ? id.replace(/^(user|group):/, '') : id;
+      return this._entityTypes(id).map((type) => `${type}/${encodeURIComponent(bare)}`);
     }
 
+    // `nuxeo-resource` aborts the previous request and reads `path` asynchronously, so lookups must never overlap.
     _fetchEntity(id) {
       const resource = this.$.entityResource;
-      const attempt = (paths) => {
-        if (!paths.length) {
-          return Promise.resolve(null);
+      const lookup = async () => {
+        for (const path of this._entityPaths(id)) {
+          resource.path = path;
+          try {
+            const entity = await resource.get();
+            if (entity) {
+              return entity;
+            }
+          } catch (_e) {
+            // not found (e.g. deleted user): try the next type, then fall back to the id
+          }
         }
-        resource.path = paths[0];
-        return resource
-          .get()
-          .then((entity) => entity || attempt(paths.slice(1)))
-          .catch(() => attempt(paths.slice(1)));
+        return null;
       };
-      return attempt(this._entityPaths(id));
+      this._lookupQueue = (this._lookupQueue || Promise.resolve()).then(lookup);
+      return this._lookupQueue;
     }
 
-    _resolveLabels() {
-      const { value } = this;
-      const ids = (Array.isArray(value) ? value : [value]).filter(
-        (id) => typeof id === 'string' && id && !(id in this._entityCache) && !this._pendingIds[id],
+    async _resolveLabels() {
+      const ids = (Array.isArray(this.value) ? this.value : [this.value]).filter(
+        (id) => typeof id === 'string' && id && !this._entityCache.has(id) && !this._pendingIds.has(id),
       );
       if (!ids.length) {
-        return Promise.resolve();
+        return;
       }
-      ids.forEach((id) => {
-        this._pendingIds[id] = true;
-      });
-      return Promise.all(
-        ids.map((id) =>
-          this._fetchEntity(id).then((entity) => {
-            delete this._pendingIds[id];
-            // unknown ids (e.g. deleted users) keep falling back to the id itself
-            this._entityCache[id] = entity ? this._withPrefixedId(entity, id) : null;
-          }),
-        ),
-      ).then(() => {
-        const selectivity = this.$.s2 && this.$.s2._selectivity;
-        // only refresh if the value did not change in the meantime, and never mark the form as dirty
-        if (selectivity && this.value === value && ids.some((id) => this._entityCache[id])) {
-          const hydrated = Array.isArray(value)
-            ? value.map((id) => this._entityCache[id] || id)
-            : this._entityCache[value] || value;
-          selectivity.setValue(hydrated, { triggerChange: false });
-        }
-      });
+      ids.forEach((id) => this._pendingIds.add(id));
+      await Promise.all(
+        ids.map(async (id) => {
+          const entity = await this._fetchEntity(id);
+          this._pendingIds.delete(id);
+          // unknown ids (e.g. deleted users) keep falling back to the id itself
+          this._entityCache.set(id, entity && this.prefixed ? { ...entity, prefixed_id: id } : entity);
+        }),
+      );
+      this._hydrateSelection();
     }
 
-    get _pendingIds() {
-      if (!this.__pendingIds) {
-        this.__pendingIds = {};
+    // Refresh the *current* selection (it may have changed while the lookups were pending) without marking the
+    // form as dirty.
+    _hydrateSelection() {
+      const selectivity = this.$.s2 && this.$.s2._selectivity;
+      const { value } = this;
+      const ids = Array.isArray(value) ? value : [value];
+      if (!selectivity || !ids.some((id) => this._entityCache.get(id))) {
+        return;
       }
-      return this.__pendingIds;
-    }
-
-    _withPrefixedId(entity, id) {
-      return this.prefixed ? { ...entity, prefixed_id: id } : entity;
+      const hydrated = Array.isArray(value)
+        ? value.map((id) => this._entityCache.get(id) || id)
+        : this._entityCache.get(value) || value;
+      selectivity.setValue(hydrated, { triggerChange: false });
     }
 
     _idFunction(item) {
