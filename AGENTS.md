@@ -119,10 +119,17 @@ Always use Nuxeo Elements for API calls, never `fetch()`:
 - ESLint: flat config in `eslint.config.mjs`
 - Max line length: 120 characters
 - `Nuxeo` global is `writable`
-- **Do not use optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source files. The Polymer
-  linter/analyzer (`polymer lint`, `polymer analyze`) uses a parser that predates `?.`; it fails to
-  parse the file or drops elements from `analysis.json` (consumed by Storybook and other tooling). Use
-  explicit guards instead — e.g. `(obj && obj.prop)` or `(template && template._templateInfo) || {}`.
+- **Do not use syntax the Polymer analyzer's parser cannot read** in `core/`, `ui/`, or `dataviz/` source
+  files: optional chaining (`?.`), nullish coalescing (`??`), optional catch binding (`catch { }`),
+  logical assignment (`||=`, `&&=`, `??=`), class fields, private `#` members, `static { }` blocks,
+  BigInt, numeric separators, `export * as`, top-level `await`, import attributes and regex `d`/`v`
+  flags. The Polymer linter/analyzer (`polymer lint`, `polymer analyze`) and the Nuxeo Web UI Designer
+  catalog generator use `polymer-analyzer` 3.2.4, whose parser predates them; it fails to parse the file
+  and drops the elements it defines (and the ones only reachable through it) from `analysis.json` and
+  from the Designer catalog. ESLint enforces this (`no-restricted-syntax` in `eslint.config.mjs`). Use
+  explicit guards instead — e.g. `(obj && obj.prop)`, an explicit `!== undefined && !== null` check,
+  `catch (e)`, or `(template && template._templateInfo) || {}`. When the value is used (not just tested),
+  prefer `obj ? obj.prop : undefined`: `obj && obj.prop` returns `null`/`0`/`''` instead of `undefined`.
   Vendored code (`ui/viewers/pdfjs/`, `ui/js-interpreter/`) is exempt — do not modify it.
 
 ## Testing
@@ -161,7 +168,7 @@ PRs run lint and test workflows automatically.
 ## Common Pitfalls
 
 - This is a **library** repo — there is no bundler or dev server. Components are consumed via npm by `nuxeo-web-ui`.
-- **Do not use optional chaining (`?.`)** in element source — see Style Rules above. Polymer analyze feeds `analysis.json`; `?.` causes elements to go missing from that output.
+- **Do not use `?.`, `??`, `catch { }` or other syntax the Polymer analyzer cannot parse** in element source — see Style Rules above. Polymer analyze feeds `analysis.json` and the Web UI Designer catalog; such syntax makes elements go missing from that output. ESLint (`no-restricted-syntax`) fails the build on it.
 - Always commit `package-lock.json` changes when dependencies change. CI relies on it for `npm ci`.
 - `@nuxeo` npm packages come from `https://packages.nuxeo.com/repository/npm-public/`, not npmjs.org.
 - The `ui/` package has its own `eslint.config.mjs` in addition to the root config.
