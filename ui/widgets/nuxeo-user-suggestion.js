@@ -430,8 +430,10 @@ import './nuxeo-user-group-formatter.js';
       const current = new Map();
       const data = selectivity.getData();
       (Array.isArray(data) ? data : [data]).forEach((item) => {
-        if (item && item['entity-type']) {
-          current.set(this._idFunction(item), item);
+        // dropdown results are wrapped by selectivity as { id, text, item: entity }
+        const entity = item && item.item ? item.item : item;
+        if (entity && entity['entity-type']) {
+          current.set(this._idFunction(entity), entity);
         }
       });
       const hydrate = (id) => this._entityCache.get(id) || current.get(id) || id;

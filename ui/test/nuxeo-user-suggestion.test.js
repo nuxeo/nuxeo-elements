@@ -468,8 +468,9 @@ suite('nuxeo-user-suggestion extras', () => {
       const get = stubGet(widget, { jdoe });
       widget.value = ['jdoe'];
       await timePasses(1);
-      // shape of a UserGroup.Suggestion result as added by the dropdown
-      widget.$.s2._selectivity.add({ ...bmartin, type: 'USER_TYPE', displayLabel: 'Bob Martin', text: 'Bob Martin' });
+      // a UserGroup.Suggestion result, wrapped by selectivity's dropdown as { id, text, item }
+      const result = { ...bmartin, type: 'USER_TYPE', displayLabel: 'Bob Martin' };
+      widget.$.s2._selectivity.add({ id: 'bmartin', text: 'Bob Martin', item: result });
       expect(widget.value).to.deep.equal(['jdoe', 'bmartin']);
       await timePasses(200);
       expect(get.callCount).to.equal(1);
