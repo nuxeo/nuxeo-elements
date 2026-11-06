@@ -215,6 +215,17 @@ import './nuxeo-error.js';
     }
 
     /**
+     * Replaces a message this layout injected earlier with the reason for a new failure, so a widget
+     * that turns invalid for another reason does not show the old one. A widget with no message keeps
+     * none, and a message the author set is kept.
+     */
+    _refreshFallbackErrorMessage(element, message) {
+      if (element.errorMessage && this._hasReplaceableErrorMessage(element)) {
+        this._setFallbackErrorMessage(element, message);
+      }
+    }
+
+    /**
      * The message for a widget whose bound property the server rejected as required but empty. The
      * server only knows the property path, so its own message ("Value is required.") does not say
      * which field failed; name it from the widget, as client side validation does. The message is

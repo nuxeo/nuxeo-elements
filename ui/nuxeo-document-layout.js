@@ -227,22 +227,34 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
      * A required property left empty is reported by the server with a message that does not name the
      * field ("Value is required."). That is the only feedback for a constraint the client cannot see,
      * such as a required list of complex entries (ELEMENTS-2143), so name the field from its widget,
-     * which also gets the message inline. Any other violation keeps the server message.
+     * which also gets the message inline. Only a violation on the property itself is named: one on a
+     * field nested in a row (`my:faq[0].question`) reaches the same widget through its first path node,
+     * but the list itself is not empty. Any other violation keeps the server message, which also
+     * replaces a message the layout injected earlier, so the widget never shows a stale reason.
      */
     _boundViolationMessage(violation, fieldName, widgets) {
       // Defaulted rather than optional-chained: polymer-analyzer cannot parse `?.` (ELEMENTS-2142).
       const constraint = violation.constraint || {};
-      const constraintName = constraint.name;
-      if (constraintName === 'NotNullConstraint') {
+      if (constraint.name === 'NotNullConstraint' && this._isPropertyViolation(violation)) {
         const named = widgets.map((widget) => this.$.layout._requiredViolationMessage(widget)).find(Boolean);
         if (named) {
           return named;
         }
       }
+      const message = this._serverViolationMessage(violation, fieldName, constraint);
+      widgets.forEach((widget) => this.$.layout._refreshFallbackErrorMessage(widget, message));
+      return message;
+    }
+
+    _isPropertyViolation(violation) {
+      return violation.path.length === 1 && !violation.path[0].is_list_item;
+    }
+
+    _serverViolationMessage(violation, fieldName, constraint) {
       const msg = this.i18n(violation.messageKey, violation.invalid_value, fieldName);
-      if (msg === violation.messageKey && constraintName) {
+      if (msg === violation.messageKey && constraint.name) {
         return this.i18n(
-          `label.schema.constraint.violation.${constraintName}`,
+          `label.schema.constraint.violation.${constraint.name}`,
           violation.invalid_value,
           fieldName,
           ...Object.values(constraint.parameters || {}),

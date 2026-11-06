@@ -453,6 +453,56 @@ suite('nuxeo-document-layout', () => {
       expect(faqTable(documentLayout).invalid).to.be.true;
     });
 
+    test('Should not name the list for a required field nested in one of its rows', async () => {
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      const report = notNullReport('my:faq');
+      report.violations[0].path = [
+        { field_name: 'my:faq', is_list_item: false },
+        { field_name: 'item', is_list_item: true, index: 0 },
+        { field_name: 'question', is_list_item: false },
+      ];
+
+      documentLayout.reportValidation(report);
+      flush();
+
+      const messages = Array.from(documentLayout.shadowRoot.querySelectorAll('span.error')).map((e) => e.textContent);
+      expect(messages).to.not.include('FAQ is required.');
+      expect(messages).to.include('Value is required.');
+      expect(table.invalid).to.be.true;
+      expect(table.errorMessage).to.not.equal('FAQ is required.');
+    });
+
+    test('Should replace an injected required message when the server reports another failure', async () => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      const sizeReport = notNullReport('my:faq');
+      sizeReport.violations[0].messageKey = 'label.schema.constraint.violation.SizeConstraint';
+      sizeReport.violations[0].constraint = { 'entity-type': 'validation_constraint', name: 'SizeConstraint' };
+
+      documentLayout.reportValidation(notNullReport('my:faq'));
+      expect(table.errorMessage).to.equal('FAQ is required.');
+
+      documentLayout.reportValidation(sizeReport);
+      flush();
+      expect(table.errorMessage).to.equal('Wrong size.');
+      expect(documentLayout.shadowRoot.querySelector('span.error').textContent).to.equal('Wrong size.');
+    });
+
+    test('Should keep a message the author configured when the server reports another failure', async () => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      table.errorMessage = 'Check the FAQ.';
+      const sizeReport = notNullReport('my:faq');
+      sizeReport.violations[0].messageKey = 'label.schema.constraint.violation.SizeConstraint';
+      sizeReport.violations[0].constraint = { 'entity-type': 'validation_constraint', name: 'SizeConstraint' };
+
+      documentLayout.reportValidation(sizeReport);
+      expect(table.errorMessage).to.equal('Check the FAQ.');
+    });
+
     test('Should fall back to the constraint message when the violation has no parameters', async () => {
       window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
       documentLayout = await buildFaqLayout();
