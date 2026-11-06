@@ -1,12 +1,13 @@
 <!--
-A required multivalued property sets `required` on the table. The row field is independently
-required when adding or editing an entry (WEBUI-2377).
+Mirrors the create/edit layout generated for a document type with a required multivalued string
+property: `required` sits on the entry widget of the row form, never on the table or its columns
+(WEBUI-180, ELEMENTS-1891).
 -->
 <dom-module id="multivalued-required-layout">
   <template>
     <nuxeo-input name="title" label="Title" value="[[title]]" required></nuxeo-input>
 
-    <nuxeo-data-table items="[[items]]" name="multiString" editable required>
+    <nuxeo-data-table items="[[items]]" name="multiString" editable>
       <nuxeo-data-table-column name="Multi String">
         <template> [[item]] </template>
       </nuxeo-data-table-column>

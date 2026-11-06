@@ -432,8 +432,9 @@ suite('nuxeo-layout', () => {
     });
   });
 
-  // The table reports missing rows only when explicitly required. Required row fields remain
-  // disabled while their dialog is closed and must not invalidate an optional table (WEBUI-2377).
+  // WEBUI-180: a layout generated for a required multivalued property flags the entry widget of the
+  // row form, which is disabled while the entry dialog is closed. The failure went unreported and
+  // the save was refused without saying why, so the table has to report it on the form's behalf.
   suite('Validation error reporting for required multivalued properties', () => {
     const buildMultivaluedLayout = async (model = '') => {
       const layout = await fixture(html`
@@ -458,18 +459,6 @@ suite('nuxeo-layout', () => {
       expect(table.errorMessage).to.equal('Multi String is required.');
     });
 
-    test('Should allow an empty optional table with a required field in its closed row form', async () => {
-      const layout = await buildMultivaluedLayout('{"title": "a title"}');
-      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
-      table.required = false;
-      await flush();
-
-      const reported = waitForEvent(layout, 'layout-validation-errors');
-      expect(await layout.validate()).to.be.true;
-      expect((await reported).detail.errors).to.be.empty;
-      expect(table.invalid).to.be.false;
-    });
-
     test('Should report nothing once the multivalued field has an entry', async () => {
       const layout = await buildMultivaluedLayout('{"title": "a title", "items": ["alpha"]}');
 
@@ -477,6 +466,69 @@ suite('nuxeo-layout', () => {
       expect(await layout.validate()).to.be.true;
 
       expect((await reported).detail.errors).to.be.empty;
+    });
+  });
+
+  // ELEMENTS-2143: a required sub-field in the row form of a complex list constrains each row, so an
+  // optional list left empty must not fail validation.
+  suite('Validation of an optional list of complex entries', () => {
+    const buildComplexLayout = async (model = '') => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/complex-optional-layout.html" model="${model}"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+      await flush();
+      return layout;
+    };
+
+    test('Should report nothing when the optional complex list has no entry', async () => {
+      const layout = await buildComplexLayout('{"title": "a title"}');
+      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
+
+      const reported = waitForEvent(layout, 'layout-validation-errors');
+      expect(await layout.validate()).to.be.true;
+      expect((await reported).detail.errors).to.be.empty;
+      expect(table.invalid).to.be.false;
+    });
+
+    test('Should still report the other required fields of the form', async () => {
+      const layout = await buildComplexLayout();
+
+      const reported = waitForEvent(layout, 'layout-validation-errors');
+      expect(await layout.validate()).to.be.false;
+      const { errors } = (await reported).detail;
+      expect(errors).to.have.lengthOf(1);
+      expect(errors[0].message).to.equal('Title is required.');
+    });
+
+    test('Should name the field for a required violation reported by the server', async () => {
+      const layout = await buildComplexLayout('{"title": "a title"}');
+      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
+
+      expect(layout._requiredViolationMessage(table)).to.equal('FAQ is required.');
+      expect(table.errorMessage).to.equal('FAQ is required.');
+
+      // the injected message stays replaceable, so client validation does not keep a stale one
+      const reported = waitForEvent(layout, 'layout-validation-errors');
+      expect(await layout.validate()).to.be.true;
+      expect((await reported).detail.errors).to.be.empty;
+    });
+
+    test('Should keep a message the layout configured when the server reports a violation', async () => {
+      const layout = await buildComplexLayout('{"title": "a title"}');
+      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
+      table.errorMessage = 'Add at least one FAQ.';
+
+      expect(layout._requiredViolationMessage(table)).to.equal('Add at least one FAQ.');
+      expect(table.errorMessage).to.equal('Add at least one FAQ.');
+    });
+
+    test('Should leave the server message to the caller when the widget has no label', async () => {
+      const layout = await buildComplexLayout('{"title": "a title"}');
+      const unlabelled = document.createElement('div');
+
+      expect(layout._requiredViolationMessage(unlabelled)).to.equal('');
+      expect(unlabelled.errorMessage).to.be.undefined;
     });
   });
 
