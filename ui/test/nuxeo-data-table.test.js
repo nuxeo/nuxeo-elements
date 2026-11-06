@@ -1061,6 +1061,29 @@ suite('nuxeo-data-table', () => {
       expect(table.$.table.getAttribute('aria-invalid')).to.equal('false');
     });
 
+    test('refreshes the required state when a scalar row form is replaced by a complex one', async () => {
+      const table = await complexFixture(
+        questionColumn,
+        html`
+          <input name="stringlist" value="{{item::input}}" required />
+        `,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(table._isWidgetRequired()).to.be.true;
+      expect(table.$.table.getAttribute('aria-required')).to.equal('true');
+
+      // same `_formRequired`, but the new form binds a sub-field of complex entries
+      const form = document.createElement('nuxeo-data-table-form');
+      form.innerHTML = '<template><input name="question" value="{{item.question::input}}" required /></template>';
+      table.replaceChild(form, table.querySelector('nuxeo-data-table-form'));
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(table._formRequired).to.be.true;
+      expect(table._isWidgetRequired()).to.be.false;
+      expect(table.$.table.hasAttribute('aria-required')).to.be.false;
+    });
+
     test('keeps the required indicator on the column of the required field', async () => {
       const table = await complexFixture(questionColumn, requiredQuestion);
       expect(table.columns.map((column) => column.required)).to.deep.equal([true]);
