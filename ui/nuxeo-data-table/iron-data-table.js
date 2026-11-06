@@ -868,11 +868,11 @@ function hasRowDetailTemplate(node) {
     _updateRequiredColumns() {
       const form = this.getContentChildren('#form')[0];
       const requiredWidgets = form ? Array.from((form.shadowRoot || form).querySelectorAll('[required]')) : [];
-      const formRequired = requiredWidgets.length > 0;
-      if (this._formRequired !== formRequired) {
-        this._formRequired = formRequired;
-        this._syncAriaValidationState();
-      }
+      this._formRequired = requiredWidgets.length > 0;
+      // Re-sync even when `_formRequired` is unchanged: a row form replaced by one binding complex
+      // instead of scalar entries (or back) changes whether the table is required. The sync is
+      // debounced, so calling it on every column or form change costs nothing.
+      this._syncAriaValidationState();
       if (!this.columns || this.columns.length === 0) {
         return;
       }
