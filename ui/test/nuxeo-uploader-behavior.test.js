@@ -440,6 +440,146 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: err }));
   });
 
+  // ELEMENTS-2117 / SonarCloud S9383: the `Promise.all(...)` aggregate below was a detached chain
+  // with no rejection handler, and the consumer callback was invoked unguarded. A callback that
+  // threw therefore rejected the aggregate, the rejection floated off to the global handler, and
+  // the terminal `batchFinished` / `batchFailed` event was never emitted -- leaving the upload UI
+  // at "in progress" with no error, the exact hang ELEMENTS-1992 added this block to prevent.
+  suite('floating rejections in the upload aggregate', () => {
+    let consoleError;
+    let unhandled;
+    let onUnhandledRejection;
+
+    setup(() => {
+      // The provider now logs the swallowed callback failure; keep it out of the runner output.
+      consoleError = sinon.stub(console, 'error');
+      // Record unhandled rejections for the duration of each test so the assertions below can name
+      // one. Mocha's own handler is registered first and still sees them, so this does not make a
+      // floating rejection survivable: revert the fix and the whole session stalls until
+      // `testsFinishTimeout` instead of reporting. That stall is the harness-level face of the bug.
+      unhandled = [];
+      onUnhandledRejection = (event) => {
+        unhandled.push(event.reason);
+        event.preventDefault();
+      };
+      window.addEventListener('unhandledrejection', onUnhandledRejection, true);
+    });
+
+    teardown(() => {
+      window.removeEventListener('unhandledrejection', onUnhandledRejection, true);
+      consoleError.restore();
+    });
+
+    test('a callback that throws on uploadInterrupted still yields exactly one terminal event', async () => {
+      const err = new Error('bad');
+      const events = [];
+      const cb = (event) => {
+        events.push(event.type);
+        if (event.type === 'uploadInterrupted') {
+          throw new Error('consumer handler blew up');
+        }
+      };
+      const done = sinon.stub().resolves({ batch: { _batchId: 'b' } });
+      const uploader = { _batchId: 'b', upload: sinon.stub().rejects(err), done };
+      connection.batchUpload.resolves(uploader);
+
+      provider.upload([fakeFile()], cb);
+      await flushAll();
+      await flushAll();
+
+      expect(events.filter((type) => type === 'batchFailed' || type === 'batchFinished')).to.deep.equal([
+        'batchFailed',
+      ]);
+      expect(done).not.to.have.been.called;
+      expect(consoleError).to.have.been.called;
+      expect(unhandled, 'the callback failure must not float off as an unhandled rejection').to.be.empty;
+    });
+
+    test('a callback that throws on batchFailed does not get a duplicate terminal event', async () => {
+      const events = [];
+      const cb = (event) => {
+        events.push(event.type);
+        if (event.type === 'batchFailed') {
+          throw new Error('consumer handler blew up');
+        }
+      };
+      const uploader = {
+        _batchId: 'b',
+        upload: sinon.stub().rejects(new Error('bad')),
+        done: sinon.stub().resolves({ batch: { _batchId: 'b' } }),
+      };
+      connection.batchUpload.resolves(uploader);
+
+      provider.upload([fakeFile()], cb);
+      await flushAll();
+      await flushAll();
+
+      // Re-emitting here would throw again and float a second unhandled rejection.
+      expect(events.filter((type) => type === 'batchFailed')).to.have.lengthOf(1);
+      expect(unhandled, 'the callback failure must not float off as an unhandled rejection').to.be.empty;
+    });
+
+    test('a rejecting aggregate still produces a terminal batchFailed', async () => {
+      // The production per-blob chain ends in its own `.catch`, so only a throw from that handler
+      // can reject the aggregate. Substituting a chain that rejects outright exercises the
+      // aggregate's own rejection handler -- the backstop that keeps such a failure from floating
+      // and leaving the batch with no terminal event at all.
+      const cb = sinon.spy();
+      const aggregateErr = new Error('aggregate rejected');
+      const rejectingChain = {
+        then: () => {
+          return { catch: () => Promise.reject(aggregateErr) };
+        },
+      };
+      const uploader = {
+        _batchId: 'b',
+        upload: sinon.stub().returns(rejectingChain),
+        done: sinon.stub().resolves({ batch: { _batchId: 'b' } }),
+      };
+      connection.batchUpload.resolves(uploader);
+
+      provider.upload([fakeFile()], cb);
+      await flushAll();
+      await flushAll();
+
+      expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: aggregateErr, batchId: 'b' }));
+      expect(uploader.done).not.to.have.been.called;
+      expect(unhandled, 'the aggregate failure must not float off as an unhandled rejection').to.be.empty;
+    });
+
+    test('a rejecting aggregate stays silent when the batch was cancelled mid-flight', async () => {
+      const cb = sinon.spy();
+      let rejectAggregate;
+      const pendingChain = {
+        then: () => {
+          return {
+            catch: () =>
+              new Promise((_, reject) => {
+                rejectAggregate = reject;
+              }),
+          };
+        },
+      };
+      const uploader = {
+        _batchId: 'b',
+        upload: sinon.stub().returns(pendingChain),
+        done: sinon.stub().resolves({ batch: { _batchId: 'b' } }),
+      };
+      connection.batchUpload.resolves(uploader);
+
+      provider.upload([fakeFile()], cb);
+      await flushAll();
+      // User cancels while the aggregate is still settling; cancelBatch() owns the teardown.
+      provider.uploader = null;
+      rejectAggregate(new Error('aggregate rejected'));
+      await flushAll();
+      await flushAll();
+
+      expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFailed' }));
+      expect(unhandled, 'the aggregate failure must not float off as an unhandled rejection').to.be.empty;
+    });
+  });
+
   test('accepts returns false when file has no mime and no extension match', () => {
     const p = new DefaultUploadProvider(connection, '.pdf', false);
     expect(p.accepts({ name: 'noext', type: '' })).to.be.false;
