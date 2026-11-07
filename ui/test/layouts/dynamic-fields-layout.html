@@ -1,0 +1,31 @@
+<dom-module id="dynamic-fields-layout">
+  <template>
+    <nuxeo-input label="Title" value="[[title]]" required></nuxeo-input>
+    <dom-repeat items="[[rows]]" as="row">
+      <template>
+        <nuxeo-input label="[[row.label]]" value="[[row.value]]" required></nuxeo-input>
+      </template>
+    </dom-repeat>
+    <dom-if if="[[showExtra]]">
+      <template>
+        <nuxeo-input label="Extra" required></nuxeo-input>
+      </template>
+    </dom-if>
+  </template>
+  <script>
+    Polymer({
+      is: 'dynamic-fields-layout',
+      properties: {
+        title: String,
+        rows: {
+          type: Array,
+          value: () => [],
+        },
+        showExtra: {
+          type: Boolean,
+          value: false,
+        },
+      },
+    });
+  </script>
+</dom-module>

@@ -36,15 +36,23 @@ import '../nuxeo-i18n-behavior.js';
     static get template() {
       return html`
         <style>
+          /*
+           * WCAG 2.1 AA 1.4.12: the pill must not pin the properties the user is allowed to
+           * override. No line-height is declared here, so an inherited value (from a user
+           * stylesheet, for instance) applies instead of being reset; the padding is expressed
+           * in em so it grows with the text rather than tightening around it; and the minimum
+           * height keeps the pill at its current size when the line height is small.
+           */
           :host {
             display: inline-block;
+            box-sizing: border-box;
             background-color: var(--nuxeo-tag-background, transparent);
             color: var(--nuxeo-default-text, #000);
-            padding: 4px 6px;
+            padding: 0.4em 0.6em;
             font-size: 0.8rem;
             margin-bottom: 0.3em;
+            min-height: 1.55em;
             border-radius: 2em;
-            line-height: initial;
             text-decoration: none;
 
             @apply --nuxeo-tag;

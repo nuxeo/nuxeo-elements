@@ -291,9 +291,14 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       this._detachDropdownTabHandler();
     }
 
+    static get observers() {
+      return ['_syncAriaState(invalid, required)'];
+    }
+
     ready() {
       super.ready();
       this._syncAriaLabel();
+      this._syncAriaState();
       const pdm = this.$.paperDropdownMenu;
       pdm.addEventListener('paper-dropdown-open', () => this._attachDropdownTabHandler());
       pdm.addEventListener('paper-dropdown-close', () => this._detachDropdownTabHandler());
@@ -334,13 +339,55 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       setTimeout(() => this._applyAriaLabel(), 0);
     }
 
-    _applyAriaLabel() {
+    _syncAriaState() {
+      // Deferred so Polymer has finished rendering the inner paper-dropdown-menu.
+      setTimeout(() => this._applyAriaState(), 0);
+    }
+
+    _applyAriaState() {
+      const nativeInput = this._getNativeInput();
+      if (!nativeInput) return;
+      // paper-dropdown-menu signals the error with colour and a thicker underline only; assistive
+      // technologies need the state on the focusable control (WCAG 2.1 SC 1.4.1).
+      nativeInput.setAttribute('aria-invalid', this.invalid ? 'true' : 'false');
+      if (this.required) {
+        nativeInput.setAttribute('aria-required', 'true');
+      } else {
+        nativeInput.removeAttribute('aria-required');
+      }
+    }
+
+    _getTriggerInput() {
       const pdm = this.$ && this.$.paperDropdownMenu;
-      if (!pdm) return;
+      if (!pdm) return null;
+      // paper-dropdown-menu exposes its paper-input trigger as $.input.
+      let paperInput;
+      if (pdm.$) {
+        paperInput = pdm.$.input;
+      }
+      if (!paperInput && pdm.shadowRoot) {
+        paperInput = pdm.shadowRoot.querySelector('paper-input');
+      }
+      return paperInput;
+    }
+
+    _getNativeInput() {
+      const paperInput = this._getTriggerInput();
+      if (!paperInput) return null;
+      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+      if (!nativeInput && paperInput.inputElement) {
+        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+      }
+      if (!nativeInput && paperInput.shadowRoot) {
+        nativeInput = paperInput.shadowRoot.querySelector('input');
+      }
+      return nativeInput;
+    }
+
+    _applyAriaLabel() {
       const ariaLabel = (this.getAttribute('aria-label') || '').trim() || (this.label || '').trim() || null;
 
-      // paper-dropdown-menu exposes its paper-input trigger as $.input.
-      const paperInput = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+      const paperInput = this._getTriggerInput();
       if (!paperInput) return;
 
       if (ariaLabel) {
@@ -351,13 +398,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
       // Set aria-label on the native <input> and remove aria-labelledby so the
       // screen reader uses our label instead of Polymer's auto-generated one.
-      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
-      if (!nativeInput && paperInput.inputElement) {
-        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
-      }
-      if (!nativeInput && paperInput.shadowRoot) {
-        nativeInput = paperInput.shadowRoot.querySelector('input');
-      }
+      const nativeInput = this._getNativeInput();
       if (nativeInput) {
         if (ariaLabel) {
           nativeInput.setAttribute('aria-label', ariaLabel);

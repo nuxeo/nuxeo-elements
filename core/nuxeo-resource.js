@@ -357,7 +357,8 @@ import './nuxeo-connection.js';
                   this.error = JSON.parse(text);
                   this.error.status = error.response.status;
                   console.warn(`Resource request failed: ${this.error.message}`);
-                } catch (_e) {
+                } catch (parseError) {
+                  console.warn('nuxeo-resource: failed to parse error response JSON', parseError);
                   this.error = { message: 'Invalid json', status: error.response.status };
                 }
               } else {

@@ -37,6 +37,7 @@ Shared logic uses Polymer behaviors (not mixins):
 
 - Prettier: 120 chars, `arrowParens: 'always'`
 - `Nuxeo` is a writable global
+- Do not use `?.`, `??`, `catch { }` or other post-ES2019 syntax — Polymer lint/analyze predates it and drops elements from `analysis.json` (ESLint enforces this). Use explicit `&&` guards, `!== undefined && !== null` checks or `catch (e)` instead.
 
 ## Vendored Code
 

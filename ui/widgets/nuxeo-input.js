@@ -22,6 +22,7 @@ import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 
 {
   /**
@@ -29,10 +30,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
    *
    * @appliesMixin Polymer.IronFormElementBehavior
    * @appliesMixin Polymer.IronValidatableBehavior
+   * @appliesMixin Nuxeo.WidgetValidationBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-input/index.html
    */
-  class Input extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class Input extends mixinBehaviors(
+    [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
         <style>
@@ -241,39 +246,36 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Re-sync once the inner native <input> is actually wired up by iron-input;
       // before that event the aria-labelledby we need to clear may not be present.
       if (this.$ && this.$.paperInput) {
-        this.$.paperInput.addEventListener('iron-input-ready', () => this._syncNativeInputAriaLabel());
+        this.$.paperInput.addEventListener('iron-input-ready', () => {
+          this._syncNativeInputAriaLabel();
+          this._syncAriaValidationState();
+        });
       }
       this._syncNativeInputAriaLabel();
+      this._syncAriaValidationState();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-input signals the error with colour
+       and a thicker underline only, so the state has to reach the native input it wraps. */
+    _ariaValidationControl() {
+      return this._getNativeInput();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-input already points the input at
+       its own paper-input-error, so we must not replace that reference. */
+    _ariaValidationMessageElement() {
+      return null;
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       const valid = this.$.paperInput.validate();
-      this._applyDefaultRequiredError(valid);
-      return valid;
-    }
-
-    // Surface a per-field reason for required inputs (string and number), consistent with the
-    // multivalued and date widgets. Only default when the field is empty and the layout supplied
-    // no message, so pattern/min/max errors and layout-supplied messages are never clobbered.
-    _applyDefaultRequiredError(valid) {
-      const isEmpty = this.value == null || this.value === '';
-      if (this.required && !valid && isEmpty) {
-        if (!this.errorMessage || this._defaultRequiredError) {
-          this.errorMessage = this.i18n('widget.required');
-          this._defaultRequiredError = true;
-        }
-      } else {
+      if (valid) {
         this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
       }
-    }
-
-    // Clear only the message we defaulted, so a layout-supplied errorMessage is never lost.
-    _clearDefaultRequiredError() {
-      if (this._defaultRequiredError) {
-        this.errorMessage = '';
-        this._defaultRequiredError = false;
-      }
+      return valid;
     }
 
     _computeAriaLabel(label, placeholder) {
@@ -290,14 +292,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       setTimeout(() => this._applyNativeInputAriaLabel(), 0);
     }
 
-    _applyNativeInputAriaLabel() {
-      const paperInput = this.$ && this.$.paperInput;
-      if (!paperInput) {
-        return;
+    _getNativeInput() {
+      let paperInput;
+      if (this.$) {
+        paperInput = this.$.paperInput;
       }
-
-      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
-
+      if (!paperInput) {
+        return null;
+      }
       let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
       if (!nativeInput && paperInput.inputElement) {
         // iron-input wraps the native input in its light DOM
@@ -306,6 +308,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!nativeInput && paperInput.shadowRoot) {
         nativeInput = paperInput.shadowRoot.querySelector('input');
       }
+      return nativeInput;
+    }
+
+    _applyNativeInputAriaLabel() {
+      const paperInput = this.$ && this.$.paperInput;
+      if (!paperInput) {
+        return;
+      }
+
+      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+
+      const nativeInput = this._getNativeInput();
       if (nativeInput) {
         if (ariaLabel) {
           nativeInput.setAttribute('aria-label', ariaLabel);

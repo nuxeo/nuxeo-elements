@@ -27,6 +27,23 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 {
+  // A JS `.` never matches a line terminator, so the original `/(.+)\/$/` only stripped a trailing
+  // slash when a non-line-terminator character preceded it: '/' and '<LF>/' were left untouched.
+  const LINE_TERMINATORS = new Set(['\n', '\r', '\u2028', '\u2029']);
+
+  /**
+   * Removes a single trailing slash, matching the previous `value.replace(/(.+)\/$/, '$1')` exactly
+   * but in linear time. That regex combined an unbounded greedy group with an anchored literal, so
+   * it backtracked super-linearly over user-typed input (SonarCloud javascript:S8786).
+   */
+  const stripTrailingSlash = (value) => {
+    if (typeof value !== 'string' || value.length < 2 || !value.endsWith('/')) {
+      return value;
+    }
+    const stripped = value.slice(0, -1);
+    return LINE_TERMINATORS.has(stripped.slice(-1)) ? value : stripped;
+  };
+
   /**
    * An element that provides path auto completion to nuxeo folderish documents.
    *
@@ -55,6 +72,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           :host {
             display: block;
             padding-bottom: 8px;
+            /* Alignment of a suggestion row that fits; rows that do not fit are handled by the
+               direction flip in --paper-typeahead-result below. */
+            --nuxeo-path-suggestion-result-text-align: left;
+          }
+
+          :host([dir='rtl']) {
+            --nuxeo-path-suggestion-result-text-align: right;
           }
 
           paper-typeahead {
@@ -69,6 +93,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
+              /* An over-long row is clipped at its inline end. Laying the row out RTL puts that
+                 clipped end at the start of the path, so the tail - the container name that actually
+                 tells two suggestions apart - stays on screen. Paths are overwhelmingly written in a
+                 left-to-right script, so this flip is not conditional on the UI reading direction;
+                 only the alignment of rows that do fit follows it. */
+              direction: rtl;
+              text-align: var(--nuxeo-path-suggestion-result-text-align, left);
               background-color: var(--nuxeo-dropdown-list-background, #fff);
               color: var(--nuxeo-text-default, #3a3a54);
               /* Keep @apply last so consumers can still override the defaults above via the mixin. */
@@ -84,18 +115,6 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
             --paper-typeahead-result-selected: {
               color: var(--hyland-path-suggestion-result-selected-text, var(--nuxeo-text-default, #3a3a54));
-            }
-
-            :host([dir='rtl']) {
-              --paper-typeahead-result: {
-                text-align: right;
-              }
-            }
-
-            :host(:not([dir='rtl'])) {
-              --paper-typeahead-result: {
-                text-align: left;
-              }
             }
 
             --paper-input-container-underline: {
@@ -189,7 +208,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
         allowedPattern: {
           type: String,
-          value: '[^()\\+*%]',
+          value: String.raw`[^()\+*%]`,
         },
 
         disabled: {
@@ -203,7 +222,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     connectedCallback() {
       super.connectedCallback();
       if (!this.hasAttribute('dir')) {
-        const direction = document.documentElement.getAttribute('dir');
+        const direction = document.documentElement.getAttribute('dir') || 'ltr';
         this.setAttribute('dir', direction);
       }
     }
@@ -304,11 +323,15 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       // XXX - paper-typeahead doesn't implement the IronValidatableBehavior, so there is no validate() method.
-      const valid =
-        (this.value && this.value === '/') ||
-        (this.parent ? this.value.replace(/(.+)\/$/, '$1') === this.parent.path : false) ||
-        (this.children ? this.children.some((child) => this.value.replace(/(.+)\/$/, '$1') === child.path) : false);
-      return valid;
+      if (this.value === '/') {
+        return true;
+      }
+      // Normalised once instead of once per child - the previous code re-ran the regex inside some().
+      const path = stripTrailingSlash(this.value);
+      return (
+        (this.parent ? path === this.parent.path : false) ||
+        (this.children ? this.children.some((child) => path === child.path) : false)
+      );
     }
   }
 

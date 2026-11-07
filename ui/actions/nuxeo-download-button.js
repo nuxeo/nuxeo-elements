@@ -128,7 +128,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _computeHoverLabel(_doc) {
-      return this._computeLabel();
+      return this.i18n('downloadButton.ariaLabel');
     }
 
     async _download() {
