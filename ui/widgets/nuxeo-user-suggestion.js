@@ -20,6 +20,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-card/paper-card.js';
 import { escapeHTML } from './nuxeo-selectivity.js';
 import './nuxeo-user-group-formatter.js';
@@ -51,6 +52,7 @@ import './nuxeo-user-group-formatter.js';
           }
         </style>
 
+        <nuxeo-resource id="entityResource"></nuxeo-resource>
         <nuxeo-selectivity
           id="s2"
           operation="[[operation]]"
@@ -278,10 +280,193 @@ import './nuxeo-user-group-formatter.js';
     }
 
     _resolveEntry(item) {
-      if (item && item['entity-type']) {
+      // REST entities, and suggestion results (which may only carry `type`) are already resolved
+      if (item && typeof item === 'object' && (item['entity-type'] || item.id)) {
         return item;
       }
+      if (typeof item === 'string') {
+        const cached = this._entityCache.get(this._cacheKey(item));
+        if (cached) {
+          return cached;
+        }
+        // the internal refresh below re-resolves every entry: do not start new lookups from it, otherwise a transient
+        // failure next to a resolved id would loop (failed lookup -> refresh -> lookup ...)
+        if (!this._hydrating) {
+          this._scheduleLabelResolution();
+        }
+      }
       return this.prefixed ? { id: item, displayLabel: item, prefixed_id: item } : { id: item, displayLabel: item };
+    }
+
+    // Maps are used (rather than plain objects) so ids such as `constructor` are not mistaken for cached entries.
+    get _entityCache() {
+      if (!this.__entityCache) {
+        this.__entityCache = new Map();
+      }
+      return this.__entityCache;
+    }
+
+    get _pendingIds() {
+      if (!this.__pendingIds) {
+        this.__pendingIds = new Set();
+      }
+      return this.__pendingIds;
+    }
+
+    // Ids handed to the widget (saved searches, layouts, URL params) are bare strings: look up the users / groups
+    // once, in the background, and refresh the selection with the entities so their labels are displayed.
+    _scheduleLabelResolution() {
+      if (this._labelResolutionScheduled) {
+        return;
+      }
+      this._labelResolutionScheduled = true;
+      Promise.resolve()
+        .then(() => {
+          this._labelResolutionScheduled = false;
+          return this._resolveLabels();
+        })
+        .catch(() => {});
+    }
+
+    _entityTypes(id) {
+      if (this.prefixed) {
+        if (id.startsWith('user:')) {
+          return ['user'];
+        }
+        if (id.startsWith('group:')) {
+          return ['group'];
+        }
+      }
+      // honour `params.searchType`, which overrides the property in the suggestion query
+      const { searchType } = this._computeParams();
+      if (searchType === 'USER_TYPE') {
+        return ['user'];
+      }
+      if (searchType === 'GROUP_TYPE') {
+        return ['group'];
+      }
+      return ['user', 'group'];
+    }
+
+    // the same id can name a user and a group: key lookups by what is looked up, so changing `search-type`,
+    // `params.searchType` or `prefixed` never reuses an entity of the wrong type
+    _cacheKey(id) {
+      return `${this.prefixed ? 'prefixed' : 'plain'}|${this._entityTypes(id).join(',')}|${id}`;
+    }
+
+    _cachedEntity(id) {
+      return typeof id === 'string' ? this._entityCache.get(this._cacheKey(id)) : undefined;
+    }
+
+    _bareId(id) {
+      return this.prefixed ? id.replace(/^(user|group):/, '') : id;
+    }
+
+    _entityPaths(id) {
+      const bare = encodeURIComponent(this._bareId(id));
+      return this._entityTypes(id).map((type) => `${type}/${bare}`);
+    }
+
+    // REST group entities may only expose `groupname`: make sure the entity carries the id it was requested with.
+    _normalizeEntity(entity, id) {
+      const normalized = entity.id
+        ? entity
+        : { ...entity, id: entity.groupname || entity.username || this._bareId(id) };
+      return this.prefixed ? { ...normalized, prefixed_id: id } : normalized;
+    }
+
+    // `nuxeo-resource` aborts the previous request and reads `path` asynchronously, so lookups must never overlap.
+    // Resolves with the entity, or null when it does not exist (404); rejects on transient failures so they are
+    // retried on a later initialization instead of being cached.
+    _fetchEntity(id) {
+      const resource = this.$.entityResource;
+      const lookup = async () => {
+        let transient = false;
+        for (const path of this._entityPaths(id)) {
+          resource.path = path;
+          try {
+            const entity = await resource.get();
+            if (entity) {
+              return this._normalizeEntity(entity, id);
+            }
+          } catch (error) {
+            if (!error || error.status !== 404) {
+              transient = true;
+            }
+          }
+        }
+        if (transient) {
+          throw new Error(`Unable to resolve ${id}`);
+        }
+        return null;
+      };
+      const result = (this._lookupQueue || Promise.resolve()).then(lookup);
+      // keep the queue usable whatever the outcome of this lookup
+      this._lookupQueue = result.catch(() => {});
+      return result;
+    }
+
+    async _resolveLabels() {
+      const ids = (Array.isArray(this.value) ? this.value : [this.value]).filter(
+        (id) =>
+          typeof id === 'string' &&
+          id &&
+          !this._entityCache.has(this._cacheKey(id)) &&
+          !this._pendingIds.has(this._cacheKey(id)),
+      );
+      if (!ids.length) {
+        return;
+      }
+      ids.forEach((id) => this._pendingIds.add(this._cacheKey(id)));
+      await Promise.all(
+        ids.map(async (id) => {
+          const key = this._cacheKey(id);
+          try {
+            // null (unknown id, e.g. a deleted user) is cached: the id itself stays displayed
+            this._entityCache.set(key, await this._fetchEntity(id));
+          } catch (_e) {
+            // transient failure: not cached, so the lookup is retried next time the value is set
+          } finally {
+            this._pendingIds.delete(key);
+          }
+        }),
+      );
+      this._hydrateSelection();
+    }
+
+    // Refresh the *current* selection (it may have changed while the lookups were pending) without marking the
+    // form as dirty.
+    _hydrateSelection() {
+      const selectivity = this.$.s2 && this.$.s2._selectivity;
+      const { value } = this;
+      const ids = Array.isArray(value) ? value : [value];
+      if (!selectivity || !ids.some((id) => this._cachedEntity(id))) {
+        return;
+      }
+      // entries picked from the dropdown meanwhile are full entities that never went through the cache: keep them
+      const current = new Map();
+      const data = selectivity.getData();
+      (Array.isArray(data) ? data : [data]).forEach((item) => {
+        // dropdown results are wrapped by selectivity as { id, text, item: entity }
+        const entity = item && item.item ? item.item : item;
+        // suggestion results may only carry `type` (USER_TYPE / GROUP_TYPE): keep any object, not just REST entities
+        if (entity && typeof entity === 'object') {
+          current.set(this._idFunction(entity), entity);
+        }
+      });
+      const hydrate = (id) => {
+        if (typeof id !== 'string') {
+          return id; // already an entity
+        }
+        return this._cachedEntity(id) || current.get(id) || id;
+      };
+      const hydrated = Array.isArray(value) ? value.map(hydrate) : hydrate(value);
+      this._hydrating = true;
+      try {
+        selectivity.setValue(hydrated, { triggerChange: false });
+      } finally {
+        this._hydrating = false;
+      }
     }
 
     _idFunction(item) {
