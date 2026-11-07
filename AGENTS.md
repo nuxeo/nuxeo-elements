@@ -2,14 +2,29 @@
 
 ## Overview
 
-This is a Polymer 3 web components library for the Nuxeo content services platform. It is a monorepo managed by Lerna with five packages: `core`, `ui`, `dataviz`, `testing-helpers`, and `storybook`. Code ownership: `@nuxeo/ui`. The main development branch is `maintenance-3.1.x`.
+This is a Polymer 3 web components library for the Nuxeo content services platform. It is a monorepo managed by Lerna with five packages: `core`, `ui`, `dataviz`, `testing-helpers`, and `storybook`. Code ownership: `@nuxeo/ui`.
+
+## Branching
+
+Tickets are collected on a permanent dev branch per LTS line. They are never merged straight into a release branch.
+
+| LTS line | Branch from / target | Release branch      |
+| -------- | -------------------- | ------------------- |
+| LTS 2025 | `develop-2025`       | `lts-2025`          |
+| LTS 2023 | `develop-2023`       | `maintenance-3.1.x` |
+
+`develop-2023` is the default branch. Most fixes apply to both lines, so raise one PR per line.
+
+Ticket PRs are squashed. The dev → release merge and the release → dev sync PR must use a **merge commit** — squashing breaks the ancestry the sync check relies on, so the next sync re-proposes the whole release branch. Hotfix work on an already-released version still branches from the release branch.
+
+Cross-repo CI pairs a `nuxeo-web-ui` PR with the branch of the **same name** here. Name an Elements branch exactly like its Web UI counterpart when the two ship together, and delete it once its PR is merged or closed — an abandoned branch can be built in place of the intended one, and the only clue is a single line in a CI log.
 
 ## Build & Validate
 
 Always follow this sequence when making changes:
 
 ```bash
-npm install                # Install all workspace dependencies (Node ≥ 18)
+npm install                # Install all workspace dependencies (Node ≥ 22.13)
 npm run format             # Auto-fix formatting (Polymer lint fix → Prettier → ESLint)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # @web/test-runner unit tests (all packages) — must pass
@@ -19,6 +34,11 @@ npm test                   # @web/test-runner unit tests (all packages) — must
 - `npm run format` runs Polymer lint fix first, then Prettier write, then ESLint fix.
 - Always run `npm run format` before committing.
 - Do NOT commit `.only` in test files.
+
+## CLA-safe commits
+
+`license/cla` fails if any commit or `Co-authored-by` trailer names `cursoragent@cursor.com`. Never add `Co-authored-by: Cursor` and never commit as the Cursor agent user. Husky runs `scripts/git/commit-msg-cla.sh` on every commit to block those trailers. If a PR branch is already polluted, squash on the PR base and rewrite with `git commit-tree` + a message file (agent `git commit` may re-inject Cursor trailers).
+
 - To test a single package: `npm run test:core`, `npm run test:ui`, or `npm run test:dataviz`.
 
 ## Project Structure
@@ -99,6 +119,18 @@ Always use Nuxeo Elements for API calls, never `fetch()`:
 - ESLint: flat config in `eslint.config.mjs`
 - Max line length: 120 characters
 - `Nuxeo` global is `writable`
+- **Do not use syntax the Polymer analyzer's parser cannot read** in `core/`, `ui/`, or `dataviz/` source
+  files: optional chaining (`?.`), nullish coalescing (`??`), optional catch binding (`catch { }`),
+  logical assignment (`||=`, `&&=`, `??=`), class fields, private `#` members, `static { }` blocks,
+  BigInt, numeric separators, `export * as`, top-level `await`, import attributes and regex `d`/`v`
+  flags. The Polymer linter/analyzer (`polymer lint`, `polymer analyze`) and the Nuxeo Web UI Designer
+  catalog generator use `polymer-analyzer` 3.2.4, whose parser predates them; it fails to parse the file
+  and drops the elements it defines (and the ones only reachable through it) from `analysis.json` and
+  from the Designer catalog. ESLint enforces this (`no-restricted-syntax` in `eslint.config.mjs`). Use
+  explicit guards instead — e.g. `(obj && obj.prop)`, an explicit `!== undefined && !== null` check,
+  `catch (e)`, or `(template && template._templateInfo) || {}`. When the value is used (not just tested),
+  prefer `obj ? obj.prop : undefined`: `obj && obj.prop` returns `null`/`0`/`''` instead of `undefined`.
+  Vendored code (`ui/viewers/pdfjs/`, `ui/js-interpreter/`) is exempt — do not modify it.
 
 ## Testing
 
@@ -123,7 +155,9 @@ npm run test:dataviz  # Dataviz only
 
 ## CI Workflow
 
-Push to `maintenance-3.1.x` triggers: **lint → test → storybook → build (tag + publish)** (all must pass).
+Push to a dev branch (`develop-2025`, `develop-2023`) runs `develop.yaml`, which starts **lint**, **test** and **storybook** in parallel — all must pass. Sonar and CodeQL trigger themselves on the same push. Nothing is published to npm, and Storybook builds but does not deploy.
+
+Push to a release branch runs `main.yaml` for that line: those three plus **sonar**, again in parallel, then **build (tag + publish)**, which depends on all four.
 
 PRs run lint and test workflows automatically.
 
@@ -134,6 +168,7 @@ PRs run lint and test workflows automatically.
 ## Common Pitfalls
 
 - This is a **library** repo — there is no bundler or dev server. Components are consumed via npm by `nuxeo-web-ui`.
+- **Do not use `?.`, `??`, `catch { }` or other syntax the Polymer analyzer cannot parse** in element source — see Style Rules above. Polymer analyze feeds `analysis.json` and the Web UI Designer catalog; such syntax makes elements go missing from that output. ESLint (`no-restricted-syntax`) fails the build on it.
 - Always commit `package-lock.json` changes when dependencies change. CI relies on it for `npm ci`.
 - `@nuxeo` npm packages come from `https://packages.nuxeo.com/repository/npm-public/`, not npmjs.org.
 - The `ui/` package has its own `eslint.config.mjs` in addition to the root config.

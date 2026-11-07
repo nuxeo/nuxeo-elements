@@ -248,7 +248,7 @@ import '../nuxeo-button-styles.js';
           value: {
             'fetch-acls': 'username,creator,extended',
             depth: 'children',
-            time: new Date().getTime(),
+            time: Date.now(),
           },
         },
         visible: {
@@ -289,7 +289,7 @@ import '../nuxeo-button-styles.js';
     refresh() {
       if (this.visible) {
         this.doc = null;
-        this.params.time = new Date().getTime();
+        this.params.time = Date.now();
         this.$.doc.get().then(() => {
           this.dispatchEvent(
             new CustomEvent('iron-resize', {
@@ -326,7 +326,7 @@ import '../nuxeo-button-styles.js';
 
     _hasPermission() {
       const permissions = this.doc && this.doc.contextParameters && this.doc.contextParameters.permissions;
-      return permissions && permissions.indexOf('WriteSecurity') !== -1;
+      return permissions && permissions.includes('WriteSecurity');
     }
 
     _empty(arr) {

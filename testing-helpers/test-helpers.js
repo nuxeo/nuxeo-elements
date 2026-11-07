@@ -39,15 +39,23 @@ const flush = async () => {
   await timePasses(0);
 };
 
-function fixture(template, flushNeeded = false) {
-  if (!flushNeeded) {
-    return openWcFixture(template);
+/**
+ * Renders a template and returns the resulting element.
+ *
+ * Kept `async` rather than wrapped in an explicit `new Promise`: the wrapper had no `reject`, so a
+ * rejection from either the render or the flush left the returned promise pending forever and the
+ * awaiting test died on a Mocha timeout instead of reporting the real failure.
+ *
+ * @param {Object} template - The template to render
+ * @param {boolean} flushNeeded - Whether to flush Polymer's async queues before returning
+ * @returns {Promise<Object>} Promise object represents the rendered element
+ */
+async function fixture(template, flushNeeded = false) {
+  const element = await openWcFixture(template);
+  if (flushNeeded) {
+    await flush();
   }
-  return new Promise((resolve) => {
-    openWcFixture(template).then((element) => {
-      flush().then(() => resolve(element));
-    });
-  });
+  return element;
 }
 
 /**

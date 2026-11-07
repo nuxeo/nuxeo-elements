@@ -67,7 +67,11 @@ export const RoutingBehavior = {
   },
 
   _generateUrl(baseUrl, path) {
-    const base = `${baseUrl}${this.router.useHashbang ? `${baseUrl.endsWith('/') ? '' : '/'}#!` : ''}`;
+    let base = baseUrl;
+    if (this.router.useHashbang) {
+      const separator = baseUrl.endsWith('/') ? '' : '/';
+      base = `${baseUrl}${separator}#!`;
+    }
     return `${base}${base.endsWith('/') || path.startsWith('/') ? '' : '/'}${path}`;
   },
 
@@ -139,7 +143,7 @@ export const RoutingBehavior = {
     }
     const [obj, ...params] = args;
     if (typeof obj !== 'object') {
-      throw new Error(`cannot resolve route: "${obj}" is not a valid entity object`);
+      throw new TypeError(`cannot resolve route: "${obj}" is not a valid entity object`);
     }
     let entityType = obj['entity-type'];
     if (!entityType) {

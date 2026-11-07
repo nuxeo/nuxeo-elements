@@ -151,7 +151,7 @@ import './nuxeo-tree-node.js';
       if (this.data && this.controller) {
         const template = dom(this).querySelector('template');
         if (this._root) {
-          dom(this).removeChild(this._root);
+          this._root.remove();
         }
         this._root = document.createElement('nuxeo-tree-node');
         this._root.id = 'root';

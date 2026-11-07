@@ -73,7 +73,11 @@ import '../nuxeo-sort-styles.js';
           }
 
           h2 {
-            color: var(--nuxeo-title-color, #213f7d);
+            color: var(--nuxeo-edit-group-heading-color, #213f7d);
+          }
+
+          .dialog-dismiss-btn {
+            color: var(--nuxeo-selection-popup-close-button-color, #3f51b5);
           }
 
           nuxeo-user-group-permissions-table {
@@ -304,7 +308,7 @@ import '../nuxeo-sort-styles.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+              <paper-button class="dialog-dismiss-btn" dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_submitEditForm">
               [[i18n('command.save.changes')]]
@@ -1028,8 +1032,8 @@ import '../nuxeo-sort-styles.js';
     }
 
     _resultsFilter(entry) {
-      const userInGroup = this.group.memberUsers && this.group.memberUsers.indexOf(entry.id) >= 0;
-      const groupInGroup = this.group.memberGroups && this.group.memberGroups.indexOf(entry.id) >= 0;
+      const userInGroup = this.group.memberUsers && this.group.memberUsers.includes(entry.id);
+      const groupInGroup = this.group.memberGroups && this.group.memberGroups.includes(entry.id);
       return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
     }
 

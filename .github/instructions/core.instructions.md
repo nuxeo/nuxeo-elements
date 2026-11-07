@@ -40,6 +40,10 @@ Do NOT use the legacy `Polymer({…})` factory for core elements.
 - Elements: `nuxeo-<name>` (kebab-case)
 - All elements register on the `Nuxeo` global namespace
 
+## Style
+
+- Do not use `?.`, `??`, `catch { }` or other post-ES2019 syntax — Polymer lint/analyze predates it and drops elements from `analysis.json` (ESLint enforces this). Use explicit `&&` guards, `!== undefined && !== null` checks or `catch (e)` instead.
+
 ## Testing
 
 - Test files: `core/test/nuxeo-<element-name>.test.js`

@@ -440,3 +440,49 @@ suite('nuxeo-directory-checkbox', () => {
     });
   });
 });
+
+// WEBUI-482: the vocabulary widgets render their error as a coloured label, which conveys nothing
+// programmatically. Their entries are stamped from the directory, so the state belongs on the group.
+suite('vocabulary widgets aria validation state', () => {
+  const settled = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+  const assertAriaValidationState = async (widget, control) => {
+    widget.validate();
+    await settled();
+
+    const error = widget.shadowRoot.querySelector('.error');
+    expect(control.getAttribute('aria-required')).to.equal('true');
+    expect(control.getAttribute('aria-invalid')).to.equal('true');
+    expect(control.getAttribute('aria-describedby')).to.equal(error.id);
+    expect(error.id).to.be.ok;
+    expect(control.getAttribute('aria-labelledby')).to.equal('label');
+  };
+
+  test('nuxeo-directory-checkbox conveys the state on the checkbox group', async () => {
+    const checkboxes = await fixture(html`
+      <nuxeo-directory-checkbox label="Languages" required></nuxeo-directory-checkbox>
+    `);
+    expect(checkboxes.$.selector.getAttribute('role')).to.equal('group');
+
+    await assertAriaValidationState(checkboxes, checkboxes.$.selector);
+
+    checkboxes.value = ['en'];
+    checkboxes.validate();
+    await settled();
+    expect(checkboxes.$.selector.getAttribute('aria-invalid')).to.equal('false');
+    expect(checkboxes.$.selector.hasAttribute('aria-describedby')).to.be.false;
+  });
+
+  test('nuxeo-directory-radio-group conveys the state on the radio group', async () => {
+    const radioGroup = await fixture(html`
+      <nuxeo-directory-radio-group label="Language" required></nuxeo-directory-radio-group>
+    `);
+
+    await assertAriaValidationState(radioGroup, radioGroup.$.group);
+
+    radioGroup.value = 'en';
+    radioGroup.validate();
+    await settled();
+    expect(radioGroup.$.group.getAttribute('aria-invalid')).to.equal('false');
+  });
+});

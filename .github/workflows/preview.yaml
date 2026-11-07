@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened, labeled]
     branches:
       - maintenance-3.1.x
+      - 'develop-20[0-9][0-9]'
 
 permissions:
   contents: read
@@ -30,7 +31,7 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: preview.yaml
           access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
-          branch-name: maintenance-3.1.x
+          branch-name: ${{ github.base_ref }}
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
 

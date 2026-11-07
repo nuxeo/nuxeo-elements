@@ -36,6 +36,7 @@ import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import '../widgets/nuxeo-dialog.js';
+import { WidgetValidationBehavior } from '../widgets/nuxeo-widget-validation-behavior.js';
 import './data-table-column.js';
 import './data-table-column-sort.js';
 import './data-table-column-filter.js';
@@ -51,6 +52,19 @@ import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
+
+function hasDataTableColumn(node) {
+  return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
+}
+
+function hasRowDetailTemplate(node) {
+  return (
+    node.nodeType === Node.ELEMENT_NODE &&
+    node.tagName === 'TEMPLATE' &&
+    node.hasAttribute('is') &&
+    node.getAttribute('is') === 'row-detail'
+  );
+}
 
 {
   /**
@@ -102,6 +116,7 @@ import '../nuxeo-button-styles.js';
    * @appliesMixin Polymer.IronValidatableBehavior
    * @appliesMixin Nuxeo.PageProviderDisplayBehavior
    * @appliesMixin Nuxeo.DraggableListBehavior
+   * @appliesMixin Nuxeo.WidgetValidationBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-data-table/index.html
    */
@@ -112,6 +127,7 @@ import '../nuxeo-button-styles.js';
       IronValidatableBehavior,
       PageProviderDisplayBehavior,
       DraggableListBehavior,
+      WidgetValidationBehavior,
     ],
     Nuxeo.Element,
   ) {
@@ -290,10 +306,8 @@ import '../nuxeo-button-styles.js';
 
             <dom-if if="[[_isEmpty]]">
               <template>
-                <div class="emptyResult" role="rowgroup">
-                  <div role="row">
-                    <div role="cell" aria-live="polite">[[_computedEmptyLabel]]</div>
-                  </div>
+                <div class="emptyResult" role="presentation">
+                  <div role="presentation" aria-live="polite">[[_computedEmptyLabel]]</div>
                 </div>
               </template>
             </dom-if>
@@ -574,6 +588,20 @@ import '../nuxeo-button-styles.js';
       return selectAllActive && _excludedItems.length === 0;
     }
 
+    /**
+     * Polymer maps any non-null boolean attribute to `true`, so `multi-selection="false"` would
+     * otherwise enable the property and leave no way to disable it from markup (ELEMENTS-1664).
+     * Special-cased to the `multi-selection` attribute only, so every other boolean attribute keeps
+     * Polymer's default deserialization.
+     */
+    _attributeToProperty(attribute, value, type) {
+      if (!this.__serializing && attribute === 'multi-selection' && value === 'false') {
+        this.multiSelection = false;
+        return;
+      }
+      super._attributeToProperty(attribute, value, type);
+    }
+
     static get observers() {
       return ['_alignHeaderRow(items.length)', '_invalidateFieldTypeCacheFromItems(items)'];
     }
@@ -585,30 +613,17 @@ import '../nuxeo-button-styles.js';
       this._fieldTypeStats = null;
       this._fieldTypeHints = null;
       this._observer = dom(this).observeNodes((info) => {
-        const hasColumns = function(node) {
-          return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
-        };
-
-        const hasDetails = function(node) {
-          return (
-            node.nodeType === Node.ELEMENT_NODE &&
-            node.tagName === 'TEMPLATE' &&
-            node.hasAttribute('is') &&
-            node.getAttribute('is') === 'row-detail'
-          );
-        };
-
         if (this._reorderingColumns) {
           return;
         }
 
-        if (info.addedNodes.filter(hasColumns).length > 0 || info.removedNodes.filter(hasColumns).length > 0) {
-          this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
+        if (info.addedNodes.some(hasDataTableColumn) || info.removedNodes.some(hasDataTableColumn)) {
+          this.set('columns', this.$.columns.assignedNodes().filter(hasDataTableColumn));
           this._backupColumnsState();
           this.notifyResize();
         }
 
-        if (info.addedNodes.filter(hasDetails).length > 0) {
+        if (info.addedNodes.some(hasRowDetailTemplate)) {
           this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
 
           // assuming parent element is always a Polymer element.
@@ -832,7 +847,7 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Flags columns as required from the `required` widgets of the row form.
+     * Flags the table and its columns as required from the `required` widgets of the row form.
      *
      * Layouts generated for a multivalued property flag the entry widget inside
      * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
@@ -840,20 +855,29 @@ import '../nuxeo-button-styles.js';
      * Columns are matched to entry widgets by name; a table with a single column always holds the
      * entries of a scalar multivalued property, where the column name is the field label.
      *
+     * The same signal makes the table itself required: the entries are the property's value, so a
+     * table with no row leaves a required property empty. Without it the layout reported no failure
+     * at all and the save was refused with no reason given (WEBUI-180). It is kept apart from the
+     * public `required` so markup that never set it keeps rendering as before.
+     *
      * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
      * flagged and clears them once they no longer match. A `required` set explicitly on a column is
      * never cleared, since it was not derived here.
      */
     _updateRequiredColumns() {
+      const form = this.getContentChildren('#form')[0];
+      const requiredWidgets = form ? Array.from((form.shadowRoot || form).querySelectorAll('[required]')) : [];
+      const formRequired = requiredWidgets.length > 0;
+      if (this._formRequired !== formRequired) {
+        this._formRequired = formRequired;
+        this._syncAriaValidationState();
+      }
       if (!this.columns || this.columns.length === 0) {
         return;
       }
-      const form = this.getContentChildren('#form')[0];
-      const requiredNames = form
-        ? Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
-            .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
-            .filter(Boolean)
-        : [];
+      const requiredNames = requiredWidgets
+        .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+        .filter(Boolean);
       if (!this._derivedRequiredColumns) {
         this._derivedRequiredColumns = new Set();
       }
@@ -901,12 +925,10 @@ import '../nuxeo-button-styles.js';
         // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
         // so calling updateSizeForItem(item) is more reliable.
 
-        // TODO: However, since we're reusing the same items array in most cases,
-        // the _collection item map inside <iron-list> gets out of sync and
-        // that breaks things like selection and updateSizeForItem.
-        // To mitigate the issue, we'll update height of every row element.
-        // Can be optimized later if needed to update only the row that has
-        // expanded or collapsed.
+        // However, since we're reusing the same items array in most cases, the _collection
+        // item map inside <iron-list> gets out of sync and that breaks things like selection
+        // and updateSizeForItem. Every row element is therefore re-measured, rather than only
+        // the row that has expanded or collapsed.
         const itemSet = [];
         for (let i = 0; i < this.$.list._physicalItems.length; i++) {
           itemSet.push(i);
@@ -943,18 +965,13 @@ import '../nuxeo-button-styles.js';
     }
 
     _isExpanded(item, items) {
-      return items && items.indexOf(item) > -1;
+      return items && items.includes(item);
     }
 
     _isFocusable(target) {
-      // eslint-disable-next-line no-constant-condition
-      if (false) {
-        // https://nemisj.com/focusable/
-        // tabIndex is not reliable in IE.
-        return target.tabIndex >= 0;
-      }
-      // unreliable with Shadow, document.activeElement doesn't go inside
-      // the shadow root.
+      // tabIndex is not used to decide this (see https://nemisj.com/focusable/); it was never
+      // reliable in IE, and document.activeElement is unreliable with Shadow DOM because it
+      // does not go inside the shadow root.
       return (
         target.contains(dom(document.activeElement).node) ||
         target instanceof Nuxeo.DataTableCheckbox ||
@@ -1038,7 +1055,9 @@ import '../nuxeo-button-styles.js';
 
     get settings() {
       const sortOrder = Array.isArray(this.sortOrder)
-        ? this.sortOrder.map((entry) => Object.assign({}, entry))
+        ? this.sortOrder.map((entry) => {
+            return { ...entry };
+          })
         : this.sortOrder || null;
 
       const tableSettings = {
@@ -1132,7 +1151,7 @@ import '../nuxeo-button-styles.js';
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
-                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }
@@ -1424,7 +1443,7 @@ import '../nuxeo-button-styles.js';
       const result = JSON.parse(
         JSON.stringify(obj, (key, value) => {
           if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
+            if (cache.includes(value)) {
               // Circular reference found, discard key
               return;
             }
@@ -1539,7 +1558,7 @@ import '../nuxeo-button-styles.js';
 
     _toggleEditDialog(itemIndex) {
       const dtform = this.getContentChildren('#form')[0];
-      if (typeof itemIndex !== 'undefined') {
+      if (itemIndex !== undefined) {
         dtform.index = itemIndex;
         dtform.item = this._deepCopy(this.items[itemIndex]);
       } else {
@@ -1631,7 +1650,46 @@ import '../nuxeo-button-styles.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      return this.required ? this.items && this.items.length > 0 : true;
+      const valid = !this._isWidgetRequired() || !!(this.items && this.items.length > 0);
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. A required multivalued complex property
+       is empty when it has no row, so the state belongs on the table that holds them. */
+    _ariaValidationControl() {
+      return this.$.table;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. A layout generated for a multivalued
+       property flags the entry widget of the row form rather than the table (see
+       `_updateRequiredColumns`), so honour that too. */
+    _isWidgetRequired() {
+      return !!this.required || !!this._formRequired;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. */
+    _isEmptyWidgetValue() {
+      return !this.items || this.items.length === 0;
+    }
+
+    /**
+     * The name a layout should use for this table in an error summary. A generated multivalued
+     * layout leaves the table unlabelled and carries the property label on the column instead, so
+     * fall back to the required column rather than leaving the failure unnamed.
+     *
+     * @return {string} The label, empty when there is none.
+     */
+    _validationLabel() {
+      if (this.label) {
+        return this.label;
+      }
+      const column = (this.columns || []).find((c) => c.required);
+      return (column && (column.name || column.field)) || '';
     }
 
     draggableFilter(el) {
@@ -1691,7 +1749,7 @@ import '../nuxeo-button-styles.js';
 
       let minWidth = 10;
       if (column && column.minWidth != null) {
-        const parsed = parseInt(column.minWidth, 10);
+        const parsed = Number.parseInt(column.minWidth, 10);
         if (!Number.isNaN(parsed)) {
           minWidth = parsed;
         }
@@ -1732,8 +1790,7 @@ import '../nuxeo-button-styles.js';
       const { column } = this._resizing;
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
+      for (const cell of cells) {
         if (cell.column === column) {
           cell.classList.remove('resizing');
           cell.style.cursor = '';
@@ -1961,8 +2018,8 @@ import '../nuxeo-button-styles.js';
 
     _clearDropIndicators() {
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].classList.remove('drop-left', 'drop-right');
+      for (const cell of cells) {
+        cell.classList.remove('drop-left', 'drop-right');
       }
     }
 
@@ -1978,9 +2035,9 @@ import '../nuxeo-button-styles.js';
       this._clearDropIndicators();
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].column === column) {
-          cells[i].classList.add('drop-right');
+      for (const cell of cells) {
+        if (cell.column === column) {
+          cell.classList.add('drop-right');
           break;
         }
       }

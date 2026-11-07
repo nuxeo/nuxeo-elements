@@ -18,6 +18,14 @@ Generate unit test files for Nuxeo Elements Polymer components using @web/test-r
 3. Generate the test file following the patterns below
 4. Run `npm test` to verify (or `npm run test:core`, `npm run test:ui`, `npm run test:dataviz`)
 
+## Coding constraint (element source, not tests)
+
+When fixing or extending element source under `core/`, `ui/`, or `dataviz/`, **do not use optional
+chaining (`?.`), nullish coalescing (`??`), `catch { }` or other post-ES2019 syntax**. Polymer
+lint/analyze (and the Web UI Designer catalog) cannot parse it and elements disappear from
+`analysis.json`; ESLint (`no-restricted-syntax`) fails the build on it. Prefer explicit guards — e.g.
+`(obj && obj.prop)`, `!== undefined && !== null` checks or `catch (e)`.
+
 > The test runner loads one generated barrel per package (`<package>/test/load-all-tests.js`).
 > After creating a new test file, run `npm run update-test-load-all` (or `npm test`, which
 > regenerates it automatically) so the new suite is picked up.

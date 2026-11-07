@@ -150,7 +150,9 @@ import '../nuxeo-button-styles.js';
           .filter(
             (rendition) => rendition.kind !== 'nuxeo:video:conversion' && rendition.kind !== 'nuxeo:picture:conversion',
           )
-          .map((item) => Object.assign({ label: this.formatRendition(item.name) }, item));
+          .map((item) => {
+            return { label: this.formatRendition(item.name), ...item };
+          });
       }
       return [];
     }
