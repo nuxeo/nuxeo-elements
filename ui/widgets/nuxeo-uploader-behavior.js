@@ -56,7 +56,19 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
   }
   // Normalize the callback once so every emission site below is safe when the caller
   // omits the callback or passes a non-function value.
-  const cb = typeof callback === 'function' ? callback : () => {};
+  const notify = typeof callback === 'function' ? callback : () => {};
+  // Isolate the consumer callback: a `cb(...)` that throws must not abort the upload state
+  // machine. Without this, a throw from e.g. the `uploadInterrupted` emission propagates into
+  // the aggregate below and the terminal `batchFinished` / `batchFailed` event is never emitted,
+  // leaving the upload UI stuck at "in progress" -- the same hang ELEMENTS-1992 introduced this
+  // block to prevent.
+  const cb = (event) => {
+    try {
+      notify(event);
+    } catch (error) {
+      console.error(`Upload callback failed while handling "${event.type}": ${error}`);
+    }
+  };
   this._ensureBatch()
     .then(() => {
       // Capture the uploader we are about to upload against. If the batch is cancelled
@@ -100,32 +112,43 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
       // terminal batch event. This prevents callers -- notably cancelBatch() -- from tearing
       // down the batch while POST /upload/{batchId}/{index} requests are still in flight,
       // which would otherwise race and produce a server-side NPE in Batch.addFile().
-      Promise.all(uploadPromises).then((results) => {
-        if (!isActive()) {
-          // Batch was cancelled; suppress terminal events -- cancelBatch() owns the teardown.
-          return;
-        }
-        const failure = results.find((r) => !r.ok);
-        const batchId = currentUploader._batchId;
-        if (failure) {
-          cb({ type: 'batchFailed', error: failure.error, batchId });
-          return;
-        }
-        currentUploader
-          .done()
-          .then((result) => {
-            if (!isActive()) {
-              return;
-            }
-            cb({ type: 'batchFinished', batchId: result.batch._batchId });
-          })
-          .catch((error) => {
-            if (!isActive()) {
-              return;
-            }
-            cb({ type: 'batchFailed', error, batchId: currentUploader._batchId });
-          });
-      });
+      Promise.all(uploadPromises)
+        .then((results) => {
+          if (!isActive()) {
+            // Batch was cancelled; suppress terminal events -- cancelBatch() owns the teardown.
+            return;
+          }
+          const failure = results.find((r) => !r.ok);
+          const batchId = currentUploader._batchId;
+          if (failure) {
+            cb({ type: 'batchFailed', error: failure.error, batchId });
+            return;
+          }
+          currentUploader
+            .done()
+            .then((result) => {
+              if (!isActive()) {
+                return;
+              }
+              cb({ type: 'batchFinished', batchId: result.batch._batchId });
+            })
+            .catch((error) => {
+              if (!isActive()) {
+                return;
+              }
+              cb({ type: 'batchFailed', error, batchId: currentUploader._batchId });
+            });
+        })
+        .catch((error) => {
+          // This chain is detached from the outer one on purpose: the `.catch` at the bottom of
+          // `_ensureBatch()` assumes the batch was never created, which stops being true for a
+          // post-batch failure. So it needs its own terminal emission -- otherwise a rejection
+          // here escapes as an unhandled rejection and the caller never leaves "in progress".
+          if (!isActive()) {
+            return;
+          }
+          cb({ type: 'batchFailed', error, batchId: currentUploader._batchId });
+        });
     })
     .catch((error) => {
       // `_ensureBatch()` failed (e.g. `connection.batchUpload()` rejected on network / auth).
