@@ -77,7 +77,12 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         >
         </nuxeo-selectivity>
 
-        <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation
+          id="addTagOp"
+          op="Services.TagDocument"
+          input="[[document.uid]]"
+          uncancelable
+        ></nuxeo-operation>
 
         <nuxeo-operation id="removeTagOp" op="Services.UntagDocument" input="[[document.uid]]"></nuxeo-operation>
 
@@ -243,39 +248,128 @@ import { escapeHTML } from './nuxeo-selectivity.js';
 
     _addedTagHandler(entry) {
       if (this.document) {
-        this.$.addTagOp.params = { tags: entry.id };
-        this.$.addTagOp.execute().then((response) => {
-          if (!response || response.properties['nxtag:tags'].length < 0) {
+        // Pasting "a,b,c" adds one tag per token in the same tick: send them in a single request.
+        // A batch belongs to the document it was started on.
+        if (!this._addedTags || this._addedTags.uid !== this.document.uid) {
+          const batch = { uid: this.document.uid, entries: [] };
+          this._addedTags = batch;
+          queueMicrotask(() => this._addTags(batch));
+        }
+        this._addedTags.entries.push(entry);
+      }
+    }
+
+    _addTags(batch) {
+      if (this._addedTags === batch) {
+        this._addedTags = null;
+      }
+      // Discard the batch if the document changed since it was queued.
+      if (!this.document || this.document.uid !== batch.uid) {
+        return;
+      }
+      const { uid, entries } = batch;
+      this.$.addTagOp.params = { tags: entries.map((entry) => entry.id).join(',') };
+      const token = this._beginTagOp();
+      this.$.addTagOp
+        .execute()
+        .then((response) => {
+          if (!response || !response.properties || !this.document || this.document.uid !== uid) {
             return;
           }
-          const lenArr = response.properties['nxtag:tags'].length;
-          const { label } = response.properties['nxtag:tags'][lenArr - 1];
-          entry.item.displayLabel = label;
-          this.shadowRoot.querySelector('#s2').value[lenArr - 1] = label;
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.addedToDocument', label);
-          this.$.toast.open();
-          const lastSelectedItem = this.$.s2._selectivity.el.firstElementChild.querySelectorAll(
-            '.selectivity-multiple-selected-item',
-          )[lenArr - 1];
-          if (lastSelectedItem) {
-            const textNode = lastSelectedItem.childNodes[1];
-            if (textNode.nodeType === Node.TEXT_NODE) {
-              textNode.textContent = label;
+          // The server may store a cleaned label (see ELEMENTS-1721): show it on the chip of the matching tag.
+          const serverLabels = response.properties['nxtag:tags'].map((tag) => tag.label);
+          const labels = this._getStoredLabels(entries, serverLabels, this._isTagOpAlone(token));
+          entries.forEach((entry) => {
+            const label = labels.get(entry);
+            entry.item.displayLabel = label;
+            if (label !== entry.id) {
+              this._relabelSelectedItem(entry.id, label);
             }
-          }
-        });
+          });
+          this.$.toast.hide();
+          const added = entries.map((entry) => labels.get(entry));
+          this.$.toast.text =
+            added.length > 1
+              ? this.i18n('tags.multipleAddedToDocument', added.join(', '))
+              : this.i18n('tags.addedToDocument', added[0]);
+          this.$.toast.open();
+        })
+        .finally(() => this._endTagOp());
+    }
+
+    /**
+     * Tag add and remove requests are counted so that a response can tell whether another one overlapped its request.
+     */
+    _beginTagOp() {
+      this._tagOps = this._tagOps || { started: 0, settled: 0 };
+      this._tagOps.started++;
+      const { started, settled } = this._tagOps;
+      // `idle` is true when no other tag request was still pending when this one started.
+      return { started, settled, idle: started - settled === 1 };
+    }
+
+    _endTagOp() {
+      this._tagOps.settled++;
+    }
+
+    /**
+     * True when no other tag request was pending when the given one started, and none started or finished since.
+     */
+    _isTagOpAlone(token) {
+      return token.idle && this._tagOps.started === token.started && this._tagOps.settled === token.settled;
+    }
+
+    /**
+     * Returns the label the server stored for each added entry. An entry stored as-is keeps its label. When exactly one
+     * entry was not stored as-is and exactly one server label is not shown yet, that label is the one stored for it.
+     * Otherwise the pairing would be a guess (the server does not keep insertion order), so the label is left as typed.
+     * It is also left as typed when another tag request overlapped this one, or while another chip is not confirmed by
+     * the server yet, because an unseen label could then belong to another change instead.
+     */
+    _getStoredLabels(entries, serverLabels, alone) {
+      const labels = new Map(entries.map((entry) => [entry, entry.id]));
+      const shown = this.$.s2.value || [];
+      const addedIds = new Set(entries.map((entry) => entry.id));
+      if (!alone || !shown.every((id) => addedIds.has(id) || serverLabels.includes(id))) {
+        return labels;
+      }
+      const unmatched = entries.filter((entry) => !serverLabels.includes(entry.id));
+      const unseen = serverLabels.filter((label) => !shown.includes(label));
+      if (unmatched.length === 1 && unseen.length === 1) {
+        labels.set(unmatched[0], unseen[0]);
+      }
+      return labels;
+    }
+
+    _relabelSelectedItem(id, label) {
+      const value = this.$.s2.value || [];
+      const index = value.indexOf(id);
+      if (index !== -1) {
+        value[index] = label;
+      }
+      const item = Array.from(
+        this.$.s2._selectivity.el.firstElementChild.querySelectorAll('.selectivity-multiple-selected-item'),
+      ).find((el) => el.dataset.itemId === id);
+      if (item) {
+        const textNode = item.childNodes[1];
+        if (textNode.nodeType === Node.TEXT_NODE) {
+          textNode.textContent = label;
+        }
       }
     }
 
     _removedTagHandler(entry) {
       if (this.document) {
         this.$.removeTagOp.params = { tags: entry.id };
-        this.$.removeTagOp.execute().then(() => {
-          this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
-          this.$.toast.open();
-        });
+        this._beginTagOp();
+        this.$.removeTagOp
+          .execute()
+          .then(() => {
+            this.$.toast.hide();
+            this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
+            this.$.toast.open();
+          })
+          .finally(() => this._endTagOp());
       }
     }
 
