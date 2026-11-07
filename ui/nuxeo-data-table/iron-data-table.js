@@ -855,10 +855,11 @@ function hasRowDetailTemplate(node) {
      * Columns are matched to entry widgets by name; a table with a single column always holds the
      * entries of a scalar multivalued property, where the column name is the field label.
      *
-     * The same signal makes the table itself required: the entries are the property's value, so a
-     * table with no row leaves a required property empty. Without it the layout reported no failure
-     * at all and the save was refused with no reason given (WEBUI-180). It is kept apart from the
-     * public `required` so markup that never set it keeps rendering as before.
+     * For a list of scalar values the same signal makes the table itself required: the entry is the
+     * whole value, so a required entry widget means the property is required, and a table with no
+     * row leaves it empty. Without it the layout reported no failure at all and the save was refused
+     * with no reason given (WEBUI-180). It is kept apart from the public `required` so markup that
+     * never set it keeps rendering as before. See `_isWidgetRequired` for complex entries.
      *
      * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
      * flagged and clears them once they no longer match. A `required` set explicitly on a column is
@@ -867,11 +868,11 @@ function hasRowDetailTemplate(node) {
     _updateRequiredColumns() {
       const form = this.getContentChildren('#form')[0];
       const requiredWidgets = form ? Array.from((form.shadowRoot || form).querySelectorAll('[required]')) : [];
-      const formRequired = requiredWidgets.length > 0;
-      if (this._formRequired !== formRequired) {
-        this._formRequired = formRequired;
-        this._syncAriaValidationState();
-      }
+      this._formRequired = requiredWidgets.length > 0;
+      // Re-sync even when `_formRequired` is unchanged: a row form replaced by one binding complex
+      // instead of scalar entries (or back) changes whether the table is required. The sync is
+      // debounced, so calling it on every column or form change costs nothing.
+      this._syncAriaValidationState();
       if (!this.columns || this.columns.length === 0) {
         return;
       }
@@ -1666,10 +1667,17 @@ function hasRowDetailTemplate(node) {
     }
 
     /* Override method from Nuxeo.WidgetValidationBehavior. A layout generated for a multivalued
-       property flags the entry widget of the row form rather than the table (see
-       `_updateRequiredColumns`), so honour that too. */
+       scalar property flags the entry widget of the row form rather than the table (see
+       `_updateRequiredColumns`), so honour that too. For complex entries a required row field only
+       constrains each row - `{{item.question}}` being required does not make the list mandatory -
+       so only the table's own `required` applies; a list the schema declares required is still
+       rejected by the server when empty (ELEMENTS-2143). Evaluated on each call rather than cached,
+       since the row form template may not be parsed yet when the form slot first changes. */
     _isWidgetRequired() {
-      return !!this.required || !!this._formRequired;
+      if (this.required) {
+        return true;
+      }
+      return !!this._formRequired && !this._isComplexEntry(this.getContentChildren('#form')[0]);
     }
 
     /* Override method from Nuxeo.WidgetValidationBehavior. */
