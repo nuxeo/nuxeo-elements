@@ -1092,7 +1092,7 @@ function hasRowDetailTemplate(node) {
           if (!persistQuery) {
             return;
           }
-          if (column.filterValue) {
+          if (this._hasFilterValue(column.filterValue)) {
             tableSettings.columns[key].filterValue = column.filterValue;
           }
           if (column.filterExpression) {
@@ -1109,11 +1109,10 @@ function hasRowDetailTemplate(node) {
         return;
       }
 
-      if (Object.hasOwn(settings, 'persistQuerySettings')) {
-        this.persistQuerySettings = !!settings.persistQuerySettings;
-      }
-      // Settings saved before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
-      const restoreQuery = !!this.persistQuerySettings;
+      // Resolved per payload: a reused table must not apply one payload's opt-in to the next, and settings saved
+      // before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
+      this.persistQuerySettings = !!settings.persistQuerySettings;
+      const restoreQuery = this.persistQuerySettings;
 
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
@@ -1147,7 +1146,7 @@ function hasRowDetailTemplate(node) {
           }
 
           // filterValue (WEBUI-1885) - restore column filter values
-          if (restoreQuery && Object.hasOwn(colSettings, 'filterValue') && colSettings.filterValue) {
+          if (restoreQuery && this._hasFilterValue(colSettings.filterValue)) {
             this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
             if (colSettings.filterExpression) {
               this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
@@ -2066,6 +2065,10 @@ function hasRowDetailTemplate(node) {
       }
     }
 
+    _hasFilterValue(value) {
+      return value != null && value !== '' && !(Array.isArray(value) && value.length === 0);
+    }
+
     /**
      * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
      */
@@ -2077,7 +2080,7 @@ function hasRowDetailTemplate(node) {
       this._suppressFilterEvents = true;
       (this.columns || []).forEach((column, idx) => {
         const value = column.filterValue;
-        if (value == null || value.length === 0) {
+        if (!this._hasFilterValue(value)) {
           return;
         }
         changed = true;
