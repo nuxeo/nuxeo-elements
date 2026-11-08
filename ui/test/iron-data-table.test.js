@@ -2360,16 +2360,20 @@ suite('iron-data-table extras', () => {
       expect(spy.firstCall.args[0].detail).to.deep.equal({ source: 'reset' });
     });
 
-    test('does not fetch when there is nothing to clear', async () => {
+    test('does not fetch or save when there is nothing to clear', async () => {
       const el = await tableWithProvider();
       el.columns = [{ field: 'dc:title', hidden: false }];
       el.filters = [];
       el.sortOrder = [];
       el._ppSort = {};
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
 
       el._resetQuerySettings();
 
       expect(el.fetch).to.not.have.been.called;
+      expect(el.clearSelection).to.not.have.been.called;
+      expect(spy).to.not.have.been.called;
     });
 
     test('clears local state without a page provider', async () => {
