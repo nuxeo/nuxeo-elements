@@ -2106,7 +2106,10 @@ function hasRowDetailTemplate(node) {
         changed = true;
       }
 
-      if (changed && hasProvider) {
+      if (!changed) {
+        return;
+      }
+      if (hasProvider) {
         this.clearSelection();
         if (this.paginable) {
           this.nxProvider.page = 1;
