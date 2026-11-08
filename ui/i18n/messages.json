@@ -411,6 +411,7 @@
   "tableSettings.columnSettings": "Columns Settings",
   "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Reset",
+  "tableSettings.persistQuerySettings": "Persist filters and sorting between sessions",
   "tags.addedToDocument": "The tag {0} has been added to the document.",
   "tags.removedFromDocument": "The tag {0} has been removed from the document.",
   "today": "Today",

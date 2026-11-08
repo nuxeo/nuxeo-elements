@@ -299,6 +299,8 @@ function hasRowDetailTemplate(node) {
                 <nuxeo-data-table-settings
                   role="columnheader"
                   columns="{{columns}}"
+                  persist-query-settings="{{persistQuerySettings}}"
+                  on-reset-query-settings="_resetQuerySettings"
                   hidden$="[[!settingsEnabled]]"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
@@ -523,6 +525,14 @@ function hasRowDetailTemplate(node) {
         settingsEnabled: {
           type: Boolean,
           reflectToAttribute: true,
+          value: false,
+        },
+        /**
+         * If enabled, column filters and sort order are included in `settings`, so they are saved and restored
+         * between sessions along with the column layout. Users can change it from the settings dialog.
+         */
+        persistQuerySettings: {
+          type: Boolean,
           value: false,
         },
         /**
@@ -1060,10 +1070,14 @@ function hasRowDetailTemplate(node) {
           })
         : this.sortOrder || null;
 
+      const persistQuery = !!this.persistQuerySettings;
       const tableSettings = {
         columns: {},
-        sortOrder,
+        persistQuerySettings: persistQuery,
       };
+      if (persistQuery) {
+        tableSettings.sortOrder = sortOrder;
+      }
 
       if (this.columns) {
         this.columns.forEach((column, idx) => {
@@ -1075,6 +1089,9 @@ function hasRowDetailTemplate(node) {
             resized: !!column.resized,
           };
           // Persist filter state only when set, to keep saved settings compact (ELEMENTS-1966)
+          if (!persistQuery) {
+            return;
+          }
           if (column.filterValue) {
             tableSettings.columns[key].filterValue = column.filterValue;
           }
@@ -1091,6 +1108,12 @@ function hasRowDetailTemplate(node) {
       if (!settings) {
         return;
       }
+
+      if (Object.prototype.hasOwnProperty.call(settings, 'persistQuerySettings')) {
+        this.persistQuerySettings = !!settings.persistQuerySettings;
+      }
+      // Settings saved before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
+      const restoreQuery = !!this.persistQuerySettings;
 
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
@@ -1124,7 +1147,11 @@ function hasRowDetailTemplate(node) {
           }
 
           // filterValue (WEBUI-1885) - restore column filter values
-          if (Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') && colSettings.filterValue) {
+          if (
+            restoreQuery &&
+            Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') &&
+            colSettings.filterValue
+          ) {
             this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
             if (colSettings.filterExpression) {
               this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
@@ -1177,11 +1204,15 @@ function hasRowDetailTemplate(node) {
       }
 
       let appliedSortOrder = null;
-      if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
+      if (restoreQuery && Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
         // keep sortOrder as an array (default to []) when applying settings
         appliedSortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
         this.sortOrder = appliedSortOrder;
-      } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
+      } else if (
+        restoreQuery &&
+        settings.columns &&
+        Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')
+      ) {
         // backward compatibility if you ever saved it under columns
         appliedSortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
         this.sortOrder = appliedSortOrder;
@@ -2041,6 +2072,53 @@ function hasRowDetailTemplate(node) {
           break;
         }
       }
+    }
+
+    /**
+     * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
+     */
+    _resetQuerySettings() {
+      const hasProvider = !!(this._hasPageProvider && this._hasPageProvider() && this.nxProvider);
+      let changed = false;
+
+      // Clear the filters in one go rather than letting each column trigger its own fetch
+      this._suppressFilterEvents = true;
+      (this.columns || []).forEach((column, idx) => {
+        const value = column.filterValue;
+        if (value == null || value.length === 0) {
+          return;
+        }
+        changed = true;
+        this.set(`columns.${idx}.filterValue`, Array.isArray(value) ? [] : '');
+        const filterBy = column.filterBy || column.field;
+        if (hasProvider && filterBy && this.nxProvider.params) {
+          delete this.nxProvider.params[filterBy];
+        }
+      });
+      this._suppressFilterEvents = false;
+      if (this.filters && this.filters.length > 0) {
+        this.set('filters', []);
+        changed = true;
+      }
+
+      if (Array.isArray(this.sortOrder) && this.sortOrder.length > 0) {
+        this.sortOrder = [];
+        changed = true;
+      }
+      if (hasProvider && this._ppSort && Object.keys(this._ppSort).length > 0) {
+        this._ppSort = {};
+        this.nxProvider.sort = {};
+        changed = true;
+      }
+
+      if (changed && hasProvider) {
+        this.clearSelection();
+        if (this.paginable) {
+          this.nxProvider.page = 1;
+        }
+        this.fetch();
+      }
+      this._fireSettingsChanged({ source: 'reset' });
     }
 
     _fireSettingsChanged(detail = {}) {
