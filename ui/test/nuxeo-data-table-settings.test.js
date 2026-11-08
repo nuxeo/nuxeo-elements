@@ -117,6 +117,61 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
+  suite('_onResetClick (ELEMENTS-2112)', () => {
+    test('should reset column visibility and request a query reset', () => {
+      element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
+      const spy = sinon.spy();
+      element.addEventListener('reset-query-settings', spy);
+
+      element._onResetClick();
+
+      expect(element.columns[0].hidden).to.be.false;
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should be wired to the Reset button', () => {
+      const spy = sinon.spy();
+      element.addEventListener('reset-query-settings', spy);
+      element.$$('paper-button.secondary').click();
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('should NOT request a query reset when closing with all columns hidden', () => {
+      element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
+      const spy = sinon.spy();
+      element.addEventListener('reset-query-settings', spy);
+
+      element._onSettingsClosed();
+
+      expect(spy).to.not.have.been.called;
+    });
+  });
+
+  suite('persistQuerySettings (ELEMENTS-2112)', () => {
+    test('should default to unchecked', () => {
+      expect(element.persistQuerySettings).to.be.false;
+      expect(element.$$('#persistQuery').checked).to.be.false;
+    });
+
+    test('should reflect the property on the checkbox', async () => {
+      element.persistQuerySettings = true;
+      await new Promise((r) => setTimeout(r, 0));
+      expect(element.$$('#persistQuery').checked).to.be.true;
+    });
+
+    test('should update the property and dispatch settings-changed on change', () => {
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+
+      element._onPersistQueryChange({ target: { checked: true } });
+
+      expect(element.persistQuerySettings).to.be.true;
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].bubbles).to.be.true;
+      expect(spy.firstCall.args[0].composed).to.be.true;
+    });
+  });
+
   suite('canChangeVisibility', () => {
     test('should return true when column is not alwaysVisible', () => {
       expect(element.canChangeVisibility({ name: 'Modified', alwaysVisible: false })).to.be.true;
