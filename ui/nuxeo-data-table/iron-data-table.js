@@ -1109,7 +1109,7 @@ function hasRowDetailTemplate(node) {
         return;
       }
 
-      if (Object.prototype.hasOwnProperty.call(settings, 'persistQuerySettings')) {
+      if (Object.hasOwn(settings, 'persistQuerySettings')) {
         this.persistQuerySettings = !!settings.persistQuerySettings;
       }
       // Settings saved before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
@@ -1147,11 +1147,7 @@ function hasRowDetailTemplate(node) {
           }
 
           // filterValue (WEBUI-1885) - restore column filter values
-          if (
-            restoreQuery &&
-            Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') &&
-            colSettings.filterValue
-          ) {
+          if (restoreQuery && Object.hasOwn(colSettings, 'filterValue') && colSettings.filterValue) {
             this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
             if (colSettings.filterExpression) {
               this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
@@ -1204,15 +1200,11 @@ function hasRowDetailTemplate(node) {
       }
 
       let appliedSortOrder = null;
-      if (restoreQuery && Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
+      if (restoreQuery && Object.hasOwn(settings, 'sortOrder')) {
         // keep sortOrder as an array (default to []) when applying settings
         appliedSortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
         this.sortOrder = appliedSortOrder;
-      } else if (
-        restoreQuery &&
-        settings.columns &&
-        Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')
-      ) {
+      } else if (restoreQuery && settings.columns && Object.hasOwn(settings.columns, 'sortOrder')) {
         // backward compatibility if you ever saved it under columns
         appliedSortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
         this.sortOrder = appliedSortOrder;
