@@ -2136,6 +2136,193 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
+  // persistQuerySettings / _resetQuerySettings (ELEMENTS-2112)
+  // ------------------------------------------------------------------
+  suite('persistQuerySettings (ELEMENTS-2112)', () => {
+    const queryColumns = () => [
+      { field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'test1', filterExpression: '$term*' },
+    ];
+
+    test('is disabled by default', async () => {
+      const el = await newTable();
+      expect(el.persistQuerySettings).to.be.false;
+    });
+
+    test('omits filters and sort order from settings when disabled', async () => {
+      const el = await newTable();
+      el.columns = queryColumns();
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+
+      const s = el.settings;
+
+      expect(s.persistQuerySettings).to.be.false;
+      expect(s).to.not.have.property('sortOrder');
+      expect(s.columns['dc:title']).to.not.have.property('filterValue');
+      expect(s.columns['dc:title']).to.not.have.property('filterExpression');
+      expect(s.columns['dc:title']).to.include({ hidden: false, order: 0 });
+    });
+
+    test('includes filters and sort order in settings when enabled', async () => {
+      const el = await newTable({ persistQuerySettings: true });
+      el.columns = queryColumns();
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+
+      const s = el.settings;
+
+      expect(s.persistQuerySettings).to.be.true;
+      expect(s.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
+      expect(s.columns['dc:title']).to.include({ filterValue: 'test1', filterExpression: '$term*' });
+    });
+
+    test('restores the flag from settings', async () => {
+      const el = await newTable();
+      el.columns = [];
+
+      el.settings = { columns: {}, persistQuerySettings: true };
+      expect(el.persistQuerySettings).to.be.true;
+
+      el.settings = { columns: {}, persistQuerySettings: false };
+      expect(el.persistQuerySettings).to.be.false;
+    });
+
+    test('does not restore filters or sort saved without the flag', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'test1', filterExpression: '$term*' } },
+        sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+      };
+
+      expect(setSpy).to.not.have.been.calledWith('columns.0.filterValue');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(setSpy).to.have.been.calledWith('columns.0.hidden', false);
+      setSpy.restore();
+    });
+
+    test('restores filters and sort when the saved flag is enabled', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'test1' } },
+        sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+        persistQuerySettings: true,
+      };
+
+      expect(setSpy).to.have.been.calledWith('columns.0.filterValue', 'test1');
+      expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
+      setSpy.restore();
+    });
+  });
+
+  suite('_resetQuerySettings (ELEMENTS-2112)', () => {
+    async function tableWithProvider() {
+      const el = await newTable();
+      el.columns = [
+        { field: 'dc:title', filterBy: 'title', hidden: false, filterValue: 'test1' },
+        { field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false, filterValue: ['Administrator'] },
+        { field: 'dc:modified', hidden: false },
+      ];
+      el.filters = [
+        { path: 'title', value: 'test1' },
+        { path: 'dc_creator_agg', value: ['Administrator'] },
+      ];
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+      const provider = document.createElement('div');
+      provider.params = { title: 'test1*', dc_creator_agg: ['Administrator'], ecm_parentId: 'abc' };
+      provider.sort = { 'dc:title': 'desc' };
+      provider.page = 3;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      el._ppSort = { 'dc:title': 'desc' };
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'clearSelection');
+      return el;
+    }
+
+    test('clears column filters, filters list, sort order and provider query, then fetches once', async () => {
+      const el = await tableWithProvider();
+      el.paginable = true;
+
+      el._resetQuerySettings();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.columns[1].filterValue).to.deep.equal([]);
+      expect(el.filters).to.deep.equal([]);
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(el.nxProvider.sort).to.deep.equal({});
+      expect(el.nxProvider.params).to.deep.equal({ ecm_parentId: 'abc' });
+      expect(el.nxProvider.page).to.equal(1);
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(el._suppressFilterEvents).to.be.false;
+    });
+
+    test('fires settings-changed so the cleared state is saved', async () => {
+      const el = await tableWithProvider();
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
+
+      el._resetQuerySettings();
+
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail).to.deep.equal({ source: 'reset' });
+    });
+
+    test('does not fetch when there is nothing to clear', async () => {
+      const el = await tableWithProvider();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      el.filters = [];
+      el.sortOrder = [];
+      el._ppSort = {};
+
+      el._resetQuerySettings();
+
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('clears local state without a page provider', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, filterValue: 'test1' }];
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      const fetchSpy = sinon.spy(el, 'fetch');
+
+      el._resetQuerySettings();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(fetchSpy).to.not.have.been.called;
+    });
+
+    test('is triggered by the settings dialog Reset button', async () => {
+      const el = await newTable();
+      const stub = sinon.stub(el, '_resetQuerySettings');
+      const settings = el.querySelector('nuxeo-data-table-settings');
+      settings.columns = [];
+
+      settings._onResetClick();
+
+      expect(stub).to.have.been.calledOnce;
+    });
+
+    test('binds the settings dialog checkbox to persistQuerySettings', async () => {
+      const el = await newTable();
+      const settings = el.querySelector('nuxeo-data-table-settings');
+
+      settings._onPersistQueryChange({ target: { checked: true } });
+      expect(el.persistQuerySettings).to.be.true;
+
+      el.persistQuerySettings = false;
+      expect(settings.persistQuerySettings).to.be.false;
+    });
+  });
+
+  // ------------------------------------------------------------------
   // _fireSettingsChanged
   // ------------------------------------------------------------------
   suite('_fireSettingsChanged', () => {
