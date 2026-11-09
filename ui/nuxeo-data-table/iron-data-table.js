@@ -529,7 +529,8 @@ function hasRowDetailTemplate(node) {
         },
         /**
          * If enabled, column filters and sort order are included in `settings`, so they are saved and restored
-         * between sessions along with the column layout. Users can change it from the settings dialog.
+         * along with the column layout. When disabled they only last while the view stays open. Users can change it
+         * from the settings dialog.
          */
         persistQuerySettings: {
           type: Boolean,
