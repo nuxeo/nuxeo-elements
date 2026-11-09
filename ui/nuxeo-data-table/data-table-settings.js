@@ -114,7 +114,7 @@ import '../nuxeo-button-styles.js';
           notify: true,
         },
         /**
-         * Whether column filters and sort order are kept between sessions.
+         * Whether column filters and sort order are saved with the table settings.
          */
         persistQuerySettings: {
           type: Boolean,
