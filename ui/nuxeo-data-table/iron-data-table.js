@@ -1112,13 +1112,17 @@ function hasRowDetailTemplate(node) {
 
       // Resolved per payload: a reused table must not apply one payload's opt-in to the next, and settings saved
       // before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
+      const wasPersisted = !!this.persistQuerySettings;
       this.persistQuerySettings = !!settings.persistQuerySettings;
       const restoreQuery = this.persistQuerySettings;
 
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
       let needsFetch = false;
-      if (!restoreQuery && this._clearQueryState()) {
+      // Only on a persisted -> non-persisted switch: the filters/sort then came from the previous payload. A
+      // non-persisted payload following another one is typically the echo of a layout save (resize, reorder), and
+      // must not wipe the filters and sort the user set during this session.
+      if (wasPersisted && !restoreQuery && this._clearQueryState()) {
         // A reused table must not keep the previous payload's filters/sort (ELEMENTS-2112)
         needsFetch = true;
       }
