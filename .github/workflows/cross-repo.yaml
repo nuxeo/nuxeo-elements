@@ -45,7 +45,6 @@ jobs:
           branch-name: ${{ github.base_ref }}
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
-            sauce_labs: false
             skip_ftests: false
             skip_a11y: false
             skip_unit_tests: false

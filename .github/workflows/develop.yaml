@@ -31,7 +31,6 @@ jobs:
       contents: read
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
   # Builds Storybook but never deploys it: the deploy step requires a non-pull_request event
   # AND a release branch name, and this runs on a dev branch.
