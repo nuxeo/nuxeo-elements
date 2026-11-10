@@ -1125,6 +1125,9 @@ function hasRowDetailTemplate(node) {
       if (wasPersisted && !restoreQuery && this._clearQueryState()) {
         // A reused table must not keep the previous payload's filters/sort (ELEMENTS-2112)
         needsFetch = true;
+        if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+          this._rewindResults();
+        }
       }
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
@@ -2121,8 +2124,12 @@ function hasRowDetailTemplate(node) {
         changed = true;
       }
       if (hasProvider && this._ppSort && Object.keys(this._ppSort).length > 0) {
+        // Only drop the provider sort when it is still the one this table applied: a destination can already have
+        // set its own default (e.g. `ecm:pos` for an Orderable folder), which must survive the cleanup
+        if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(this._ppSort)) {
+          this.nxProvider.sort = {};
+        }
         this._ppSort = {};
-        this.nxProvider.sort = {};
         changed = true;
       }
       return changed;
@@ -2136,13 +2143,21 @@ function hasRowDetailTemplate(node) {
         return;
       }
       if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
-        this.clearSelection();
-        if (this.paginable) {
-          this.nxProvider.page = 1;
-        }
+        this._rewindResults();
         this.fetch();
       }
       this._fireSettingsChanged({ source: 'reset' });
+    }
+
+    /**
+     * Drops the selection and goes back to the first page, so a reload after the query changed does not append
+     * the new results after the previous ones (ELEMENTS-2112).
+     */
+    _rewindResults() {
+      this.clearSelection();
+      if (this.paginable) {
+        this.nxProvider.page = 1;
+      }
     }
 
     _fireSettingsChanged(detail = {}) {
