@@ -358,8 +358,8 @@ import './nuxeo-user-group-formatter.js';
       return typeof id === 'string' ? this._entityCache.get(this._cacheKey(id)) : undefined;
     }
 
-    _bareId(id) {
-      return this.prefixed ? id.replace(/^(user|group):/, '') : id;
+    _bareId(id, prefixed = this.prefixed) {
+      return prefixed ? id.replace(/^(user|group):/, '') : id;
     }
 
     _entityPaths(id) {
@@ -368,11 +368,11 @@ import './nuxeo-user-group-formatter.js';
     }
 
     // REST group entities may only expose `groupname`: make sure the entity carries the id it was requested with.
-    _normalizeEntity(entity, id) {
+    _normalizeEntity(entity, id, prefixed = this.prefixed) {
       const normalized = entity.id
         ? entity
-        : { ...entity, id: entity.groupname || entity.username || this._bareId(id) };
-      return this.prefixed ? { ...normalized, prefixed_id: id } : normalized;
+        : { ...entity, id: entity.groupname || entity.username || this._bareId(id, prefixed) };
+      return prefixed ? { ...normalized, prefixed_id: id } : normalized;
     }
 
     // `nuxeo-resource` aborts the previous request and reads `path` asynchronously, so lookups must never overlap.
@@ -380,15 +380,19 @@ import './nuxeo-user-group-formatter.js';
     // retried on a later initialization instead of being cached.
     _fetchEntity(id) {
       const resource = this.$.entityResource;
+      // Capture the context before queuing: it must match the cache key even if settings change while waiting.
+      const paths = this._entityPaths(id);
+      const { prefixed } = this;
       const lookup = async () => {
         let transient = false;
-        for (const path of this._entityPaths(id)) {
+        for (const path of paths) {
           resource.path = path;
           try {
             const entity = await resource.get();
             if (entity) {
-              return this._normalizeEntity(entity, id);
+              return this._normalizeEntity(entity, id, prefixed);
             }
+            transient = true;
           } catch (error) {
             if (!error || error.status !== 404) {
               transient = true;
