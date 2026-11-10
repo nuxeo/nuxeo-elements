@@ -607,8 +607,51 @@ suite('nuxeo-user-suggestion extras', () => {
       });
     });
 
+    [503, null, new Error('network failure')].forEach((failure) => {
+      test(`a transient user failure (${String(
+        failure,
+      )}) does not fall through to a group of the same id`, async () => {
+        const widget = await fixture(
+          html`
+            <nuxeo-user-suggestion></nuxeo-user-suggestion>
+          `,
+        );
+        const group = { 'entity-type': 'group', id: 'support', grouplabel: 'Support team' };
+        const paths = [];
+        let userAvailable = false;
+        sinon.stub(widget.$.entityResource, 'get').callsFake(() => {
+          const { path } = widget.$.entityResource;
+          paths.push(path);
+          if (path === 'user/support') {
+            if (userAvailable) {
+              return Promise.resolve({ ...jdoe, id: 'support' });
+            }
+            if (failure === null) {
+              return Promise.resolve(null);
+            }
+            return Promise.reject(typeof failure === 'number' ? { status: failure } : failure);
+          }
+          return Promise.resolve(group);
+        });
+        widget.value = 'support';
+        await timePasses(100);
+        expect(paths).to.deep.equal(['user/support']);
+        expect(labels(widget)).to.deep.equal(['support']);
+        expect(widget._entityCache.has(widget._cacheKey('support'))).to.be.false;
+        userAvailable = true;
+        widget.value = '';
+        widget.value = 'support';
+        await timePasses(100);
+        expect(labels(widget)).to.deep.equal(['John Doe']);
+      });
+    });
+
     test('a 404 followed by a transient failure is not cached as missing', async () => {
-      const widget = await fixture(html`<nuxeo-user-suggestion></nuxeo-user-suggestion>`);
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion></nuxeo-user-suggestion>
+        `,
+      );
       const get = sinon.stub(widget.$.entityResource, 'get');
       get.onCall(0).rejects({ status: 404 });
       get.onCall(1).rejects({ status: 503 });
