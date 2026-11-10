@@ -453,8 +453,9 @@ import './nuxeo-user-group-formatter.js';
       (Array.isArray(data) ? data : [data]).forEach((item) => {
         // dropdown results are wrapped by selectivity as { id, text, item: entity }
         const entity = item && item.item ? item.item : item;
-        // suggestion results may only carry `type` (USER_TYPE / GROUP_TYPE): keep any object, not just REST entities
-        if (entity && typeof entity === 'object') {
+        // suggestion results may only carry `type` (USER_TYPE / GROUP_TYPE): keep any object, not just REST entities.
+        // ID-only placeholders (see `_resolveEntry`) are not kept: the cached entity replaces them.
+        if (entity && typeof entity === 'object' && !this._isPlaceholder(entity)) {
           current.set(this._idFunction(entity), entity);
         }
       });
@@ -462,7 +463,9 @@ import './nuxeo-user-group-formatter.js';
         if (typeof id !== 'string') {
           return id; // already an entity
         }
-        return this._cachedEntity(id) || current.get(id) || id;
+        // an entity resolved in the current selection wins over a cached one of the same id (e.g. a group picked
+        // from the dropdown while a user with that id is cached)
+        return current.get(id) || this._cachedEntity(id) || id;
       };
       const hydrated = Array.isArray(value) ? value.map(hydrate) : hydrate(value);
       this._hydrating = true;
@@ -471,6 +474,10 @@ import './nuxeo-user-group-formatter.js';
       } finally {
         this._hydrating = false;
       }
+    }
+
+    _isPlaceholder(entity) {
+      return !entity['entity-type'] && !entity.type && !entity.properties && entity.displayLabel === entity.id;
     }
 
     _idFunction(item) {

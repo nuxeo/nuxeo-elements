@@ -492,6 +492,34 @@ suite('nuxeo-user-suggestion extras', () => {
       await timePasses(200);
       expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
     });
+    test('a group picked during a pending lookup wins over a cached user with the same id', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple></nuxeo-user-suggestion>
+        `,
+      );
+      const user = { ...jdoe, id: 'support' };
+      const group = { 'entity-type': 'group', id: 'support', groupname: 'support', grouplabel: 'Support team' };
+      let finishSlow;
+      sinon.stub(widget.$.entityResource, 'get').callsFake(() => {
+        const { path } = widget.$.entityResource;
+        if (path === 'user/slow') {
+          return new Promise((resolve) => {
+            finishSlow = () => resolve({ ...bmartin, id: 'slow' });
+          });
+        }
+        return Promise.resolve(user);
+      });
+      widget.value = ['support'];
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['John Doe']);
+      widget.value = ['slow'];
+      await timePasses(10);
+      widget.$.s2._selectivity.add({ id: 'support', text: 'Support team', item: group });
+      finishSlow();
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['Bob Martin', 'Support team']);
+    });
     test('changing search-type does not reuse an entity of the other type', async () => {
       const widget = await fixture(
         html`
