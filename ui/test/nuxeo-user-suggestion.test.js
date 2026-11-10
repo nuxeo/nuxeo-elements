@@ -283,7 +283,9 @@ suite('nuxeo-user-suggestion extras', () => {
               reject(new Error('aborted'));
             } else if (typeof entity === 'number') {
               reject({ status: entity, message: 'error' });
-            } else if (entity['entity-type'] && entity['entity-type'] !== type) {
+            } else if (entity instanceof Error) {
+              reject(entity);
+            } else if (entity && entity['entity-type'] && entity['entity-type'] !== type) {
               reject({ status: 404, message: 'not found' });
             } else {
               resolve(entity);
@@ -511,6 +513,118 @@ suite('nuxeo-user-suggestion extras', () => {
       expect(widget.$.entityResource.path).to.equal('group/support');
       expect(labels(widget)).to.deep.equal(['Support team']);
     });
+    ['searchType', 'params.searchType'].forEach((property) => {
+      test(`queued lookups keep their original ${property}`, async () => {
+        const widget = await fixture(
+          html`
+            <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+          `,
+        );
+        const user = { ...jdoe, id: 'support' };
+        const group = { 'entity-type': 'group', id: 'support', grouplabel: 'Support team' };
+        widget.params = {};
+        const paths = [];
+        let finishFirst;
+        const get = sinon.stub(widget.$.entityResource, 'get').callsFake(() => {
+          const { path } = widget.$.entityResource;
+          paths.push(path);
+          if (path === 'user/jdoe') {
+            return new Promise((resolve) => {
+              finishFirst = () => resolve(jdoe);
+            });
+          }
+          return Promise.resolve(path === 'user/support' ? user : group);
+        });
+        widget.value = ['jdoe', 'support'];
+        await timePasses(0);
+        expect(finishFirst).to.be.a('function');
+        widget.set(property, 'GROUP_TYPE');
+        widget.value = ['support'];
+        await timePasses(0);
+        finishFirst();
+        await timePasses(100);
+        expect(paths).to.deep.equal(['user/jdoe', 'user/support', 'group/support']);
+        expect(labels(widget)).to.deep.equal(['Support team']);
+        widget.set(property, 'USER_TYPE');
+        widget.value = [];
+        widget.value = ['support'];
+        await timePasses(50);
+        expect(labels(widget)).to.deep.equal(['John Doe']);
+        expect(get.callCount).to.equal(3);
+        expect(widget._pendingIds.size).to.equal(0);
+      });
+    });
+
+    test('an in-flight response keeps its original prefixed normalization', async () => {
+      const widget = await fixture(
+        html`
+          <nuxeo-user-suggestion multiple prefixed search-type="GROUP_TYPE"></nuxeo-user-suggestion>
+        `,
+      );
+      let finish;
+      sinon.stub(widget.$.entityResource, 'get').callsFake(
+        () =>
+          new Promise((resolve) => {
+            finish = () => resolve({ 'entity-type': 'group', grouplabel: 'Support team' });
+          }),
+      );
+      widget.value = ['group:support'];
+      await timePasses(0);
+      const key = widget._cacheKey('group:support');
+      widget.prefixed = false;
+      widget.value = [];
+      finish();
+      await timePasses(50);
+      expect(widget._entityCache.get(key)).to.include({ id: 'support', prefixed_id: 'group:support' });
+      widget.prefixed = true;
+      widget.value = ['group:support'];
+      await timePasses(50);
+      expect(labels(widget)).to.deep.equal(['Support team']);
+      expect(widget._pendingIds.size).to.equal(0);
+    });
+
+    [401, 403, 500, new Error('network failure'), new Error('aborted'), null, undefined].forEach((failure) => {
+      test(`lookup failure ${String(failure)} remains retryable and does not block the queue`, async () => {
+        const widget = await fixture(
+          html`
+            <nuxeo-user-suggestion multiple search-type="USER_TYPE"></nuxeo-user-suggestion>
+          `,
+        );
+        const entities = { jdoe: failure, bmartin };
+        const get = stubGet(widget, entities);
+        widget.value = ['jdoe', 'bmartin'];
+        await timePasses(100);
+        expect(labels(widget)).to.deep.equal(['jdoe', 'Bob Martin']);
+        expect(widget._entityCache.has(widget._cacheKey('jdoe'))).to.be.false;
+        expect(widget._pendingIds.size).to.equal(0);
+        expect(get.callCount).to.equal(2);
+        entities.jdoe = jdoe;
+        widget.value = [];
+        widget.value = ['jdoe', 'bmartin'];
+        await timePasses(100);
+        expect(labels(widget)).to.deep.equal(['John Doe', 'Bob Martin']);
+        expect(get.callCount).to.equal(3);
+      });
+    });
+
+    test('a 404 followed by a transient failure is not cached as missing', async () => {
+      const widget = await fixture(html`<nuxeo-user-suggestion></nuxeo-user-suggestion>`);
+      const get = sinon.stub(widget.$.entityResource, 'get');
+      get.onCall(0).rejects({ status: 404 });
+      get.onCall(1).rejects({ status: 503 });
+      get.onCall(2).resolves(jdoe);
+      widget.value = 'jdoe';
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['jdoe']);
+      expect(widget._entityCache.has(widget._cacheKey('jdoe'))).to.be.false;
+      expect(widget._pendingIds.size).to.equal(0);
+      widget.value = '';
+      widget.value = 'jdoe';
+      await timePasses(100);
+      expect(labels(widget)).to.deep.equal(['John Doe']);
+      expect(get.callCount).to.equal(3);
+    });
+
     test('prefixed mixed entity and id values resolve the id', async () => {
       const widget = await fixture(
         html`
