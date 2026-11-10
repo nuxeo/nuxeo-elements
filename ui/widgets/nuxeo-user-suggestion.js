@@ -384,23 +384,23 @@ import './nuxeo-user-group-formatter.js';
       const paths = this._entityPaths(id);
       const { prefixed } = this;
       const lookup = async () => {
-        let transient = false;
         for (const path of paths) {
           resource.path = path;
+          let entity;
           try {
-            const entity = await resource.get();
-            if (entity) {
-              return this._normalizeEntity(entity, id, prefixed);
-            }
-            transient = true;
+            entity = await resource.get();
           } catch (error) {
-            if (!error || error.status !== 404) {
-              transient = true;
+            if (error && error.status === 404) {
+              // confirmed missing: only now try the next entity type
+              continue;
             }
+            // transient failure: never fall through to another type, it could return an unrelated entity
+            throw error || new Error(`Unable to resolve ${id}`);
           }
-        }
-        if (transient) {
-          throw new Error(`Unable to resolve ${id}`);
+          if (!entity) {
+            throw new Error(`Unable to resolve ${id}`);
+          }
+          return this._normalizeEntity(entity, id, prefixed);
         }
         return null;
       };
