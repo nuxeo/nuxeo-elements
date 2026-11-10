@@ -16,18 +16,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
+import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-textarea.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 
 {
   /**
    * An element for generic textarea input in forms
    *
+   * @appliesMixin Polymer.IronFormElementBehavior
+   * @appliesMixin Polymer.IronValidatableBehavior
+   * @appliesMixin Nuxeo.WidgetValidationBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-textarea/index.html
    */
-  class Textarea extends Nuxeo.Element {
+  class Textarea extends mixinBehaviors(
+    [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
         <style>
@@ -61,6 +71,10 @@ import '@polymer/paper-input/paper-textarea.js';
 
           label {
             @apply --nuxeo-label;
+          }
+
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
         </style>
 
@@ -186,7 +200,13 @@ import '@polymer/paper-input/paper-textarea.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      return this.$.paperTextarea.validate();
+      const valid = this.$.paperTextarea.validate();
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
     }
 
     ready() {
@@ -201,6 +221,18 @@ import '@polymer/paper-input/paper-textarea.js';
       }
       this._syncNativeTextareaAriaLabel();
       this._syncNativeTextareaAriaState();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-textarea signals the error with colour
+       and a thicker underline only, so the state has to reach the native textarea it wraps. */
+    _ariaValidationControl() {
+      return this._getNativeTextarea();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-textarea already points the textarea at
+       its own paper-input-error, so we must not replace that reference. */
+    _ariaValidationMessageElement() {
+      return null;
     }
 
     _computeAriaLabel(label, placeholder) {
