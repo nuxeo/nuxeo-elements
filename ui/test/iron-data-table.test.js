@@ -2298,6 +2298,30 @@ suite('iron-data-table extras', () => {
         expectCleared(el);
       });
 
+      test('goes back to the first page and clears the selection when the payload clears the query', async () => {
+        const el = await filteredTable();
+        el.paginable = true;
+        el.nxProvider.page = 4;
+        sinon.stub(el, 'clearSelection');
+
+        el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.nxProvider.page).to.equal(1);
+        expect(el.clearSelection).to.have.been.calledOnce;
+        expect(el.fetch).to.have.been.calledOnce;
+      });
+
+      test('keeps a provider sort set by the destination while clearing the old table sort', async () => {
+        const el = await filteredTable();
+        el.nxProvider.sort = { 'ecm:pos': 'ASC' };
+
+        el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.sortOrder).to.deep.equal([]);
+        expect(el._ppSort).to.deep.equal({});
+        expect(el.nxProvider.sort).to.deep.equal({ 'ecm:pos': 'ASC' });
+      });
+
       test('keeps session filters and sort when an opted-out payload echoes a layout save', async () => {
         const el = await filteredTable();
         el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
