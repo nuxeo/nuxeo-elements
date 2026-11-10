@@ -2298,6 +2298,34 @@ suite('iron-data-table extras', () => {
         expectCleared(el);
       });
 
+      test('keeps session filters and sort when an opted-out payload echoes a layout save', async () => {
+        const el = await filteredTable();
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+        el.fetch.resetHistory();
+        el.set('columns.0.filterValue', 'session');
+        el.filters = [{ path: 'title', value: 'session' }];
+        el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+        el.nxProvider.params.title = 'session';
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false, width: '120px' } } };
+
+        expect(el.columns[0].filterValue).to.equal('session');
+        expect(el.filters).to.have.lengthOf(1);
+        expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'asc' }]);
+        expect(el.nxProvider.params.title).to.equal('session');
+        expect(el.fetch).to.not.have.been.called;
+      });
+
+      test('keeps session filters when the dialog turns persistence off and the save echoes back', async () => {
+        const el = await filteredTable();
+        el.persistQuerySettings = false; // settings dialog checkbox
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.columns[0].filterValue).to.equal('hello');
+        expect(el.nxProvider.params.title).to.equal('hello');
+      });
+
       test('replaces the previous filters when the next payload also opts in', async () => {
         const el = await filteredTable();
 
