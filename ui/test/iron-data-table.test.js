@@ -2246,6 +2246,79 @@ suite('iron-data-table extras', () => {
       setSpy.restore();
     });
 
+    suite('reusing a table across payloads', () => {
+      async function filteredTable() {
+        const el = await newTable();
+        el.columns = [{ field: 'dc:title', filterBy: 'title', hidden: false, name: 'Title' }];
+        el.filters = [];
+        const provider = document.createElement('div');
+        provider.params = { ecm_parentId: 'abc' };
+        provider.sort = {};
+        provider.auto = false;
+        sinon.stub(el, '_nxProviderChanged');
+        el.nxProvider = provider;
+        sinon.stub(el, '_hasPageProvider').returns(true);
+        sinon.stub(el, 'notifyResize');
+        sinon.stub(el, 'fetch');
+        el.settings = {
+          persistQuerySettings: true,
+          columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
+          sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+        };
+        expect(provider.params.title).to.equal('hello');
+        el.fetch.resetHistory();
+        return el;
+      }
+
+      const expectCleared = (el) => {
+        expect(el.columns[0].filterValue).to.equal('');
+        expect(el.filters).to.deep.equal([]);
+        expect(el.sortOrder).to.deep.equal([]);
+        expect(el._ppSort).to.deep.equal({});
+        expect(el.nxProvider.sort).to.deep.equal({});
+        expect(el.nxProvider.params).to.deep.equal({ ecm_parentId: 'abc' });
+        expect(el.fetch).to.have.been.calledOnce;
+      };
+
+      test('clears the previous filters and sort when the next payload opts out', async () => {
+        const el = await filteredTable();
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.persistQuerySettings).to.be.false;
+        expectCleared(el);
+      });
+
+      test('clears the previous filters and sort when the next payload is legacy', async () => {
+        const el = await filteredTable();
+
+        el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'legacy' } }, sortOrder: [] };
+
+        expect(el.persistQuerySettings).to.be.false;
+        expectCleared(el);
+      });
+
+      test('replaces the previous filters when the next payload also opts in', async () => {
+        const el = await filteredTable();
+
+        el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'other' } } };
+
+        expect(el.nxProvider.params.title).to.equal('other');
+        expect(el.filters).to.have.lengthOf(1);
+        expect(el.filters[0].value).to.equal('other');
+      });
+
+      test('does not fetch for an opted-out payload when nothing was filtered', async () => {
+        const el = await filteredTable();
+        el.settings = { columns: {} };
+        el.fetch.resetHistory();
+
+        el.settings = { columns: {} };
+
+        expect(el.fetch).to.not.have.been.called;
+      });
+    });
+
     test('does not save empty filter values', async () => {
       const el = await newTable({ persistQuerySettings: true });
       el.columns = [

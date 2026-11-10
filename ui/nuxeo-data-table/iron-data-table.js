@@ -1118,6 +1118,10 @@ function hasRowDetailTemplate(node) {
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
       let needsFetch = false;
+      if (!restoreQuery && this._clearQueryState()) {
+        // A reused table must not keep the previous payload's filters/sort (ELEMENTS-2112)
+        needsFetch = true;
+      }
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
         // avoid firing many fetches that may abort each other (WEBUI-1885)
@@ -2071,28 +2075,39 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
+     * Clears the column filters, the provider filter params and the sort order without reloading.
+     * Returns true when something was cleared (ELEMENTS-2112).
      */
-    _resetQuerySettings() {
+    _clearQueryState() {
       const hasProvider = !!(this._hasPageProvider && this._hasPageProvider() && this.nxProvider);
       let changed = false;
 
       // Clear the filters in one go rather than letting each column trigger its own fetch
       this._suppressFilterEvents = true;
-      (this.columns || []).forEach((column, idx) => {
-        const value = column.filterValue;
-        if (!this._hasFilterValue(value)) {
-          return;
-        }
-        changed = true;
-        this.set(`columns.${idx}.filterValue`, Array.isArray(value) ? [] : '');
-        const filterBy = column.filterBy || column.field;
-        if (hasProvider && filterBy && this.nxProvider.params) {
-          delete this.nxProvider.params[filterBy];
-        }
-      });
-      this._suppressFilterEvents = false;
+      try {
+        (this.columns || []).forEach((column, idx) => {
+          const value = column.filterValue;
+          if (!this._hasFilterValue(value)) {
+            return;
+          }
+          changed = true;
+          this.set(`columns.${idx}.filterValue`, Array.isArray(value) ? [] : '');
+          const filterBy = column.filterBy || column.field;
+          if (hasProvider && filterBy && this.nxProvider.params) {
+            delete this.nxProvider.params[filterBy];
+          }
+        });
+      } finally {
+        this._suppressFilterEvents = false;
+      }
       if (this.filters && this.filters.length > 0) {
+        if (hasProvider && this.nxProvider.params) {
+          this.filters.forEach((filter) => {
+            if (filter && filter.path) {
+              delete this.nxProvider.params[filter.path];
+            }
+          });
+        }
         this.set('filters', []);
         changed = true;
       }
@@ -2106,11 +2121,17 @@ function hasRowDetailTemplate(node) {
         this.nxProvider.sort = {};
         changed = true;
       }
+      return changed;
+    }
 
-      if (!changed) {
+    /**
+     * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
+     */
+    _resetQuerySettings() {
+      if (!this._clearQueryState()) {
         return;
       }
-      if (hasProvider) {
+      if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
         this.clearSelection();
         if (this.paginable) {
           this.nxProvider.page = 1;
