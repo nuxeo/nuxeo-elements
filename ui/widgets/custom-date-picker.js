@@ -27,6 +27,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezone } from '../nuxeo-timezone.js';
 
 // A short grace period prevents transient focus reroutes from immediately
 // collapsing the popover during month navigation.
@@ -177,10 +178,8 @@ const VALID_MOMENT_TOKENS = new Set([
         },
 
         /**
-         * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
-         * - empty: local time will be used, as read from the browser (this is the default)
-         * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * IANA timezone used to determine today's calendar day. An empty or invalid zone uses the browser.
+         * Input and value remain wall-clock calendar dates; nuxeo-date-picker handles timestamp conversion.
          */
         timezone: {
           type: String,
@@ -1403,9 +1402,8 @@ const VALID_MOMENT_TOKENS = new Set([
       const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
       this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
-      this._today = new Date();
-      this._today.setHours(0, 0, 0, 0); // Normalize to start of day
-      this._viewDate = new Date();
+      this._today = this._getToday();
+      this._viewDate = new Date(this._today);
       this._focusedDate = null;
       // Call sites already reported by _logRecoveredError (see there).
       this._loggedRecoveries = new Set();
@@ -1445,9 +1443,8 @@ const VALID_MOMENT_TOKENS = new Set([
 
       this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
-      this._today = new Date();
-      this._today.setHours(0, 0, 0, 0); // Normalize to start of day
-      this._viewDate = new Date();
+      this._today = this._getToday();
+      this._viewDate = new Date(this._today);
       this._focusedDate = null;
 
       // Verify the locale is properly set
@@ -1646,10 +1643,10 @@ const VALID_MOMENT_TOKENS = new Set([
       }
     }
 
-    // Add _moment method for timezone handling like nuxeo-date-picker
+    // Calendar dates are browser-local Date objects, not instants. The outer nuxeo-date-picker
+    // converts between these wall-clock days and timestamps in the configured timezone.
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
-      return fn(...args);
+      return moment(...args);
     }
 
     // Robust parser for date-only strings (YYYY-MM-DD) to local Date at start of day
@@ -2879,11 +2876,13 @@ const VALID_MOMENT_TOKENS = new Set([
         e.stopPropagation();
       }
 
-      // Create a fresh today date to ensure consistency
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      this._today = this._getToday();
+      this._selectDate(this._today);
+    }
 
-      this._selectDate(today);
+    _getToday() {
+      const today = momentTimezone(this.timezone)();
+      return new Date(today.year(), today.month(), today.date());
     }
 
     // Separate method for mouse clicks to ensure proper detection

@@ -285,7 +285,7 @@ suite('custom-date-picker', () => {
       expect(m.year()).to.equal(2024);
     });
 
-    test('uses moment.utc() when timezone is Etc/UTC', async () => {
+    test('keeps local calendar arithmetic when timezone is Etc/UTC', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-04-12T00:00:00Z');
@@ -3822,7 +3822,7 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_moment timezone branch', () => {
-    test('uses moment.utc for Etc/UTC timezone', async () => {
+    test('keeps calendar dates local with Etc/UTC configured', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-06-15');
@@ -4818,7 +4818,7 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_moment with timezone', () => {
-    test('uses utc when timezone is Etc/UTC', async () => {
+    test('keeps calendar parsing local with Etc/UTC configured', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-06-15');
