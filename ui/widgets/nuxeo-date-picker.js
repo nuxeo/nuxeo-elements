@@ -209,8 +209,8 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
           disabled$="[[disabled]]"
           aria-label$="[[_computeDateAriaLabel(label)]]"
           autocomplete="[[autocomplete]]"
-          min="[[min]]"
-          max="[[max]]"
+          min="[[_calendarDate(min, timezone)]]"
+          max="[[_calendarDate(max, timezone)]]"
           error-message="[[errorMessage]]"
           clear-button-visible$="[[!hideClearDateButton]]"
           hide-placeholder="[[hidePlaceholder]]"
@@ -238,7 +238,9 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
       });
       // tell custom-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
-      this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
+      this.$.date.set('i18n.formatDate', (date) =>
+        (date instanceof Date ? moment(date) : this._moment(date)).format(moment.localeData().longDateFormat('L')),
+      );
       this.$.date.set('i18n.parseDate', (text) => {
         const date = this._moment(text, moment.localeData().longDateFormat('L'));
         return {
@@ -271,6 +273,14 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
     _moment(...args) {
       const fn = momentTimezoneParser(this.timezone);
       return fn(...args);
+    }
+
+    _calendarDate(value, timezone) {
+      if (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+      }
+      const date = momentTimezoneParser(timezone)(value);
+      return date.isValid() ? date.locale('en').format('YYYY-MM-DD') : value;
     }
 
     _computeDateAriaLabel(label) {

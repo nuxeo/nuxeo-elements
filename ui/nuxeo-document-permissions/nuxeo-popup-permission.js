@@ -397,9 +397,16 @@ import '../nuxeo-button-styles.js';
       ) {
         return original;
       }
-      const date = pickerMoment(value);
-      // Parse the end of the selected day to pick up DST changes since midnight.
-      return (endOfDay ? pickerMoment(`${date.format('YYYY-MM-DD')}T23:59:59`) : date).format();
+      let date = pickerMoment(value);
+      if (endOfDay) {
+        // The final hour can repeat. Resolve the next calendar day's start, then step back
+        // one second and reapply the offset for that instant so the entire selected day is included.
+        const nextDay = date.clone().add(1, 'day');
+        const nextStart = pickerMoment([nextDay.year(), nextDay.month(), nextDay.date()]);
+        date = pickerMoment(nextStart.subtract(1, 'second'));
+      }
+      // Automation timestamps require ASCII digits regardless of the UI language.
+      return date.locale('en').format();
     }
 
     handleResponse() {
@@ -442,11 +449,15 @@ import '../nuxeo-button-styles.js';
         params.comment = ace.comment;
         let dateBased = false;
         if (ace.begin !== null) {
-          params.begin = momentTimezoneParser(config.get('timezone'))(ace.begin).format('YYYY-MM-DD');
+          params.begin = momentTimezoneParser(config.get('timezone'))(ace.begin)
+            .locale('en')
+            .format('YYYY-MM-DD');
           dateBased = true;
         }
         if (ace.end !== null) {
-          params.end = momentTimezoneParser(config.get('timezone'))(ace.end).format('YYYY-MM-DD');
+          params.end = momentTimezoneParser(config.get('timezone'))(ace.end)
+            .locale('en')
+            .format('YYYY-MM-DD');
           dateBased = true;
         }
 

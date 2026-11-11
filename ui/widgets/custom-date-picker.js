@@ -183,6 +183,7 @@ const VALID_MOMENT_TOKENS = new Set([
          */
         timezone: {
           type: String,
+          observer: '_timezoneChanged',
           value() {
             return config.get('timezone');
           },
@@ -2883,6 +2884,16 @@ const VALID_MOMENT_TOKENS = new Set([
     _getToday() {
       const today = momentTimezone(this.timezone)();
       return new Date(today.year(), today.month(), today.date());
+    }
+
+    _timezoneChanged() {
+      this._today = this._getToday();
+      if (!this._selectedDate) {
+        this._viewDate = new Date(this._today);
+      }
+      if (this.shadowRoot) {
+        this._generateCalendar();
+      }
     }
 
     // Separate method for mouse clicks to ensure proper detection
