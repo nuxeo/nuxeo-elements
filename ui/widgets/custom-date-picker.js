@@ -1664,7 +1664,8 @@ const VALID_MOMENT_TOKENS = new Set([
             d.setHours(0, 0, 0, 0);
             // The multi-argument Date constructor remaps years 0-99 to 1900-1999.
             d.setFullYear(year, month, day);
-            return Number.isNaN(d.getTime()) ? null : d;
+            // Reject normalized dates such as February 30 or month 13 as invalid bounds.
+            return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day ? d : null;
           }
         }
         const d = new Date(value);
@@ -2892,6 +2893,7 @@ const VALID_MOMENT_TOKENS = new Set([
       if (!this._selectedDate) {
         this._viewDate = this._getInitialViewDate();
       }
+      this._generateYearOptions();
       if (this.shadowRoot) {
         this._generateCalendar();
       }

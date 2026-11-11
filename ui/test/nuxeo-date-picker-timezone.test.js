@@ -176,18 +176,23 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     picker._closeCalendar();
   });
 
-  test('ignores invalid calendar bounds when opening and navigating months', async () => {
-    const el = await createPicker('America/Los_Angeles');
-    el.min = 'not-a-date';
-    el.max = 'not-a-date';
-    await flush();
-    const picker = el.$.date;
-    picker._openCalendar();
-    expect(picker._viewDate.getTime()).to.equal(picker._today.getTime());
-    expect(picker._yearOptions).to.have.length(200);
-    expect(picker._isNextMonthDisabled()).to.be.false;
-    expect(picker._isPreviousMonthDisabled()).to.be.false;
-    picker._closeCalendar();
+  ['not-a-date', '2026-02-30', '2026-13-01', '2026-01-00'].forEach((bound) => {
+    test(`ignores invalid calendar bound ${bound} when opening and navigating months`, async () => {
+      const el = await createPicker('America/Los_Angeles');
+      el.min = bound;
+      el.max = bound;
+      await flush();
+      const picker = el.$.date;
+      picker._openCalendar();
+      expect(picker._viewDate.getTime()).to.equal(picker._today.getTime());
+      expect(picker._yearOptions).to.have.length(200);
+      picker._generateMonthYearOptions();
+      expect(picker._monthYearOptions).to.have.length(2400);
+      expect(picker._isNextMonthDisabled()).to.be.false;
+      expect(picker._isPreviousMonthDisabled()).to.be.false;
+      expect(picker._isDateDisabled(picker._today)).to.be.false;
+      picker._closeCalendar();
+    });
   });
 
   test('refreshes the selected day on a timezone change without changing its stored instant or dropping the next edit', async () => {
@@ -256,6 +261,24 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     expect(picker._monthYearOptions[0].value).to.equal('1900-0');
     const leapDay = picker._parseBoundDate('0000-02-29');
     expect([leapDay.getFullYear(), leapDay.getMonth(), leapDay.getDate()]).to.deep.equal([0, 1, 29]);
+    picker._closeCalendar();
+  });
+
+  test('refreshes year choices and dropdown focus when timestamp bounds move across a year boundary', async () => {
+    const el = await createPicker('Etc/UTC');
+    el.min = '2026-01-01T00:00:00Z';
+    el.max = el.min;
+    await flush();
+    const picker = el.$.date;
+    picker._openCalendar();
+    expect(picker._yearOptions).to.deep.equal([2026]);
+    el.timezone = 'Pacific/Pago_Pago';
+    await flush();
+    expect(picker._dateToISO(picker._viewDate)).to.equal('2025-12-31');
+    expect(picker._yearOptions).to.deep.equal([2025]);
+    picker._toggleYearDropdown();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(picker.shadowRoot.activeElement.dataset.year).to.equal('2025');
     picker._closeCalendar();
   });
 
