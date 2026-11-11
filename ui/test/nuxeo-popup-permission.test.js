@@ -8,7 +8,7 @@ You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 */
-import moment from '@nuxeo/moment';
+import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-permissions/nuxeo-popup-permission.js';
@@ -16,9 +16,12 @@ import '../nuxeo-document-permissions/nuxeo-popup-permission.js';
 suite('nuxeo-popup-permission', () => {
   let el;
   let previousTimezone;
+  let previousLocale;
 
   setup(async () => {
     previousTimezone = config.get('timezone');
+    previousLocale = moment.locale();
+    moment.locale('en');
     config.set('timezone', undefined);
     el = await fixture(html`
       <nuxeo-popup-permission></nuxeo-popup-permission>
@@ -27,6 +30,7 @@ suite('nuxeo-popup-permission', () => {
 
   teardown(() => {
     config.set('timezone', previousTimezone);
+    moment.locale(previousLocale);
   });
 
   test('displays the configured calendar days and preserves unchanged permission instants', () => {
@@ -51,6 +55,25 @@ suite('nuxeo-popup-permission', () => {
     expect(el._serializePermissionDate('2026-03-08')).to.equal('2026-03-08T00:00:00-05:00');
     expect(el._serializePermissionDate('2026-03-08T05:00:00.000Z', null, true)).to.equal('2026-03-08T23:59:59-04:00');
     expect(el._serializePermissionDate('2026-11-01', null, true)).to.equal('2026-11-01T23:59:59-05:00');
+  });
+
+  test('serializes permission dates and editor days with ASCII digits without changing the locale', () => {
+    config.set('timezone', 'Asia/Tokyo');
+    const begin = '2026-01-19T15:00:00.000Z';
+    el.ace = { id: 'ace-1', username: 'members', permission: 'Read', begin, end: null };
+    el._computeParams(el.ace, false);
+    expect(el.params.begin).to.equal('2026-01-20');
+    // The child pickers initialize their browser locale when the ACE is loaded.
+    moment.locale('ar');
+    expect(el._serializePermissionDate('2026-01-21', begin)).to.equal('2026-01-21T00:00:00+09:00');
+    expect(el._serializePermissionDate('2026-01-21', null, true)).to.equal('2026-01-21T23:59:59+09:00');
+    expect(el._serializePermissionDate('2026-01-20', begin)).to.equal(begin);
+    expect(moment.locale()).to.equal('ar');
+  });
+
+  test('includes the repeated final hour when permission expiry falls on a midnight DST fallback', () => {
+    config.set('timezone', 'Africa/Cairo');
+    expect(el._serializePermissionDate('2026-10-29', null, true)).to.equal('2026-10-29T23:59:59+02:00');
   });
 
   test('returns a local permission label by default', () => {

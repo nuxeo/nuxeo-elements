@@ -126,6 +126,38 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     expect(el.value).to.equal('2026-11-01T17:30:45.000Z');
   });
 
+  test('normalizes timestamp limits to the configured calendar day', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    el.min = '2026-01-19T15:00:00Z';
+    el.max = '2026-01-19T15:00:00Z';
+    await flush();
+    expect(el.$.date.min).to.equal('2026-01-20');
+    expect(el.$.date.max).to.equal('2026-01-20');
+    await typeDate(el, '01/20/2026');
+    expect(el.validate()).to.be.true;
+    await typeDate(el, '01/19/2026');
+    expect(el.validate()).to.be.false;
+    await typeDate(el, '01/21/2026');
+    expect(el.validate()).to.be.false;
+  });
+
+  test('preserves date-only and empty limits and updates timestamp limits when the zone changes', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    el.min = '2026-01-20';
+    el.max = '';
+    await flush();
+    expect(el.$.date.min).to.equal('2026-01-20');
+    expect(el.$.date.max).to.equal('');
+    el.max = '2026-01-19T15:00:00Z';
+    el.timezone = 'America/New_York';
+    await flush();
+    expect(el.$.date.min).to.equal('2026-01-20');
+    expect(el.$.date.max).to.equal('2026-01-19');
+    el.max = 'not-a-date';
+    await flush();
+    expect(el.$.date.max).to.equal('not-a-date');
+  });
+
   test('Today follows the explicit picker timezone when it differs from the global setting', async () => {
     const el = await createPicker('Asia/Tokyo');
     el.timezone = 'Pacific/Pago_Pago';
@@ -138,6 +170,37 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     } finally {
       clock.restore();
     }
+  });
+
+  test('refreshes the Today marker and empty calendar view after a timezone change', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    const clock = sinon.useFakeTimers({ now: Date.parse('2026-01-20T06:00:00Z'), toFake: ['Date'] });
+    try {
+      el.timezone = 'Pacific/Pago_Pago';
+      await flush();
+      expect(el.$.date._dateToISO(el.$.date._today)).to.equal('2026-01-19');
+      expect(el.$.date._dateToISO(el.$.date._viewDate)).to.equal('2026-01-19');
+      expect(el.$.date._calendarDays.find((day) => day.isToday).dateISO).to.equal('2026-01-19');
+      el.$.date._selectDate(new Date(2026, 0, 25));
+      const value = el.value;
+      const viewDate = el.$.date._viewDate.getTime();
+      el.timezone = 'Asia/Tokyo';
+      await flush();
+      expect(el.$.date._dateToISO(el.$.date._today)).to.equal('2026-01-20');
+      expect(el.$.date._viewDate.getTime()).to.equal(viewDate);
+      expect(el.value).to.equal(value);
+    } finally {
+      clock.restore();
+    }
+  });
+
+  test('formats selected calendar Dates locally and stored timestamp strings in the configured zone', async () => {
+    const el = await createPicker('Pacific/Pago_Pago');
+    moment.locale('en');
+    el.$.date._selectDate(new Date(2026, 0, 20));
+    await flush();
+    expect(el.$.date.formattedValue).to.equal('01/20/2026');
+    expect(el.$.date.i18n.formatDate('2026-01-20T06:00:00.000Z')).to.equal('01/19/2026');
   });
 
   test('parses a localized visible date in the configured zone', async () => {
