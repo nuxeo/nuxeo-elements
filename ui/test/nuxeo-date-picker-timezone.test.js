@@ -282,6 +282,33 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     picker._closeCalendar();
   });
 
+  [
+    ['2011-12-30', '12/29/2011', '12/31/2011', 2011],
+    ['1994-12-31', '12/30/1994', '01/01/1995', 1994],
+  ].forEach(([bound, before, after, lastYear]) => {
+    test(`enforces both sides of calendar bound ${bound} even when the browser skipped that day`, async () => {
+      const el = await createPicker('Etc/UTC');
+      el.min = bound;
+      await flush();
+      await typeDate(el, before);
+      expect(el.validate()).to.be.false;
+      await typeDate(el, after);
+      expect(el.validate()).to.be.true;
+      el.min = '';
+      el.max = bound;
+      await flush();
+      await typeDate(el, after);
+      expect(el.validate()).to.be.false;
+      await typeDate(el, before);
+      expect(el.validate()).to.be.true;
+      el.$.date._openCalendar();
+      expect(el.$.date._yearOptions.slice(-1)).to.deep.equal([lastYear]);
+      el.$.date._generateMonthYearOptions();
+      expect(el.$.date._monthYearOptions.slice(-1)[0].value).to.equal(`${lastYear}-11`);
+      el.$.date._closeCalendar();
+    });
+  });
+
   test('Today follows the explicit picker timezone when it differs from the global setting', async () => {
     const el = await createPicker('Asia/Tokyo');
     el.timezone = 'Pacific/Pago_Pago';
