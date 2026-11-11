@@ -607,3 +607,27 @@ suite('nuxeo-date-picker nested focus regression (ELEMENTS-2095)', () => {
     expect(inner._isYearDropdownOpen).to.be.true;
   });
 });
+
+// ELEMENTS-1887: harmonize error highlighting across form widgets — the label turns red when
+// the widget is invalid (complementing the existing red required asterisk).
+suite('nuxeo-date-picker invalid highlighting', () => {
+  const INVALID_COLOR = 'rgb(222, 53, 11)'; // #de350b
+
+  test('renders the label in the invalid color when invalid', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker label="Created at" invalid></nuxeo-date-picker>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.equal(INVALID_COLOR);
+  });
+
+  test('does not apply the invalid color to the label when valid', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker label="Created at"></nuxeo-date-picker>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.not.equal(INVALID_COLOR);
+  });
+});

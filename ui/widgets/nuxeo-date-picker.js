@@ -181,7 +181,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             @apply --nuxeo-label;
           }
 
-          /* Keep label color normal even when invalid; only the * is red */
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
 
           custom-date-picker {
             padding-bottom: 8px;
