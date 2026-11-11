@@ -214,6 +214,51 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     expect(el.value).to.equal('2026-01-20T10:00:00.000Z');
   });
 
+  [
+    ['2026-01-20', '2026-01-20', '2026-01-20'],
+    ['', '2026-01-20', '2026-01-20'],
+    ['2026-12-20', '', '2026-12-20'],
+  ].forEach(([min, max, expected]) => {
+    test(`keeps an open empty calendar within bounds ${min} to ${max} after changing timezone`, async () => {
+      const el = await createPicker('Asia/Tokyo');
+      el.min = min;
+      el.max = max;
+      await flush();
+      const clock = sinon.useFakeTimers({ now: Date.parse('2026-11-11T06:00:00Z'), toFake: ['Date'] });
+      try {
+        el.$.date._openCalendar();
+        el.timezone = 'Pacific/Pago_Pago';
+        await flush();
+        expect(el.$.date._dateToISO(el.$.date._viewDate)).to.equal(expected);
+        const day = el.$.date._calendarDays.find((entry) => entry.dateISO === expected);
+        expect(day.isDisabled).to.be.false;
+        el.$.date._selectDate(day.date);
+        await flush();
+        expect(el.value).to.equal(`${expected}T11:00:00.000Z`);
+        expect(el.validate()).to.be.true;
+      } finally {
+        el.$.date._closeCalendar();
+        clock.restore();
+      }
+    });
+  });
+
+  test('preserves the complete ISO year in calendar bounds and year/month options', async () => {
+    const el = await createPicker('America/Los_Angeles');
+    el.min = '0021-11-07';
+    el.max = '2026-01-20';
+    await flush();
+    const picker = el.$.date;
+    picker._openCalendar();
+    expect(picker._viewDate.getFullYear()).to.equal(21);
+    expect(picker._yearOptions[0]).to.equal(1900);
+    picker._generateMonthYearOptions();
+    expect(picker._monthYearOptions[0].value).to.equal('1900-0');
+    const leapDay = picker._parseBoundDate('0000-02-29');
+    expect([leapDay.getFullYear(), leapDay.getMonth(), leapDay.getDate()]).to.deep.equal([0, 1, 29]);
+    picker._closeCalendar();
+  });
+
   test('Today follows the explicit picker timezone when it differs from the global setting', async () => {
     const el = await createPicker('Asia/Tokyo');
     el.timezone = 'Pacific/Pago_Pago';
