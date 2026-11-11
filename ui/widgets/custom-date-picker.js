@@ -1660,12 +1660,21 @@ const VALID_MOMENT_TOKENS = new Set([
             const year = Number.parseInt(m[1], 10);
             const month = Number.parseInt(m[2], 10) - 1;
             const day = Number.parseInt(m[3], 10);
+            const calendarDate = new Date(0);
+            calendarDate.setUTCFullYear(year, month, day);
+            // Check Gregorian validity independently of days skipped by the browser's timezone.
+            if (
+              calendarDate.getUTCFullYear() !== year ||
+              calendarDate.getUTCMonth() !== month ||
+              calendarDate.getUTCDate() !== day
+            ) {
+              return null;
+            }
             const d = new Date(0);
             d.setHours(0, 0, 0, 0);
             // The multi-argument Date constructor remaps years 0-99 to 1900-1999.
             d.setFullYear(year, month, day);
-            // Reject normalized dates such as February 30 or month 13 as invalid bounds.
-            return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day ? d : null;
+            return d;
           }
         }
         const d = new Date(value);
@@ -1749,7 +1758,7 @@ const VALID_MOMENT_TOKENS = new Set([
       }
 
       if (this.max) {
-        const maxDate = this._parseBoundDate(this.max);
+        const maxDate = this._parseBoundDate(this.max, true);
         if (maxDate) {
           maxYear = Math.min(endYear, maxDate.getFullYear());
         }
@@ -1769,13 +1778,28 @@ const VALID_MOMENT_TOKENS = new Set([
      * null bound is ignored the same way.
      *
      * @param {?string} value
+     * @param {boolean} maximum whether this is an inclusive upper bound
      * @returns {?Date}
      */
-    _parseBoundDate(value) {
+    _parseBoundDate(value, maximum = false) {
       if (!value) {
         return null;
       }
-      return this._parseDateOnly(value);
+      const date = this._parseDateOnly(value);
+      const parts = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      if (
+        date &&
+        maximum &&
+        parts &&
+        (date.getFullYear() !== Number(parts[1]) ||
+          date.getMonth() !== Number(parts[2]) - 1 ||
+          date.getDate() !== Number(parts[3]))
+      ) {
+        // A skipped local day has no selectable Date. Its minimum is the first following instant;
+        // its maximum must end before that instant, so neither bound admits an out-of-range day.
+        return new Date(date.getTime() - 1);
+      }
+      return date;
     }
 
     /**
@@ -1832,7 +1856,7 @@ const VALID_MOMENT_TOKENS = new Set([
       // Use 1900-2099 range but respect min/max constraints. Both bounds are parsed once here
       // rather than inside the loop below.
       const minDate = this._parseBoundDate(this.min);
-      const maxDate = this._parseBoundDate(this.max);
+      const maxDate = this._parseBoundDate(this.max, true);
       const { startYear, endYear } = this._getMonthYearRange(minDate, maxDate);
 
       this._monthYearOptions = [];
@@ -2901,7 +2925,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
     _getInitialViewDate() {
       const minDate = this._parseBoundDate(this.min);
-      const maxDate = this._parseBoundDate(this.max);
+      const maxDate = this._parseBoundDate(this.max, true);
       // Opening and refreshing an empty calendar use the same permitted starting day.
       const initialDate = minDate || this._today;
       return new Date(maxDate && initialDate > maxDate ? maxDate : initialDate);
@@ -3752,7 +3776,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check min date constraint
       if (this.min) {
-        const minDate = this._parseDateOnly(this.min);
+        const minDate = this._parseBoundDate(this.min);
         if (minDate) {
           minDate.setHours(0, 0, 0, 0);
           if (normalizedDate < minDate) {
@@ -3763,7 +3787,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check max date constraint
       if (this.max) {
-        const maxDate = this._parseDateOnly(this.max);
+        const maxDate = this._parseBoundDate(this.max, true);
         if (maxDate) {
           maxDate.setHours(0, 0, 0, 0);
           if (normalizedDate > maxDate) {
@@ -3797,7 +3821,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check min date constraint
       if (this.min) {
-        const minDate = this._parseDateOnly(this.min);
+        const minDate = this._parseBoundDate(this.min);
         if (minDate) {
           minDate.setHours(0, 0, 0, 0);
           if (normalizedDate < minDate) {
@@ -3811,7 +3835,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check max date constraint
       if (this.max) {
-        const maxDate = this._parseDateOnly(this.max);
+        const maxDate = this._parseBoundDate(this.max, true);
         if (maxDate) {
           maxDate.setHours(0, 0, 0, 0);
           if (normalizedDate > maxDate) {
@@ -3951,21 +3975,21 @@ const VALID_MOMENT_TOKENS = new Set([
         const hasMax = !!this.max;
 
         if (hasMin && hasMax) {
-          const minDate = this._parseDateOnly(this.min);
-          const maxDate = this._parseDateOnly(this.max);
+          const minDate = this._parseBoundDate(this.min);
+          const maxDate = this._parseBoundDate(this.max, true);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be between ${minFormatted} and ${maxFormatted}`;
         }
 
         if (hasMin) {
-          const minDate = this._parseDateOnly(this.min);
+          const minDate = this._parseBoundDate(this.min);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or after ${minFormatted}`;
         }
 
         if (hasMax) {
-          const maxDate = this._parseDateOnly(this.max);
+          const maxDate = this._parseBoundDate(this.max, true);
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or before ${maxFormatted}`;
         }
@@ -4567,10 +4591,10 @@ const VALID_MOMENT_TOKENS = new Set([
      * @returns {?string} 'min', 'max' or null.
      */
     _getViolatedBound(currentDate) {
-      if (this.min && currentDate.isBefore(this._moment(this._parseDateOnly(this.min)), 'day')) {
+      if (this.min && currentDate.isBefore(this._moment(this._parseBoundDate(this.min)), 'day')) {
         return 'min';
       }
-      if (this.max && currentDate.isAfter(this._moment(this._parseDateOnly(this.max)), 'day')) {
+      if (this.max && currentDate.isAfter(this._moment(this._parseBoundDate(this.max, true)), 'day')) {
         return 'max';
       }
       return null;
@@ -5442,7 +5466,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Normalize min and max dates
       const minDate = this._parseBoundDate(this.min);
-      const maxDate = this._parseBoundDate(this.max);
+      const maxDate = this._parseBoundDate(this.max, true);
 
       if (maxDate) {
         maxDate.setHours(23, 59, 59, 999);
