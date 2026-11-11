@@ -1,0 +1,156 @@
+/**
+@license
+©2026 Hyland Software, Inc. and its affiliates. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import { config } from '@nuxeo/nuxeo-elements';
+import moment from '@nuxeo/moment/min/moment-with-locales.js';
+import '../widgets/nuxeo-date-picker.js';
+
+suite('nuxeo-date-picker configured timezone round-trip', () => {
+  let previousTimezone;
+  let previousLocale;
+
+  setup(() => {
+    previousTimezone = config.get('timezone');
+    previousLocale = moment.locale();
+  });
+
+  teardown(() => {
+    config.set('timezone', previousTimezone);
+    moment.locale(previousLocale);
+  });
+
+  const cases = [
+    ['America/New_York', '2026-01-20T05:00:00.000Z'],
+    ['Europe/Paris', '2026-01-19T23:00:00.000Z'],
+    ['Asia/Kolkata', '2026-01-19T18:30:00.000Z'],
+    ['Asia/Kathmandu', '2026-01-19T18:15:00.000Z'],
+    ['Asia/Tokyo', '2026-01-19T15:00:00.000Z'],
+    ['Australia/Sydney', '2026-01-19T13:00:00.000Z'],
+    ['Pacific/Pago_Pago', '2026-01-20T11:00:00.000Z'],
+    ['Etc/UTC', '2026-01-20T00:00:00.000Z'],
+  ];
+
+  async function createPicker(zone) {
+    config.set('timezone', zone);
+    const el = await fixture(
+      html`
+        <nuxeo-date-picker format="MM/DD/YYYY"></nuxeo-date-picker>
+      `,
+    );
+    await flush();
+    return el;
+  }
+
+  async function typeDate(el, text) {
+    const input = el.$.date.$.dateInput;
+    input.value = text;
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    input.dispatchEvent(new Event('blur'));
+    await flush();
+  }
+
+  cases.forEach(([zone, midnight]) => {
+    test(`types, reopens and blurs January 20 without shifting it in ${zone}`, async () => {
+      const el = await createPicker(zone);
+      await typeDate(el, '01/20/2026');
+      expect(el.value).to.equal(midnight);
+      expect(el.$.date.$.dateInput.value).to.equal('01/20/2026');
+
+      const reopened = await createPicker(zone);
+      reopened.value = midnight;
+      await flush();
+      expect(reopened.$.date.$.dateInput.value).to.equal('01/20/2026');
+      reopened.$.date.$.dateInput.dispatchEvent(new Event('blur'));
+      await flush();
+      expect(reopened.value).to.equal(midnight);
+    });
+
+    test(`calendar selection stores configured midnight in ${zone}`, async () => {
+      const el = await createPicker(zone);
+      el.$.date._selectDate(new Date(2026, 0, 20));
+      await flush();
+      expect(el.value).to.equal(midnight);
+      expect(el.$.date.$.dateInput.value).to.equal('01/20/2026');
+    });
+  });
+
+  test('keeps an existing non-midnight instant when the displayed day is not edited', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    el.value = '2026-01-19T23:45:12.000Z';
+    await flush();
+    expect(el.$.date.$.dateInput.value).to.equal('01/20/2026');
+    el.$.date.$.dateInput.dispatchEvent(new Event('blur'));
+    await flush();
+    expect(el.value).to.equal('2026-01-19T23:45:12.000Z');
+  });
+
+  test('uses browser midnight with unset or invalid timezone and can clear the value', async () => {
+    for (const zone of [undefined, 'Invalid/PickerZone']) {
+      const el = await createPicker(zone);
+      await typeDate(el, '01/20/2026');
+      expect(el.value).to.equal(moment('2026-01-20').toJSON());
+      el.value = null;
+      await flush();
+      expect(el.$.date.$.dateInput.value).to.equal('');
+    }
+  });
+
+  test('uses the correct midnight offset on both sides of a DST transition', async () => {
+    const el = await createPicker('America/New_York');
+    await typeDate(el, '03/08/2026');
+    expect(el.value).to.equal('2026-03-08T05:00:00.000Z');
+    await typeDate(el, '03/09/2026');
+    expect(el.value).to.equal('2026-03-09T04:00:00.000Z');
+  });
+
+  test('resolves defaultTime after a daylight-saving offset change', async () => {
+    const el = await createPicker('America/New_York');
+    el.defaultTime = '12:30:45';
+    await typeDate(el, '03/08/2026');
+    expect(el.value).to.equal('2026-03-08T16:30:45.000Z');
+    await typeDate(el, '11/01/2026');
+    expect(el.value).to.equal('2026-11-01T17:30:45.000Z');
+  });
+
+  test('Today follows the explicit picker timezone when it differs from the global setting', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    el.timezone = 'Pacific/Pago_Pago';
+    await flush();
+    const clock = sinon.useFakeTimers({ now: Date.parse('2026-01-20T06:00:00Z'), toFake: ['Date'] });
+    try {
+      el.$.date._selectToday();
+      expect(el.value).to.equal('2026-01-19T11:00:00.000Z');
+      expect(el.$.date.$.dateInput.value).to.equal('01/19/2026');
+    } finally {
+      clock.restore();
+    }
+  });
+
+  test('parses a localized visible date in the configured zone', async () => {
+    const el = await createPicker('Europe/Paris');
+    const locale = sinon.stub(el.$.date, '_getUserLocale').returns('fr');
+    try {
+      el.format = 'DD MMMM YYYY';
+      await flush();
+      await typeDate(el, '15 juillet 2026');
+      expect(el.value).to.equal('2026-07-14T22:00:00.000Z');
+      expect(el.$.date.$.dateInput.value).to.equal('15 juillet 2026');
+    } finally {
+      locale.restore();
+    }
+  });
+});

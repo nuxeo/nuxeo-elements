@@ -25,6 +25,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezoneParser } from '../nuxeo-timezone.js';
 
 {
   /**
@@ -112,9 +113,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         /**
          * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
+         * Valid values are:
          * - empty: local time will be used, as read from the browser (this is the default)
          * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * - any IANA zone: dates are read and displayed in that zone; invalid zones use browser local time
          */
         timezone: {
           type: String,
@@ -213,6 +215,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear-button-visible$="[[!hideClearDateButton]]"
           hide-placeholder="[[hidePlaceholder]]"
           format="[[format]]"
+          timezone="[[timezone]]"
         >
         </custom-date-picker>
       `;
@@ -266,7 +269,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
+      const fn = momentTimezoneParser(this.timezone);
       return fn(...args);
     }
 
@@ -310,14 +313,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _inputValueChanged() {
       if (this._inputValue !== null && !this._preventInputUpdate) {
-        const date = this._moment(this._inputValue);
+        let date = this._moment(this._inputValue);
         if (date.isValid()) {
           if (this.defaultTime) {
             const time = moment(this.defaultTime, 'HH:mm:ss');
             if (time.isValid()) {
-              date.add(time.hour(), 'hour');
-              date.add(time.minute(), 'minute');
-              date.add(time.second(), 'second');
+              // Resolve the wall-clock time in the zone again: its offset may change after midnight.
+              date = this._moment([date.year(), date.month(), date.date(), time.hour(), time.minute(), time.second()]);
             } else {
               throw new Error(`Invalid default time ${this.defaultTime}`);
             }
