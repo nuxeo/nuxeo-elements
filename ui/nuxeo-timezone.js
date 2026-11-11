@@ -129,4 +129,33 @@ export function momentTimezoneParser(timezone) {
   };
 }
 
+/**
+ * Returns the final instant belonging to a calendar day in the configured zone.
+ * A rollback can repeat the following midnight and then return to the selected day,
+ * so its last instant cannot always be found by subtracting from the first next midnight.
+ */
+export function endOfDayInTimezone(value, timezone) {
+  const date = momentTimezoneParser(timezone)(value);
+  const zone = timezone && momentTz.tz.zone(timezone);
+  if (!date.isValid() || !zone) {
+    return date.endOf('day');
+  }
+  const dayStart = moment.utc([date.year(), date.month(), date.date()]).valueOf();
+  const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+  let intervalStart = Number.NEGATIVE_INFINITY;
+  let lastInstant = Number.NEGATIVE_INFINITY;
+  // Intersect the calendar day with each constant-offset interval in the timezone database.
+  // This includes repeated hours and excludes gaps without changing global parsing settings.
+  zone.untils.forEach((intervalEnd, index) => {
+    const offset = zone.offsets[index] * 60 * 1000;
+    const start = Math.max(intervalStart, dayStart + offset);
+    const end = Math.min(intervalEnd, dayEnd + offset);
+    if (start < end) {
+      lastInstant = Math.max(lastInstant, end - 1);
+    }
+    intervalStart = intervalEnd;
+  });
+  return momentTimezone(timezone)(lastInstant).locale(date.locale());
+}
+
 export default momentTimezone;

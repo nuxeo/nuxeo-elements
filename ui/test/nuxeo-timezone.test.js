@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
-import { momentTimezone, momentTimezoneParser, isValidTimezone } from '../nuxeo-timezone.js';
+import { momentTimezone, momentTimezoneParser, isValidTimezone, endOfDayInTimezone } from '../nuxeo-timezone.js';
 
 suite('nuxeo-timezone', () => {
   // A fixed instant so results never depend on the machine running the tests.
@@ -28,6 +28,41 @@ suite('nuxeo-timezone', () => {
 
   teardown(() => {
     moment.locale(originalLocale);
+  });
+
+  suite('endOfDayInTimezone', () => {
+    test('returns the last millisecond of a normal named-zone or UTC day', () => {
+      expect(endOfDayInTimezone('2026-01-20', 'Asia/Kathmandu').toJSON()).to.equal('2026-01-20T18:14:59.999Z');
+      expect(endOfDayInTimezone('2026-01-20', 'Etc/UTC').toJSON()).to.equal('2026-01-20T23:59:59.999Z');
+    });
+
+    test('uses the final offset on both short and long DST days', () => {
+      expect(endOfDayInTimezone('2026-03-08', 'America/New_York').toJSON()).to.equal('2026-03-09T03:59:59.999Z');
+      expect(endOfDayInTimezone('2026-11-01', 'America/New_York').toJSON()).to.equal('2026-11-02T04:59:59.999Z');
+      expect(endOfDayInTimezone('2026-10-29', 'Africa/Cairo').toJSON()).to.equal('2026-10-29T21:59:59.999Z');
+    });
+
+    test('includes the last occurrence of a day that resumes after the following midnight', () => {
+      const end = endOfDayInTimezone('2009-10-31', 'America/St_Johns');
+      expect(end.toJSON()).to.equal('2009-11-01T03:29:59.999Z');
+      expect(momentTimezone('America/St_Johns')(end.valueOf() + 1).format('YYYY-MM-DD')).to.equal('2009-11-01');
+    });
+
+    test('falls back to the browser day for absent or invalid zones and preserves invalid input', () => {
+      const expected = moment('2026-01-20')
+        .endOf('day')
+        .toJSON();
+      expect(endOfDayInTimezone('2026-01-20').toJSON()).to.equal(expected);
+      expect(endOfDayInTimezone('2026-01-20', 'EndOfDay/UnknownZone').toJSON()).to.equal(expected);
+      expect(endOfDayInTimezone('not-a-date', 'Asia/Tokyo').isValid()).to.be.false;
+    });
+
+    test('preserves the input locale without changing the global locale', () => {
+      moment.locale('en');
+      const value = moment('2026-01-20').locale('fr');
+      expect(endOfDayInTimezone(value, 'Europe/Paris').locale()).to.equal('fr');
+      expect(moment.locale()).to.equal('en');
+    });
   });
 
   suite('isValidTimezone', () => {

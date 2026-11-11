@@ -120,6 +120,7 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
          */
         timezone: {
           type: String,
+          observer: '_valueChanged',
           value() {
             return config.get('timezone');
           },
@@ -315,7 +316,12 @@ import { momentTimezoneParser } from '../nuxeo-timezone.js';
         const year = `${date.get('Y')}`.padStart(4, '0');
         const month = `${date.get('M') + 1}`.padStart(2, '0');
         const day = `${date.get('D')}`.padStart(2, '0');
-        this._inputValue = `${year}-${month}-${day}`;
+        try {
+          this._inputValue = `${year}-${month}-${day}`;
+        } finally {
+          // A timezone change can leave the calendar day unchanged, so its observer may not run.
+          this._preventInputUpdate = false;
+        }
       } else {
         this._inputValue = '';
       }
