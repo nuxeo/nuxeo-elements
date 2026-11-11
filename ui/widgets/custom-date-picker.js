@@ -1739,15 +1739,15 @@ const VALID_MOMENT_TOKENS = new Set([
       let maxYear = endYear;
 
       if (this.min) {
-        const minDate = new Date(this.min);
-        if (!Number.isNaN(minDate.getTime())) {
+        const minDate = this._parseBoundDate(this.min);
+        if (minDate) {
           minYear = Math.max(startYear, minDate.getFullYear());
         }
       }
 
       if (this.max) {
-        const maxDate = new Date(this.max);
-        if (!Number.isNaN(maxDate.getTime())) {
+        const maxDate = this._parseBoundDate(this.max);
+        if (maxDate) {
           maxYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
@@ -1772,8 +1772,7 @@ const VALID_MOMENT_TOKENS = new Set([
       if (!value) {
         return null;
       }
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? null : date;
+      return this._parseDateOnly(value);
     }
 
     /**
@@ -2949,23 +2948,20 @@ const VALID_MOMENT_TOKENS = new Set([
 
         // Prioritize min date for initial view when constraints exist
         // This ensures users see the valid range starting from the minimum date
-        if (this.min) {
-          const minDate = new Date(this.min);
+        const minDate = this._parseBoundDate(this.min);
+        const maxDate = this._parseBoundDate(this.max);
+        if (minDate) {
           // Always start with min date when it exists, regardless of today's date
           initialDate = new Date(minDate);
-        } else if (this.max) {
+        } else if (maxDate) {
           // Only use max date if no min date is specified and today is after max
-          const maxDate = new Date(this.max);
           if (initialDate > maxDate) {
             initialDate = new Date(maxDate);
           }
         }
 
         // Final validation: ensure initial date is within valid range
-        if (this.min && this.max) {
-          const minDate = new Date(this.min);
-          const maxDate = new Date(this.max);
-
+        if (minDate && maxDate) {
           if (initialDate < minDate) {
             initialDate = new Date(minDate);
           } else if (initialDate > maxDate) {
@@ -5458,16 +5454,10 @@ const VALID_MOMENT_TOKENS = new Set([
       const lastDay = new Date(year, month + 1, 0);
 
       // Normalize min and max dates
-      let minDate = null;
-      let maxDate = null;
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max);
 
-      if (this.min) {
-        minDate = new Date(this.min);
-        minDate.setHours(0, 0, 0, 0);
-      }
-
-      if (this.max) {
-        maxDate = new Date(this.max);
+      if (maxDate) {
         maxDate.setHours(23, 59, 59, 999);
       }
 

@@ -76,6 +76,11 @@ suite('nuxeo-popup-permission', () => {
     expect(el._serializePermissionDate('2026-10-29', null, true)).to.equal('2026-10-29T23:59:59+02:00');
   });
 
+  test('expires after the final occurrence of the selected day when the following midnight repeats', () => {
+    config.set('timezone', 'America/St_Johns');
+    expect(el._serializePermissionDate('2009-10-31', null, true)).to.equal('2009-10-31T23:59:59-03:30');
+  });
+
   test('returns a local permission label by default', () => {
     expect(el._computeNewPermissionLabel(false)).to.equal(el.i18n('popupPermission.newLocalPermission'));
   });

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { momentTimezoneParser } from '../nuxeo-timezone.js';
+import { endOfDayInTimezone, momentTimezoneParser } from '../nuxeo-timezone.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
@@ -397,14 +397,7 @@ import '../nuxeo-button-styles.js';
       ) {
         return original;
       }
-      let date = pickerMoment(value);
-      if (endOfDay) {
-        // The final hour can repeat. Resolve the next calendar day's start, then step back
-        // one second and reapply the offset for that instant so the entire selected day is included.
-        const nextDay = date.clone().add(1, 'day');
-        const nextStart = pickerMoment([nextDay.year(), nextDay.month(), nextDay.date()]);
-        date = pickerMoment(nextStart.subtract(1, 'second'));
-      }
+      const date = endOfDay ? endOfDayInTimezone(value, config.get('timezone')) : pickerMoment(value);
       // Automation timestamps require ASCII digits regardless of the UI language.
       return date.locale('en').format();
     }

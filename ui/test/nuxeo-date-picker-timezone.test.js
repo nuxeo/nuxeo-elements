@@ -158,6 +158,62 @@ suite('nuxeo-date-picker configured timezone round-trip', () => {
     expect(el.$.date.max).to.equal('not-a-date');
   });
 
+  test('opens and navigates the permitted month at a year boundary in any browser timezone', async () => {
+    const el = await createPicker('America/Los_Angeles');
+    el.min = '2026-01-01T08:00:00Z';
+    el.max = el.min;
+    await flush();
+    const picker = el.$.date;
+    picker._openCalendar();
+    expect(picker._dateToISO(picker._viewDate)).to.equal('2026-01-01');
+    expect(picker._yearOptions).to.deep.equal([2026]);
+    picker._generateMonthYearOptions();
+    expect(picker._monthYearOptions.map(({ value }) => value)).to.deep.equal(['2026-0']);
+    picker._viewDate = new Date(2025, 11, 1);
+    expect(picker._isNextMonthDisabled()).to.be.false;
+    picker._viewDate = new Date(2026, 1, 1);
+    expect(picker._isPreviousMonthDisabled()).to.be.false;
+    picker._closeCalendar();
+  });
+
+  test('ignores invalid calendar bounds when opening and navigating months', async () => {
+    const el = await createPicker('America/Los_Angeles');
+    el.min = 'not-a-date';
+    el.max = 'not-a-date';
+    await flush();
+    const picker = el.$.date;
+    picker._openCalendar();
+    expect(picker._viewDate.getTime()).to.equal(picker._today.getTime());
+    expect(picker._yearOptions).to.have.length(200);
+    expect(picker._isNextMonthDisabled()).to.be.false;
+    expect(picker._isPreviousMonthDisabled()).to.be.false;
+    picker._closeCalendar();
+  });
+
+  test('refreshes the selected day on a timezone change without changing its stored instant or dropping the next edit', async () => {
+    const el = await createPicker('Asia/Tokyo');
+    const instant = '2026-01-19T15:00:00Z';
+    el.value = instant;
+    el.min = instant;
+    el.max = instant;
+    await flush();
+    expect(el.$.date.$.dateInput.value).to.equal('01/20/2026');
+    el.timezone = 'Pacific/Pago_Pago';
+    await flush();
+    expect(el.$.date.$.dateInput.value).to.equal('01/19/2026');
+    expect(el.validate()).to.be.true;
+    expect(el.value).to.equal(instant);
+    el.timezone = 'Pacific/Honolulu';
+    await flush();
+    expect(el.$.date.$.dateInput.value).to.equal('01/19/2026');
+    expect(el.value).to.equal(instant);
+    el.min = '';
+    el.max = '';
+    await flush();
+    await typeDate(el, '01/20/2026');
+    expect(el.value).to.equal('2026-01-20T10:00:00.000Z');
+  });
+
   test('Today follows the explicit picker timezone when it differs from the global setting', async () => {
     const el = await createPicker('Asia/Tokyo');
     el.timezone = 'Pacific/Pago_Pago';
