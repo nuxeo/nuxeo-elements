@@ -1660,8 +1660,10 @@ const VALID_MOMENT_TOKENS = new Set([
             const year = Number.parseInt(m[1], 10);
             const month = Number.parseInt(m[2], 10) - 1;
             const day = Number.parseInt(m[3], 10);
-            const d = new Date(year, month, day);
+            const d = new Date(0);
             d.setHours(0, 0, 0, 0);
+            // The multi-argument Date constructor remaps years 0-99 to 1900-1999.
+            d.setFullYear(year, month, day);
             return Number.isNaN(d.getTime()) ? null : d;
           }
         }
@@ -2888,11 +2890,19 @@ const VALID_MOMENT_TOKENS = new Set([
     _timezoneChanged() {
       this._today = this._getToday();
       if (!this._selectedDate) {
-        this._viewDate = new Date(this._today);
+        this._viewDate = this._getInitialViewDate();
       }
       if (this.shadowRoot) {
         this._generateCalendar();
       }
+    }
+
+    _getInitialViewDate() {
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max);
+      // Opening and refreshing an empty calendar use the same permitted starting day.
+      const initialDate = minDate || this._today;
+      return new Date(maxDate && initialDate > maxDate ? maxDate : initialDate);
     }
 
     // Separate method for mouse clicks to ensure proper detection
@@ -2944,32 +2954,7 @@ const VALID_MOMENT_TOKENS = new Set([
         this._viewDate = new Date(this._selectedDate);
         this._focusedDate = new Date(this._selectedDate);
       } else {
-        let initialDate = new Date(this._today);
-
-        // Prioritize min date for initial view when constraints exist
-        // This ensures users see the valid range starting from the minimum date
-        const minDate = this._parseBoundDate(this.min);
-        const maxDate = this._parseBoundDate(this.max);
-        if (minDate) {
-          // Always start with min date when it exists, regardless of today's date
-          initialDate = new Date(minDate);
-        } else if (maxDate) {
-          // Only use max date if no min date is specified and today is after max
-          if (initialDate > maxDate) {
-            initialDate = new Date(maxDate);
-          }
-        }
-
-        // Final validation: ensure initial date is within valid range
-        if (minDate && maxDate) {
-          if (initialDate < minDate) {
-            initialDate = new Date(minDate);
-          } else if (initialDate > maxDate) {
-            initialDate = new Date(maxDate);
-          }
-        }
-
-        this._viewDate = initialDate;
+        this._viewDate = this._getInitialViewDate();
         this._focusedDate = null; // No focused date when no date is selected
       }
 
