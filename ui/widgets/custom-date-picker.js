@@ -3439,15 +3439,21 @@ const VALID_MOMENT_TOKENS = new Set([
 
     _focusDate(date, allowCrossMonth = false) {
       // Update focused date
-      this._focusedDate = new Date(date);
-      this._focusedDate.setHours(0, 0, 0, 0);
+      const focusedDate = new Date(date);
+      focusedDate.setHours(0, 0, 0, 0);
+      this._focusedDate = focusedDate;
 
       // Focus the date element
       this.async(() => {
+        // A selection, close or later focus request replaced this date meanwhile (selecting right after
+        // navigating clears it): leave the focus where that action put it.
+        if (this._focusedDate !== focusedDate) {
+          return;
+        }
         // Use local date formatting to avoid timezone issues
-        const year = this._focusedDate.getFullYear();
-        const month = String(this._focusedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(this._focusedDate.getDate()).padStart(2, '0');
+        const year = focusedDate.getFullYear();
+        const month = String(focusedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(focusedDate.getDate()).padStart(2, '0');
         const dateISO = `${year}-${month}-${day}`;
 
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
