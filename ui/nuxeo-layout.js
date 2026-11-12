@@ -180,16 +180,9 @@ import './nuxeo-error.js';
       const errors = elements.map((element) => {
         const label = this._fieldLabel(element);
         let message = element.errorMessage;
-        // A widget that validates itself may already have defaulted to the generic `widget.required`
-        // text and flagged it via `_defaultRequiredError`. That default only exists for widgets used
-        // outside a layout, so treat it as replaceable here and name the field instead. A message the
-        // author set on the widget carries no such flag and is still preserved.
-        if (!message || message === fallbackErrorMessages.get(element) || element._defaultRequiredError) {
+        if (this._hasReplaceableErrorMessage(element)) {
           message = this._defaultErrorMessage(element, label);
-          fallbackErrorMessages.set(element, message);
-          if ('errorMessage' in element) {
-            element.errorMessage = message;
-          }
+          this._setFallbackErrorMessage(element, message);
         }
         return { element, label, message };
       });
@@ -201,6 +194,57 @@ import './nuxeo-error.js';
       this.dispatchEvent(
         new CustomEvent('layout-validation-errors', { bubbles: true, composed: true, detail: { errors } }),
       );
+    }
+
+    /**
+     * Whether the widget's current message may be replaced by one naming the field: it has none, it
+     * holds a message this layout injected, or it defaulted to the generic `widget.required` text
+     * (flagged by `_defaultRequiredError`, a default that only exists for widgets used outside a
+     * layout). A message the author set on the widget carries no such mark and is preserved.
+     */
+    _hasReplaceableErrorMessage(element) {
+      const message = element.errorMessage;
+      return !message || message === fallbackErrorMessages.get(element) || !!element._defaultRequiredError;
+    }
+
+    _setFallbackErrorMessage(element, message) {
+      fallbackErrorMessages.set(element, message);
+      if ('errorMessage' in element) {
+        element.errorMessage = message;
+      }
+    }
+
+    /**
+     * Replaces a message this layout injected earlier with the reason for a new failure, so a widget
+     * that turns invalid for another reason does not show the old one. A widget with no message keeps
+     * none, and a message the author set is kept.
+     */
+    _refreshFallbackErrorMessage(element, message) {
+      if (element.errorMessage && this._hasReplaceableErrorMessage(element)) {
+        this._setFallbackErrorMessage(element, message);
+      }
+    }
+
+    /**
+     * The message for a widget whose bound property the server rejected as required but empty. The
+     * server only knows the property path, so its own message ("Value is required.") does not say
+     * which field failed; name it from the widget, as client side validation does. The message is
+     * recorded as injected, so the next client validation recomputes it rather than keeping it.
+     *
+     * @param {Element} element The widget bound to the rejected property.
+     * @return {string} The message, or an empty string when the widget has no label to name it by.
+     */
+    _requiredViolationMessage(element) {
+      if (!this._hasReplaceableErrorMessage(element)) {
+        return element.errorMessage;
+      }
+      const label = this._fieldLabel(element);
+      if (!label) {
+        return '';
+      }
+      const message = this.i18n('layout.validation.requiredField.named', label);
+      this._setFallbackErrorMessage(element, message);
+      return message;
     }
 
     _defaultErrorMessage(element, label) {
