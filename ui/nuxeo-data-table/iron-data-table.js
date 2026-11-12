@@ -299,6 +299,8 @@ function hasRowDetailTemplate(node) {
                 <nuxeo-data-table-settings
                   role="columnheader"
                   columns="{{columns}}"
+                  persist-query-settings="{{persistQuerySettings}}"
+                  on-reset-query-settings="_resetQuerySettings"
                   hidden$="[[!settingsEnabled]]"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
@@ -523,6 +525,15 @@ function hasRowDetailTemplate(node) {
         settingsEnabled: {
           type: Boolean,
           reflectToAttribute: true,
+          value: false,
+        },
+        /**
+         * If enabled, column filters and sort order are included in `settings`, so they are saved and restored
+         * along with the column layout. When disabled they only last while the view stays open. Users can change it
+         * from the settings dialog.
+         */
+        persistQuerySettings: {
+          type: Boolean,
           value: false,
         },
         /**
@@ -1060,10 +1071,14 @@ function hasRowDetailTemplate(node) {
           })
         : this.sortOrder || null;
 
+      const persistQuery = !!this.persistQuerySettings;
       const tableSettings = {
         columns: {},
-        sortOrder,
+        persistQuerySettings: persistQuery,
       };
+      if (persistQuery) {
+        tableSettings.sortOrder = sortOrder;
+      }
 
       if (this.columns) {
         this.columns.forEach((column, idx) => {
@@ -1075,7 +1090,10 @@ function hasRowDetailTemplate(node) {
             resized: !!column.resized,
           };
           // Persist filter state only when set, to keep saved settings compact (ELEMENTS-1966)
-          if (column.filterValue) {
+          if (!persistQuery) {
+            return;
+          }
+          if (this._hasFilterValue(column.filterValue)) {
             tableSettings.columns[key].filterValue = column.filterValue;
           }
           if (column.filterExpression) {
@@ -1092,9 +1110,25 @@ function hasRowDetailTemplate(node) {
         return;
       }
 
+      // Resolved per payload: a reused table must not apply one payload's opt-in to the next, and settings saved
+      // before the option existed carry no flag, so their filters/sort are not restored (ELEMENTS-2112)
+      const wasPersisted = !!this.persistQuerySettings;
+      this.persistQuerySettings = !!settings.persistQuerySettings;
+      const restoreQuery = this.persistQuerySettings;
+
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
       let needsFetch = false;
+      // Only on a persisted -> non-persisted switch: the filters/sort then came from the previous payload. A
+      // non-persisted payload following another one is typically the echo of a layout save (resize, reorder), and
+      // must not wipe the filters and sort the user set during this session.
+      if (wasPersisted && !restoreQuery && this._clearQueryState()) {
+        // A reused table must not keep the previous payload's filters/sort (ELEMENTS-2112)
+        needsFetch = true;
+        if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+          this._rewindResults();
+        }
+      }
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
         // avoid firing many fetches that may abort each other (WEBUI-1885)
@@ -1124,7 +1158,7 @@ function hasRowDetailTemplate(node) {
           }
 
           // filterValue (WEBUI-1885) - restore column filter values
-          if (Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') && colSettings.filterValue) {
+          if (restoreQuery && this._hasFilterValue(colSettings.filterValue)) {
             this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
             if (colSettings.filterExpression) {
               this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
@@ -1177,11 +1211,11 @@ function hasRowDetailTemplate(node) {
       }
 
       let appliedSortOrder = null;
-      if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
+      if (restoreQuery && Object.hasOwn(settings, 'sortOrder')) {
         // keep sortOrder as an array (default to []) when applying settings
         appliedSortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
         this.sortOrder = appliedSortOrder;
-      } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
+      } else if (restoreQuery && settings.columns && Object.hasOwn(settings.columns, 'sortOrder')) {
         // backward compatibility if you ever saved it under columns
         appliedSortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
         this.sortOrder = appliedSortOrder;
@@ -2040,6 +2074,89 @@ function hasRowDetailTemplate(node) {
           cell.classList.add('drop-right');
           break;
         }
+      }
+    }
+
+    _hasFilterValue(value) {
+      return value != null && value !== '' && !(Array.isArray(value) && value.length === 0);
+    }
+
+    /**
+     * Clears the column filters, the provider filter params and the sort order without reloading.
+     * Returns true when something was cleared (ELEMENTS-2112).
+     */
+    _clearQueryState() {
+      const hasProvider = !!(this._hasPageProvider && this._hasPageProvider() && this.nxProvider);
+      let changed = false;
+
+      // Clear the filters in one go rather than letting each column trigger its own fetch
+      this._suppressFilterEvents = true;
+      try {
+        (this.columns || []).forEach((column, idx) => {
+          const value = column.filterValue;
+          if (!this._hasFilterValue(value)) {
+            return;
+          }
+          changed = true;
+          this.set(`columns.${idx}.filterValue`, Array.isArray(value) ? [] : '');
+          const filterBy = column.filterBy || column.field;
+          if (hasProvider && filterBy && this.nxProvider.params) {
+            delete this.nxProvider.params[filterBy];
+          }
+        });
+      } finally {
+        this._suppressFilterEvents = false;
+      }
+      if (this.filters && this.filters.length > 0) {
+        if (hasProvider && this.nxProvider.params) {
+          this.filters.forEach((filter) => {
+            if (filter && filter.path) {
+              delete this.nxProvider.params[filter.path];
+            }
+          });
+        }
+        this.set('filters', []);
+        changed = true;
+      }
+
+      if (Array.isArray(this.sortOrder) && this.sortOrder.length > 0) {
+        this.sortOrder = [];
+        changed = true;
+      }
+      if (hasProvider && this._ppSort && Object.keys(this._ppSort).length > 0) {
+        // Only drop the provider sort when it is still the one this table applied: a destination can already have
+        // set its own default (e.g. `ecm:pos` for an Orderable folder), which must survive the cleanup
+        if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(this._ppSort)) {
+          this.nxProvider.sort = {};
+        }
+        this._ppSort = {};
+        changed = true;
+      }
+      return changed;
+    }
+
+    /**
+     * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
+     */
+    _resetQuerySettings() {
+      if (!this._clearQueryState()) {
+        return;
+      }
+      if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+        this._rewindResults();
+        this.fetch();
+      }
+      this._fireSettingsChanged({ source: 'reset' });
+    }
+
+    /**
+     * Drops the selection and goes back to the first page, so a reload after the query changed does not append
+     * the new results after the previous ones (ELEMENTS-2112).
+     */
+    _rewindResults() {
+      this.clearSelection();
+      if (this.paginable) {
+        this.nxProvider.page = 1;
       }
     }
 
