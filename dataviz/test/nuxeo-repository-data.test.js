@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { fixture, html, login } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../nuxeo-repository-data.js';
 
 suite('nuxeo-repository-data', () => {
@@ -197,5 +198,71 @@ suite('nuxeo-repository-data', () => {
       { key: '1980-01-02', value: 2 },
       { key: '1980-01-03', value: 3 },
     ]);
+  });
+
+  suite('configured timezone', () => {
+    let previousTimezone;
+
+    function rangeTerm(search) {
+      return search.query.bool.must.find((term) => term.range);
+    }
+
+    function dateHistogram() {
+      return fixture(html`
+        <nuxeo-repository-data
+          with-date-intervals="day"
+          date-field="schema:field"
+          start-date="2026-01-01"
+          end-date="2026-01-31"
+        >
+        </nuxeo-repository-data>
+      `);
+    }
+
+    setup(() => {
+      previousTimezone = config.get('timezone');
+    });
+
+    teardown(() => {
+      config.set('timezone', previousTimezone);
+    });
+
+    test('keeps the browser offset and UTC day bounds when no timezone is configured', async () => {
+      config.set('timezone', '');
+      const search = await dateHistogram();
+      assert.equal(search.aggregates.by.date_histogram.time_zone, moment().format('Z'));
+      assert.deepEqual(rangeTerm(search), { range: { 'schema:field': { gte: '2026-01-01', lte: '2026-01-31' } } });
+    });
+
+    test('buckets and filters by calendar days in the configured timezone', async () => {
+      config.set('timezone', 'Pacific/Kiritimati');
+      const search = await dateHistogram();
+      assert.equal(search.aggregates.by.date_histogram.time_zone, 'Pacific/Kiritimati');
+      assert.deepEqual(rangeTerm(search), {
+        range: { 'schema:field': { gte: '2026-01-01', lte: '2026-01-31', time_zone: 'Pacific/Kiritimati' } },
+      });
+    });
+
+    test('sends the canonical zone id', async () => {
+      config.set('timezone', ' america/new_york ');
+      const search = await dateHistogram();
+      assert.equal(search.aggregates.by.date_histogram.time_zone, 'America/New_York');
+      assert.equal(rangeTerm(search).range['schema:field'].time_zone, 'America/New_York');
+    });
+
+    test('falls back to the browser offset for an unknown timezone', async () => {
+      config.set('timezone', 'Mars/Phobos');
+      const search = await dateHistogram();
+      assert.equal(search.aggregates.by.date_histogram.time_zone, moment().format('Z'));
+      assert.notProperty(rangeTerm(search).range['schema:field'], 'time_zone');
+    });
+
+    test('keeps an explicit timezone', async () => {
+      config.set('timezone', 'Asia/Tokyo');
+      const search = await fixture(html`
+        <nuxeo-repository-data with-date-intervals="day" timezone="+02:00"></nuxeo-repository-data>
+      `);
+      assert.equal(search.aggregates.by.date_histogram.time_zone, '+02:00');
+    });
   });
 });

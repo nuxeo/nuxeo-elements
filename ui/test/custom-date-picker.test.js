@@ -1314,6 +1314,54 @@ suite('custom-date-picker extras', () => {
     });
   });
 
+  suite('_focusDate deferred focus', () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 80));
+
+    test('focuses the requested day once the calendar is rendered', async () => {
+      const el = await newPicker();
+      el._openCalendar();
+      el._viewDate = new Date(2026, 0, 1);
+      el._generateCalendar();
+      await settle();
+      const day = el.shadowRoot.querySelector('[data-date="2026-01-20"]');
+      expect(day).to.exist;
+      const focus = sinon.spy(day, 'focus');
+      el._focusDate(new Date(2026, 0, 20));
+      await settle();
+      expect(focus.calledOnce).to.be.true;
+    });
+
+    test('does not throw or steal focus when a selection clears the focused day first', async () => {
+      const el = await newPicker();
+      el._openCalendar();
+      el._viewDate = new Date(2026, 0, 1);
+      el._generateCalendar();
+      await settle();
+      const findNearest = sinon.spy(el, '_findAndFocusNearestValidDate');
+      el._focusDate(new Date(2026, 0, 20));
+      // Selecting (or closing) before the deferred focus runs clears the focused day.
+      el._focusedDate = null;
+      await settle();
+      expect(findNearest.called).to.be.false;
+      expect(el._focusedDate).to.be.null;
+    });
+
+    test('only the latest focus request moves the focus', async () => {
+      const el = await newPicker();
+      el._openCalendar();
+      el._viewDate = new Date(2026, 0, 1);
+      el._generateCalendar();
+      await settle();
+      const first = sinon.spy(el.shadowRoot.querySelector('[data-date="2026-01-20"]'), 'focus');
+      const latest = sinon.spy(el.shadowRoot.querySelector('[data-date="2026-01-22"]'), 'focus');
+      el._focusDate(new Date(2026, 0, 20));
+      el._focusDate(new Date(2026, 0, 22));
+      await settle();
+      expect(first.called).to.be.false;
+      expect(latest.calledOnce).to.be.true;
+    });
+  });
+
   suite('_selectDate branch coverage', () => {
     test('does nothing when called with null', async () => {
       const el = await newPicker();
