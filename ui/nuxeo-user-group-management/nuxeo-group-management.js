@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { formatUserDisplayName, formatUserPrincipal } from './nuxeo-user-display.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -460,7 +461,7 @@ import '../nuxeo-sort-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[_userDisplayName(item)]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_userPrincipal(item)]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
@@ -707,7 +708,7 @@ import '../nuxeo-sort-styles.js';
 
         _removedMemberDisplayName: {
           type: String,
-          computed: '_userDisplayName(_removedMember)',
+          computed: '_userPrincipal(_removedMember)',
         },
 
         // Array of { path, direction } for multi-column sort on member users (nuxeo-data-table-column-sort contract)
@@ -762,11 +763,11 @@ import '../nuxeo-sort-styles.js';
     }
 
     _userDisplayName(user) {
-      if (!user) {
-        return '';
-      }
-      const props = user.properties || {};
-      return props.username || user.name || user.id || '';
+      return formatUserDisplayName(user);
+    }
+
+    _userPrincipal(user) {
+      return formatUserPrincipal(user);
     }
 
     _getEmail(properties) {
@@ -906,7 +907,7 @@ import '../nuxeo-sort-styles.js';
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
-        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._userDisplayName(this._removedMember)));
+        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._userPrincipal(this._removedMember)));
       });
     }
 
