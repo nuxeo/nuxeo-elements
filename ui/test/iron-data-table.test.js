@@ -1557,7 +1557,7 @@ suite('iron-data-table extras', () => {
   // ------------------------------------------------------------------
   suite('get settings', () => {
     test('returns column state keyed by field', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [
         { field: 'dc:title', hidden: false, order: 0, width: '200px', resized: true },
         { field: 'dc:modified', hidden: true, order: 1, width: null, resized: false },
@@ -1572,7 +1572,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('falls back to col-N key when field is missing', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ hidden: false, order: 0, width: null }];
       el.sortOrder = null;
 
@@ -1582,7 +1582,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('uses index as order when column.order is not a number', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ field: 'x', hidden: false, order: undefined, width: null }];
       el.sortOrder = [];
 
@@ -1591,7 +1591,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('handles sortOrder as non-array', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [];
       el.sortOrder = { path: 'dc:title', direction: 'asc' };
 
@@ -1600,7 +1600,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('handles null sortOrder', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [];
       el.sortOrder = null;
 
@@ -1609,7 +1609,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('handles undefined sortOrder', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [];
       el.sortOrder = undefined;
 
@@ -1618,7 +1618,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('persists filterValue when set (ELEMENTS-1966)', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
       el.sortOrder = [];
 
@@ -1627,7 +1627,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('does not persist filterValue when empty/unset (ELEMENTS-1966)', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [
         { field: 'dc:title', hidden: false, order: 0, width: null, filterValue: '' },
         { field: 'dc:modified', hidden: false, order: 1, width: null },
@@ -1640,7 +1640,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('persists filterExpression when set (ELEMENTS-1966)', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [
         {
           field: 'dc:title',
@@ -1658,7 +1658,7 @@ suite('iron-data-table extras', () => {
     });
 
     test('does not persist filterExpression when unset (ELEMENTS-1966)', async () => {
-      const el = await newTable();
+      const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
       el.sortOrder = [];
 
@@ -1683,7 +1683,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: true } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: true } } };
 
       expect(setSpy).to.have.been.calledWith('columns.0.hidden', true);
       setSpy.restore();
@@ -1694,7 +1694,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, order: 5 } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, order: 5 } } };
 
       expect(setSpy).to.have.been.calledWith('columns.0.order', 5);
       setSpy.restore();
@@ -1705,7 +1705,10 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, width: '300px', resized: true } } };
+      el.settings = {
+        persistQuerySettings: true,
+        columns: { 'dc:title': { hidden: false, width: '300px', resized: true } },
+      };
 
       expect(setSpy).to.have.been.calledWith('columns.0.width', '300px');
       expect(setSpy).to.have.been.calledWith('columns.0.resized', true);
@@ -1717,7 +1720,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, width: '200px' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, width: '200px' } } };
 
       expect(setSpy).to.have.been.calledWith('columns.0.resized', true);
       setSpy.restore();
@@ -1727,7 +1730,7 @@ suite('iron-data-table extras', () => {
       const el = await newTable();
       el.columns = [];
 
-      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      el.settings = { persistQuerySettings: true, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'asc' }]);
     });
@@ -1736,7 +1739,10 @@ suite('iron-data-table extras', () => {
       const el = await newTable();
       el.columns = [];
 
-      el.settings = { columns: { sortOrder: [{ path: 'dc:modified', direction: 'desc' }] } };
+      el.settings = {
+        persistQuerySettings: true,
+        columns: { sortOrder: [{ path: 'dc:modified', direction: 'desc' }] },
+      };
 
       expect(el.sortOrder).to.deep.equal([{ path: 'dc:modified', direction: 'desc' }]);
     });
@@ -1745,7 +1751,7 @@ suite('iron-data-table extras', () => {
       const el = await newTable();
       el.columns = [];
 
-      el.settings = { sortOrder: 'invalid' };
+      el.settings = { persistQuerySettings: true, sortOrder: 'invalid' };
 
       expect(el.sortOrder).to.deep.equal([]);
     });
@@ -1761,7 +1767,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, '_hasPageProvider').returns(true);
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      el.settings = { persistQuerySettings: true, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(el.nxProvider.sort).to.deep.equal({ 'dc:title': 'asc' });
       el.notifyResize.restore();
@@ -1779,7 +1785,7 @@ suite('iron-data-table extras', () => {
       const fetchStub = sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      el.settings = { persistQuerySettings: true, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(fetchStub).to.have.been.called;
       fetchStub.restore();
@@ -1791,7 +1797,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'col-0': { hidden: true } } };
+      el.settings = { persistQuerySettings: true, columns: { 'col-0': { hidden: true } } };
 
       expect(setSpy).to.have.been.calledWith('columns.0.hidden', true);
       setSpy.restore();
@@ -1805,7 +1811,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
 
       expect(setSpy).to.have.been.calledWith('columns.0.filterValue', 'hello');
       setSpy.restore();
@@ -1816,7 +1822,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false } } };
 
       const filterValueCalls = setSpy
         .getCalls()
@@ -1830,7 +1836,7 @@ suite('iron-data-table extras', () => {
       el.columns = [{ field: 'dc:title', hidden: false }];
       const setSpy = sinon.spy(el, 'set');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: '' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: '' } } };
 
       const filterValueCalls = setSpy
         .getCalls()
@@ -1851,7 +1857,7 @@ suite('iron-data-table extras', () => {
         return origSet(path, value);
       });
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
 
       // While the per-column set was happening, suppression must have been true
       expect(observed.every((v) => v === true)).to.be.true;
@@ -1873,7 +1879,7 @@ suite('iron-data-table extras', () => {
       const fetchStub = sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
 
       expect(provider.params['dc:title']).to.equal('hello');
       expect(el.filters).to.have.lengthOf(1);
@@ -1898,6 +1904,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'notifyResize');
 
       el.settings = {
+        persistQuerySettings: true,
         columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
       };
 
@@ -1922,6 +1929,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'notifyResize');
 
       el.settings = {
+        persistQuerySettings: true,
         columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
       };
 
@@ -1944,7 +1952,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
 
       expect(el.columns[0].filterExpression).to.be.undefined;
 
@@ -1965,7 +1973,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'new' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'new' } } };
 
       expect(el.filters).to.have.lengthOf(1);
       expect(el.filters[0].value).to.equal('new');
@@ -1988,6 +1996,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'notifyResize');
 
       el.settings = {
+        persistQuerySettings: true,
         columns: { 'dc:title': { hidden: false, filterValue: 'new', filterExpression: '%$term%' } },
       };
 
@@ -2015,6 +2024,7 @@ suite('iron-data-table extras', () => {
 
       // $1 in the search term must not be treated as a back-reference
       el.settings = {
+        persistQuerySettings: true,
         columns: { 'dc:title': { hidden: false, filterValue: '$1 test', filterExpression: '%$term%' } },
       };
 
@@ -2039,7 +2049,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
 
       expect(provider.page).to.equal(1);
 
@@ -2060,7 +2070,7 @@ suite('iron-data-table extras', () => {
       const fetchStub = sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { columns: { 'dc:title': { hidden: true } } };
+      el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: true } } };
 
       expect(fetchStub).to.not.have.been.called;
 
@@ -2082,6 +2092,7 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'notifyResize');
 
       el.settings = {
+        persistQuerySettings: true,
         columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
         sortOrder: [{ path: 'dc:title', direction: 'asc' }],
       };
@@ -2105,7 +2116,7 @@ suite('iron-data-table extras', () => {
       const fetchStub = sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      el.settings = { persistQuerySettings: true, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(fetchStub).to.have.been.calledOnce;
 
@@ -2126,12 +2137,403 @@ suite('iron-data-table extras', () => {
       const fetchStub = sinon.stub(el, 'fetch');
       sinon.stub(el, 'notifyResize');
 
-      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      el.settings = { persistQuerySettings: true, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(fetchStub).to.not.have.been.called;
 
       fetchStub.restore();
       el.notifyResize.restore();
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // persistQuerySettings / _resetQuerySettings (ELEMENTS-2112)
+  // ------------------------------------------------------------------
+  suite('persistQuerySettings (ELEMENTS-2112)', () => {
+    const queryColumns = () => [
+      { field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'test1', filterExpression: '$term*' },
+    ];
+
+    test('is disabled by default', async () => {
+      const el = await newTable();
+      expect(el.persistQuerySettings).to.be.false;
+    });
+
+    test('omits filters and sort order from settings when disabled', async () => {
+      const el = await newTable();
+      el.columns = queryColumns();
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+
+      const s = el.settings;
+
+      expect(s.persistQuerySettings).to.be.false;
+      expect(s).to.not.have.property('sortOrder');
+      expect(s.columns['dc:title']).to.not.have.property('filterValue');
+      expect(s.columns['dc:title']).to.not.have.property('filterExpression');
+      expect(s.columns['dc:title']).to.include({ hidden: false, order: 0 });
+    });
+
+    test('includes filters and sort order in settings when enabled', async () => {
+      const el = await newTable({ persistQuerySettings: true });
+      el.columns = queryColumns();
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+
+      const s = el.settings;
+
+      expect(s.persistQuerySettings).to.be.true;
+      expect(s.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
+      expect(s.columns['dc:title']).to.include({ filterValue: 'test1', filterExpression: '$term*' });
+    });
+
+    test('restores the flag from settings', async () => {
+      const el = await newTable();
+      el.columns = [];
+
+      el.settings = { columns: {}, persistQuerySettings: true };
+      expect(el.persistQuerySettings).to.be.true;
+
+      el.settings = { columns: {}, persistQuerySettings: false };
+      expect(el.persistQuerySettings).to.be.false;
+    });
+
+    test('does not restore filters or sort saved without the flag', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'test1', filterExpression: '$term*' } },
+        sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+      };
+
+      expect(setSpy).to.not.have.been.calledWith('columns.0.filterValue');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(setSpy).to.have.been.calledWith('columns.0.hidden', false);
+      setSpy.restore();
+    });
+
+    test('restores filters and sort when the saved flag is enabled', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'test1' } },
+        sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+        persistQuerySettings: true,
+      };
+
+      expect(setSpy).to.have.been.calledWith('columns.0.filterValue', 'test1');
+      expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
+      setSpy.restore();
+    });
+
+    test('does not carry an opt-in over to a later payload without the flag', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      el.settings = { columns: { 'dc:title': { hidden: false } }, persistQuerySettings: true };
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: true, filterValue: 'legacy' } },
+        sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+      };
+
+      expect(el.persistQuerySettings).to.be.false;
+      expect(setSpy).to.not.have.been.calledWith('columns.0.filterValue');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(setSpy).to.have.been.calledWith('columns.0.hidden', true);
+      setSpy.restore();
+    });
+
+    suite('reusing a table across payloads', () => {
+      async function filteredTable() {
+        const el = await newTable();
+        el.columns = [{ field: 'dc:title', filterBy: 'title', hidden: false, name: 'Title' }];
+        el.filters = [];
+        const provider = document.createElement('div');
+        provider.params = { ecm_parentId: 'abc' };
+        provider.sort = {};
+        provider.auto = false;
+        sinon.stub(el, '_nxProviderChanged');
+        el.nxProvider = provider;
+        sinon.stub(el, '_hasPageProvider').returns(true);
+        sinon.stub(el, 'notifyResize');
+        sinon.stub(el, 'fetch');
+        el.settings = {
+          persistQuerySettings: true,
+          columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
+          sortOrder: [{ path: 'dc:title', direction: 'desc' }],
+        };
+        expect(provider.params.title).to.equal('hello');
+        el.fetch.resetHistory();
+        return el;
+      }
+
+      const expectCleared = (el) => {
+        expect(el.columns[0].filterValue).to.equal('');
+        expect(el.filters).to.deep.equal([]);
+        expect(el.sortOrder).to.deep.equal([]);
+        expect(el._ppSort).to.deep.equal({});
+        expect(el.nxProvider.sort).to.deep.equal({});
+        expect(el.nxProvider.params).to.deep.equal({ ecm_parentId: 'abc' });
+        expect(el.fetch).to.have.been.calledOnce;
+      };
+
+      test('clears the previous filters and sort when the next payload opts out', async () => {
+        const el = await filteredTable();
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.persistQuerySettings).to.be.false;
+        expectCleared(el);
+      });
+
+      test('clears the previous filters and sort when the next payload is legacy', async () => {
+        const el = await filteredTable();
+
+        el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'legacy' } }, sortOrder: [] };
+
+        expect(el.persistQuerySettings).to.be.false;
+        expectCleared(el);
+      });
+
+      test('goes back to the first page and clears the selection when the payload clears the query', async () => {
+        const el = await filteredTable();
+        el.paginable = true;
+        el.nxProvider.page = 4;
+        sinon.stub(el, 'clearSelection');
+
+        el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.nxProvider.page).to.equal(1);
+        expect(el.clearSelection).to.have.been.calledOnce;
+        expect(el.fetch).to.have.been.calledOnce;
+      });
+
+      test('keeps a provider sort set by the destination while clearing the old table sort', async () => {
+        const el = await filteredTable();
+        el.nxProvider.sort = { 'ecm:pos': 'ASC' };
+
+        el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.sortOrder).to.deep.equal([]);
+        expect(el._ppSort).to.deep.equal({});
+        expect(el.nxProvider.sort).to.deep.equal({ 'ecm:pos': 'ASC' });
+      });
+
+      test('keeps session filters and sort when an opted-out payload echoes a layout save', async () => {
+        const el = await filteredTable();
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+        el.fetch.resetHistory();
+        el.set('columns.0.filterValue', 'session');
+        el.filters = [{ path: 'title', value: 'session' }];
+        el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+        el.nxProvider.params.title = 'session';
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false, width: '120px' } } };
+
+        expect(el.columns[0].filterValue).to.equal('session');
+        expect(el.filters).to.have.lengthOf(1);
+        expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'asc' }]);
+        expect(el.nxProvider.params.title).to.equal('session');
+        expect(el.fetch).to.not.have.been.called;
+      });
+
+      test('keeps session filters when the dialog turns persistence off and the save echoes back', async () => {
+        const el = await filteredTable();
+        el.persistQuerySettings = false; // settings dialog checkbox
+
+        el.settings = { persistQuerySettings: false, columns: { 'dc:title': { hidden: false } } };
+
+        expect(el.columns[0].filterValue).to.equal('hello');
+        expect(el.nxProvider.params.title).to.equal('hello');
+      });
+
+      test('replaces the previous filters when the next payload also opts in', async () => {
+        const el = await filteredTable();
+
+        el.settings = { persistQuerySettings: true, columns: { 'dc:title': { hidden: false, filterValue: 'other' } } };
+
+        expect(el.nxProvider.params.title).to.equal('other');
+        expect(el.filters).to.have.lengthOf(1);
+        expect(el.filters[0].value).to.equal('other');
+      });
+
+      test('does not fetch for an opted-out payload when nothing was filtered', async () => {
+        const el = await filteredTable();
+        el.settings = { columns: {} };
+        el.fetch.resetHistory();
+
+        el.settings = { columns: {} };
+
+        expect(el.fetch).to.not.have.been.called;
+      });
+    });
+
+    test('does not save empty filter values', async () => {
+      const el = await newTable({ persistQuerySettings: true });
+      el.columns = [
+        { field: 'dc:creator', hidden: false, order: 0, width: null, filterValue: [] },
+        { field: 'dc:title', hidden: false, order: 1, width: null, filterValue: '' },
+      ];
+      el.sortOrder = [];
+
+      const s = el.settings;
+
+      expect(s.columns['dc:creator']).to.not.have.property('filterValue');
+      expect(s.columns['dc:title']).to.not.have.property('filterValue');
+    });
+
+    test('does not restore an empty multi-value filter', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:creator': { hidden: false, filterValue: [] } }, persistQuerySettings: true };
+
+      expect(setSpy).to.not.have.been.calledWith('columns.0.filterValue');
+      expect(el.filters).to.deep.equal([]);
+      expect(provider.params).to.not.have.property('dc_creator_agg');
+      expect(el.fetch).to.not.have.been.called;
+      setSpy.restore();
+    });
+
+    test('keeps a reset multi-value filter cleared across save and restore', async () => {
+      const el = await newTable({ persistQuerySettings: true });
+      el.columns = [{ field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false, filterValue: ['Administrator'] }];
+      el.filters = [{ path: 'dc_creator_agg', value: ['Administrator'] }];
+      const provider = document.createElement('div');
+      provider.params = { dc_creator_agg: ['Administrator'] };
+      provider.sort = {};
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'clearSelection');
+
+      el._resetQuerySettings();
+      const saved = el.settings;
+      el.settings = saved;
+
+      expect(saved.columns['dc:creator']).to.not.have.property('filterValue');
+      expect(el.filters).to.deep.equal([]);
+      expect(provider.params).to.not.have.property('dc_creator_agg');
+    });
+  });
+
+  suite('_resetQuerySettings (ELEMENTS-2112)', () => {
+    async function tableWithProvider() {
+      const el = await newTable();
+      el.columns = [
+        { field: 'dc:title', filterBy: 'title', hidden: false, filterValue: 'test1' },
+        { field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false, filterValue: ['Administrator'] },
+        { field: 'dc:modified', hidden: false },
+      ];
+      el.filters = [
+        { path: 'title', value: 'test1' },
+        { path: 'dc_creator_agg', value: ['Administrator'] },
+      ];
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+      const provider = document.createElement('div');
+      provider.params = { title: 'test1*', dc_creator_agg: ['Administrator'], ecm_parentId: 'abc' };
+      provider.sort = { 'dc:title': 'desc' };
+      provider.page = 3;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      el._ppSort = { 'dc:title': 'desc' };
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'clearSelection');
+      return el;
+    }
+
+    test('clears column filters, filters list, sort order and provider query, then fetches once', async () => {
+      const el = await tableWithProvider();
+      el.paginable = true;
+
+      el._resetQuerySettings();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.columns[1].filterValue).to.deep.equal([]);
+      expect(el.filters).to.deep.equal([]);
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(el.nxProvider.sort).to.deep.equal({});
+      expect(el.nxProvider.params).to.deep.equal({ ecm_parentId: 'abc' });
+      expect(el.nxProvider.page).to.equal(1);
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(el._suppressFilterEvents).to.be.false;
+    });
+
+    test('fires settings-changed so the cleared state is saved', async () => {
+      const el = await tableWithProvider();
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
+
+      el._resetQuerySettings();
+
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail).to.deep.equal({ source: 'reset' });
+    });
+
+    test('does not fetch or save when there is nothing to clear', async () => {
+      const el = await tableWithProvider();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      el.filters = [];
+      el.sortOrder = [];
+      el._ppSort = {};
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
+
+      el._resetQuerySettings();
+
+      expect(el.fetch).to.not.have.been.called;
+      expect(el.clearSelection).to.not.have.been.called;
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('clears local state without a page provider', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, filterValue: 'test1' }];
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      const fetchSpy = sinon.spy(el, 'fetch');
+
+      el._resetQuerySettings();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(fetchSpy).to.not.have.been.called;
+    });
+
+    test('is triggered by the settings dialog Reset button', async () => {
+      const el = await newTable();
+      const stub = sinon.stub(el, '_resetQuerySettings');
+      const settings = el.querySelector('nuxeo-data-table-settings');
+      settings.columns = [];
+
+      settings._onResetClick();
+
+      expect(stub).to.have.been.calledOnce;
+    });
+
+    test('binds the settings dialog checkbox to persistQuerySettings', async () => {
+      const el = await newTable();
+      const settings = el.querySelector('nuxeo-data-table-settings');
+
+      settings._onPersistQueryChange({ target: { checked: true } });
+      expect(el.persistQuerySettings).to.be.true;
+
+      el.persistQuerySettings = false;
+      expect(settings.persistQuerySettings).to.be.false;
     });
   });
 

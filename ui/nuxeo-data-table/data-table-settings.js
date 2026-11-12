@@ -41,6 +41,10 @@ import '../nuxeo-button-styles.js';
             @apply --buttons-bar;
             margin-top: 0px;
           }
+
+          .persist-query {
+            margin-top: 1em;
+          }
         </style>
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -65,12 +69,20 @@ import '../nuxeo-button-styles.js';
                   </dom-repeat>
                   <table></table>
                 </div>
+                <paper-checkbox
+                  noink
+                  id="persistQuery"
+                  class="persist-query"
+                  checked="[[persistQuerySettings]]"
+                  on-change="_onPersistQueryChange"
+                  >[[i18n('tableSettings.persistQuerySettings')]]</paper-checkbox
+                >
               </div>
             </div>
           </paper-dialog-scrollable>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink on-click="_resetSettings" class="secondary"
+              <paper-button noink on-click="_onResetClick" class="secondary"
                 >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
               >
             </div>
@@ -101,6 +113,14 @@ import '../nuxeo-button-styles.js';
           type: Array,
           notify: true,
         },
+        /**
+         * Whether column filters and sort order are saved with the table settings.
+         */
+        persistQuerySettings: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
       };
     }
 
@@ -127,6 +147,21 @@ import '../nuxeo-button-styles.js';
       this.columns.forEach((column, idx) => {
         this.set(`columns.${idx}.hidden`, column.hiddenBack);
       });
+    }
+
+    _onResetClick() {
+      this._resetSettings();
+      this.dispatchEvent(new CustomEvent('reset-query-settings'));
+    }
+
+    _onPersistQueryChange(e) {
+      this.persistQuerySettings = e.target.checked;
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     }
 
     _onSettingsClosed() {
