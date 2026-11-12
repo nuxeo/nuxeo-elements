@@ -43,6 +43,7 @@ import './nuxeo-icons.js';
 import './nuxeo-user-group-management/nuxeo-create-group.js';
 import './nuxeo-user-group-management/nuxeo-create-user.js';
 import './nuxeo-user-group-management/nuxeo-group-management.js';
+import './nuxeo-user-group-management/nuxeo-user-group-export-dialog.js';
 import './nuxeo-user-group-management/nuxeo-user-group-search.js';
 import './nuxeo-user-group-management/nuxeo-user-management.js';
 import './nuxeo-user-group-management/nuxeo-user-profile.js';
@@ -84,21 +85,46 @@ import './nuxeo-button-styles.js';
           }
 
           #createDropdown {
-            position: absolute;
-            right: 0;
             padding: 0;
-            top: 15px;
-          }
-
-          :host([dir='rtl']) #createDropdown {
-            left: 0;
-            right: auto;
+            margin-inline-start: 1.5em;
           }
 
           paper-menu-button {
             width: 130px;
             height: 48px;
-            margin-bottom: 16px;
+          }
+
+          /* The page-level actions share one row, held against its trailing edge by the leading spacer.
+             A flow row rather than an absolutely positioned dropdown, so the controls share a baseline,
+             the search card takes the full width, and RTL reflows without a dir override. */
+          .toolbar {
+            margin-bottom: 0.5em;
+            min-height: 48px;
+          }
+
+          /* the row reserves a height for its buttons, so a principal who can neither export nor create
+             would get a blank strip above the search; the layout class sets display:flex, which outranks
+             the UA rule for hidden */
+          [hidden] {
+            display: none !important;
+          }
+
+          .toolbar .spacer {
+            flex: 1;
+          }
+
+          /* the bare paper-button rule stretches the create trigger to fill its menu button; the export
+             buttons opt out and size to their own label */
+          .export-action {
+            width: auto;
+          }
+
+          .export-action + .export-action {
+            margin-inline-start: 1.5em;
+          }
+
+          .export-action iron-icon {
+            width: 1.3rem;
           }
 
           paper-button {
@@ -124,42 +150,66 @@ import './nuxeo-button-styles.js';
         <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
         <paper-toast id="toast"></paper-toast>
+        <nuxeo-user-group-export-dialog id="exportDialog"></nuxeo-user-group-export-dialog>
         <iron-pages selected="[[page]]" attr-for-selected="name">
           <section name="search">
-            <div class="horizontal layout center">
+            <div class="horizontal layout center toolbar" hidden$="[[!_hasPageActions(readonly, _currentUser)]]">
+              <span class="spacer"></span>
+              <dom-if if="[[_canExport(_currentUser)]]">
+                <template>
+                  <paper-button
+                    id="exportUsersButton"
+                    noink
+                    class="export-action horizontal-button"
+                    on-click="_exportUsers"
+                    aria-labelledby="exportUsersButtonLabel"
+                  >
+                    <iron-icon icon="nuxeo:csv-export"></iron-icon>
+                    <span id="exportUsersButtonLabel">[[i18n('userGroupManagement.export.users')]]</span>
+                  </paper-button>
+                  <paper-button
+                    id="exportGroupsButton"
+                    noink
+                    class="export-action horizontal-button"
+                    on-click="_exportGroups"
+                    aria-labelledby="exportGroupsButtonLabel"
+                  >
+                    <iron-icon icon="nuxeo:csv-export"></iron-icon>
+                    <span id="exportGroupsButtonLabel">[[i18n('userGroupManagement.export.groups')]]</span>
+                  </paper-button>
+                </template>
+              </dom-if>
               <dom-if if="[[_canCreateUserGroup(readonly, _currentUser)]]">
                 <template>
-                  <div class="flex">
-                    <paper-menu-button
-                      id="createDropdown"
-                      no-animations
-                      no-overlap
-                      horizontal-align="right"
-                      vertical-align="top"
-                      vertical-offset="-4"
+                  <paper-menu-button
+                    id="createDropdown"
+                    no-animations
+                    no-overlap
+                    horizontal-align="right"
+                    vertical-align="top"
+                    vertical-offset="-4"
+                  >
+                    <paper-button
+                      noink
+                      class="primary horizontal-button"
+                      id="createButton"
+                      slot="dropdown-trigger"
+                      aria-labelledby="label"
                     >
-                      <paper-button
-                        noink
-                        class="primary horizontal-button"
-                        id="createButton"
-                        slot="dropdown-trigger"
-                        aria-labelledby="label"
-                      >
-                        <iron-icon icon="nuxeo:add"></iron-icon>
-                        <span id="label">[[i18n('userGroupManagement.new.usergroup')]]</span>
-                      </paper-button>
-                      <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
-                        <paper-icon-item name="user" on-click="_createUser">
-                          <iron-icon icon="nuxeo:user" slot="item-icon">&gt;</iron-icon>
-                          <span>[[i18n('userGroupManagement.new.user')]]</span>
-                        </paper-icon-item>
-                        <paper-icon-item name="group" on-click="_createGroup">
-                          <iron-icon icon="nuxeo:group" slot="item-icon">&gt;</iron-icon>
-                          <span>[[i18n('userGroupManagement.new.group')]]</span>
-                        </paper-icon-item>
-                      </paper-listbox>
-                    </paper-menu-button>
-                  </div>
+                      <iron-icon icon="nuxeo:add"></iron-icon>
+                      <span id="label">[[i18n('userGroupManagement.new.usergroup')]]</span>
+                    </paper-button>
+                    <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
+                      <paper-icon-item name="user" on-click="_createUser">
+                        <iron-icon icon="nuxeo:user" slot="item-icon">&gt;</iron-icon>
+                        <span>[[i18n('userGroupManagement.new.user')]]</span>
+                      </paper-icon-item>
+                      <paper-icon-item name="group" on-click="_createGroup">
+                        <iron-icon icon="nuxeo:group" slot="item-icon">&gt;</iron-icon>
+                        <span>[[i18n('userGroupManagement.new.group')]]</span>
+                      </paper-icon-item>
+                    </paper-listbox>
+                  </paper-menu-button>
                 </template>
               </dom-if>
             </div>
@@ -301,6 +351,27 @@ import './nuxeo-button-styles.js';
 
     _canCreateUserGroup(readonly, currentUser) {
       return !readonly && this.hasAdministrationPermissions(currentUser);
+    }
+
+    /**
+     * Offered to the users who administer this screen. Not a security boundary: the server exposes the
+     * exports to any authenticated principal, as it does the searches over the same populations.
+     */
+    _canExport(currentUser) {
+      return this.hasAdministrationPermissions(currentUser);
+    }
+
+    /** `true` when the row has an action to show, so it is not left reserving empty space. */
+    _hasPageActions(readonly, currentUser) {
+      return this._canExport(currentUser) || this._canCreateUserGroup(readonly, currentUser);
+    }
+
+    _exportUsers() {
+      this.$.exportDialog.open('users');
+    }
+
+    _exportGroups() {
+      this.$.exportDialog.open('groups');
     }
 
     /**

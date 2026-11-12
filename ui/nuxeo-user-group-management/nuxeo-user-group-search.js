@@ -57,7 +57,7 @@ import '../nuxeo-sort-styles.js';
           }
 
           .search {
-            width: calc(100% - 11rem);
+            width: 100%;
           }
 
           .title {
