@@ -99,6 +99,15 @@ suite('nuxeo-sort-select', () => {
       el.selected = null;
       expect(el._sortOrder).to.equal('asc');
     });
+
+    test('shows the ascending arrow again when the selection is cleared (ELEMENTS-2017)', () => {
+      el.selected = { label: 'Modified', order: 'desc' };
+      expect(el._sortOrder).to.equal('desc');
+
+      el.selected = null;
+
+      expect(el._sortOrder).to.equal('asc');
+    });
   });
 
   suite('_toggleSortOrder', () => {

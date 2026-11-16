@@ -11,6 +11,7 @@ You may obtain a copy of the License at
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../nuxeo-data-table/iron-data-table.js';
+import { applyUserSort } from '../nuxeo-user-sort.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -2488,12 +2489,12 @@ suite('iron-data-table extras', () => {
       expect(el.columns[0].filterValue).to.equal('');
     });
 
-    test('leaves a sort chosen elsewhere since the table last sorted', async () => {
+    test('leaves a sort the page set since the table last sorted', async () => {
       const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
-      // e.g. the sort selector of the grid view
+      // e.g. the page opening another folder
       provider.sort = { 'dc:modified': 'desc' };
       el.fetch.resetHistory();
 
@@ -2583,12 +2584,12 @@ suite('iron-data-table extras', () => {
       expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
     });
 
-    test('gives back the sort chosen elsewhere before the table sorted again, not an older one', async () => {
+    test('gives back the sort the page set before the table sorted again, not an older one', async () => {
       const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
-      // e.g. the sort selector of the grid view, then a header click back in the table
+      // e.g. the page opening another folder, then a header click in the table
       provider.sort = { 'dc:modified': 'desc' };
       el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
 
@@ -2597,18 +2598,33 @@ suite('iron-data-table extras', () => {
       expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
     });
 
-    test('leaves an equal sort set elsewhere since, as it is not the one the table applied', async () => {
+    test('leaves an equal sort the page set since, as it is not the one the table applied', async () => {
       const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
-      // the sort selector of the grid view picks the same sort, as a new object
-      const chosenElsewhere = { 'dc:title': 'asc' };
-      provider.sort = chosenElsewhere;
+      // set as a new object by the page, not chosen by the user
+      const setByThePage = { 'dc:title': 'asc' };
+      provider.sort = setByThePage;
 
       el.resetSettings();
 
-      expect(provider.sort).to.equal(chosenElsewhere);
+      expect(provider.sort).to.equal(setByThePage);
+    });
+
+    test('also gives back the default after a sort chosen with the sort selector of another view', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // the "Sort by" selector of the grid view goes through applyUserSort too
+      applyUserSort(provider, { 'dc:coverage': 'asc' });
+      el.fetch.resetHistory();
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(el.fetch.callCount).to.equal(1);
     });
 
     test('keeps the automatic fetch of a sort changed while the reset of a paginable table was loading', async () => {
