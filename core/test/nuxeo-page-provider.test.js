@@ -500,5 +500,24 @@ suite('nuxeo-page-provider', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(server.requests.some((r) => r.url.indexOf('/auto_provider/') >= 0)).to.be.true;
     });
+
+    test('cancelAutoFetch drops a scheduled automatic fetch that has not run yet', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider provider="auto_provider" auto auto-delay="20"></nuxeo-page-provider>
+      `);
+
+      provider.cancelAutoFetch();
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      expect(server.requests.some((r) => r.url.indexOf('/auto_provider/') >= 0)).to.be.false;
+    });
+
+    test('cancelAutoFetch does nothing when no automatic fetch was scheduled', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider provider="auto_provider"></nuxeo-page-provider>
+      `);
+
+      expect(() => provider.cancelAutoFetch()).to.not.throw();
+    });
   });
 });

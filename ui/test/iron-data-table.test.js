@@ -9,6 +9,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 */
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../nuxeo-data-table/iron-data-table.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -2177,7 +2178,11 @@ suite('iron-data-table extras', () => {
     }
 
     function newProvider(props = {}) {
-      return Object.assign(document.createElement('div'), { sort: {}, params: {}, auto: true, page: 3 }, props);
+      return Object.assign(
+        document.createElement('div'),
+        { sort: {}, params: {}, auto: true, page: 3, cancelAutoFetch: sinon.stub() },
+        props,
+      );
     }
 
     async function tableWithProvider(provider) {
@@ -2186,7 +2191,6 @@ suite('iron-data-table extras', () => {
       el.nxProvider = provider;
       sinon.stub(el, '_hasPageProvider').returns(true);
       sinon.stub(el, 'fetch');
-      sinon.stub(el, 'reset');
       sinon.stub(el, 'clearSelection');
       sinon.stub(el, 'notifyResize');
       return el;
@@ -2249,6 +2253,7 @@ suite('iron-data-table extras', () => {
       const provider = newProvider({
         params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_path: '/ws' },
         auto: false,
+        offset: 80,
       });
       const el = await tableWithProvider(provider);
       el.paginable = true;
@@ -2263,8 +2268,11 @@ suite('iron-data-table extras', () => {
       expect(provider.params).to.deep.equal({ ecm_path: '/ws' });
       expect(el.filters).to.deep.equal([]);
       expect(provider.page).to.equal(1);
+      // the offset kept from a later page would otherwise win over the first page
+      expect(provider.offset).to.equal(0);
       expect(el.clearSelection).to.have.been.calledOnce;
       expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.not.have.been.called;
     });
 
     test('does not fetch when there is no filter and the table never changed the sort', async () => {
@@ -2298,8 +2306,8 @@ suite('iron-data-table extras', () => {
       expect(el.fetch).to.have.been.calledOnce;
     });
 
-    test('lets an auto provider fetch by itself from the first row when the sort changed', async () => {
-      const provider = newProvider({ auto: true, offset: 40 });
+    test('fetches once for an auto provider whose sort changed, cancelling the fetch it scheduled', async () => {
+      const provider = newProvider({ auto: true });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
@@ -2308,13 +2316,13 @@ suite('iron-data-table extras', () => {
       el.resetSettings();
 
       expect(provider.sort).to.deep.equal({});
-      expect(provider.offset).to.equal(0);
-      expect(el.reset).to.have.been.calledOnce;
-      expect(el.fetch).to.not.have.been.called;
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
     });
 
-    test('lets an auto provider fetch by itself when its page goes back to the first one', async () => {
-      const provider = newProvider({ auto: true, page: 3, params: { dc_title: 'invoice*' } });
+    test('fetches the first page once for a paginable auto provider', async () => {
+      const provider = newProvider({ auto: true, page: 3, offset: 80, params: { dc_title: 'invoice*' } });
       const el = await tableWithProvider(provider);
       el.paginable = true;
       el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
@@ -2324,21 +2332,26 @@ suite('iron-data-table extras', () => {
 
       expect(provider.params).to.deep.equal({});
       expect(provider.page).to.equal(1);
-      expect(el.reset).to.have.been.calledOnce;
-      expect(el.fetch).to.not.have.been.called;
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
     });
 
-    test('fetches for an auto provider when only its filters changed', async () => {
-      const provider = newProvider({ auto: true, params: { dc_title: 'invoice*' } });
-      const el = await tableWithProvider(provider);
-      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
-      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+    test('forgets the cached sort even for a provider it never sorted', async () => {
+      const first = newProvider({ auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
 
       el.resetSettings();
 
-      expect(provider.params).to.deep.equal({});
-      expect(el.fetch).to.have.been.calledOnce;
-      expect(el.reset).to.not.have.been.called;
+      expect(el._ppSort).to.deep.equal({});
+      expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      // the same header click as on the first provider now applies to the second one
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      expect(second.sort).to.deep.equal({ 'dc:title': 'asc' });
     });
 
     test('restores the sort of each provider after moving between them', async () => {
@@ -2443,6 +2456,82 @@ suite('iron-data-table extras', () => {
 
       expect(titleColumn.filterValue).to.equal('');
       expect(spy).to.not.have.been.called;
+    });
+
+    test('drops a header filter still waiting for its debounce', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      await sleep(50);
+      // the header row is rendered in the table's light DOM
+      const filter = el.querySelector('nuxeo-data-table-column-filter');
+      const input = filter.shadowRoot.querySelector('paper-input');
+      // a filter already cleared before: the reset itself then has no filter value to change
+      el.set('columns.0.filterValue', '');
+      await flush();
+      const discardSpy = sinon.spy(filter, 'discardPendingEdit');
+      // typed into that empty filter, not committed yet
+      input.value = 'invoice';
+      expect(filter._debouncer.isActive()).to.be.true;
+
+      el.resetSettings();
+      await sleep(300);
+
+      expect(discardSpy).to.have.been.calledOnce;
+      expect(filter._debouncer.isActive()).to.be.false;
+      expect(input.value).to.equal('');
+      expect(el.columns[0].filterValue).to.equal('');
+    });
+
+    test('leaves a sort chosen elsewhere since the table last sorted', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // e.g. the sort selector of the grid view
+      provider.sort = { 'dc:modified': 'desc' };
+      el.fetch.resetHistory();
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('sends a single request through the real fetch of a scrolled auto provider', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      // scrolling made the provider request a larger range, and a filter is applied
+      provider.pageSize = 40;
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+
+      el.resetSettings();
+      await sleep(40);
+
+      expect(provider.params).to.deep.equal({});
+      expect(fetchStub).to.have.been.calledOnce;
     });
   });
 

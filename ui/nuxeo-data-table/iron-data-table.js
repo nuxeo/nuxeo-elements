@@ -1221,6 +1221,14 @@ function hasRowDetailTemplate(node) {
      * so a host that stores the table settings can drop them instead of saving the defaults (ELEMENTS-2017).
      */
     resetSettings() {
+      // A filter typed just before the reset is still waiting for its debounce: drop it, or it comes back afterwards.
+      // The header row is rendered in light DOM; filters of a table nested in a row detail belong to that table.
+      this.querySelectorAll('nuxeo-data-table-column-filter').forEach((filter) => {
+        if (filter.closest('nuxeo-data-table') === this) {
+          filter.discardPendingEdit();
+        }
+      });
+
       // Clear the column filters with their events suppressed, as the settings setter does, so several cleared
       // filters do not each start a fetch that could abort the others (WEBUI-1885). The provider is updated below.
       this._suppressFilterEvents = true;
@@ -1234,7 +1242,7 @@ function hasRowDetailTemplate(node) {
       const sortChanged = this._resetSortOrder();
       if (filtersCleared || sortChanged) {
         this.clearSelection();
-        this._refetchFromFirstRow(sortChanged);
+        this._refetchFromFirstRow();
       }
 
       this.notifyResize();
@@ -1242,26 +1250,21 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Shows the results again from the first row once a reset changed the filters or the sort, with a single request.
-     * An auto provider fetches by itself when its sort or page changes, reading its params at that point, so the
-     * table only fetches when no such request is coming: always for other providers, and for an auto provider whose
-     * filters alone changed, since params removed in place go unnoticed.
+     * Shows the results again from the first row once a reset changed the filters or the sort. The table's own fetch
+     * does it, as for any other refresh: it requests the first page or range and replaces the rows. Changing the sort,
+     * page or range of an auto provider also schedules a fetch of its own, which would only repeat that request, so it
+     * is cancelled.
      */
-    _refetchFromFirstRow(sortChanged) {
+    _refetchFromFirstRow() {
       const provider = this.nxProvider;
-      const pageChanges = this.paginable && provider.page !== 1;
       if (this.paginable) {
+        // the provider gives its offset, kept from the last page it returned, precedence over the page
+        provider.offset = 0;
         provider.page = 1;
       }
-      if (provider.auto && (sortChanged || pageChanges)) {
-        if (!this.paginable) {
-          // the automatic request reads the range from the provider: start it at the first row, not a scrolled one
-          provider.offset = 0;
-        }
-        // drop the rows of the previous results, so the automatic request does not mix with them
-        this.reset();
-      } else {
-        this.fetch();
+      this.fetch();
+      if (provider.auto && typeof provider.cancelAutoFetch === 'function') {
+        provider.cancelAutoFetch();
       }
     }
 
@@ -1307,12 +1310,18 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Clears the sort order and gives the page provider back the sort it had before the table first changed it.
+     * Clears the sort order and gives the page provider back the sort it had before the table first changed it, as
+     * long as the provider still holds the sort the table applied: a sort chosen elsewhere since, e.g. with the sort
+     * selector of another view, is left alone.
      *
      * @return {boolean} `true` when the provider sort changed.
      */
     _resetSortOrder() {
+      // `_ppSort` is the sort the table last applied, which may belong to another provider: always forget it with the
+      // sort order, so the next header click is compared to an empty sort and applied.
+      const appliedSort = this._ppSort;
       this.sortOrder = [];
+      this._ppSort = {};
       if (!this._hasPageProvider() || !this._defaultSorts) {
         return false;
       }
@@ -1321,8 +1330,8 @@ function hasRowDetailTemplate(node) {
       if (!defaultSort) {
         return false;
       }
-      this._ppSort = {};
-      if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(defaultSort)) {
+      const providerSort = JSON.stringify(this.nxProvider.sort || {});
+      if (providerSort === JSON.stringify(defaultSort) || providerSort !== JSON.stringify(appliedSort || {})) {
         return false;
       }
       this.nxProvider.sort = { ...defaultSort };
