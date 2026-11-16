@@ -2165,6 +2165,205 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
+  // resetSettings (ELEMENTS-2017)
+  // ------------------------------------------------------------------
+  suite('resetSettings', () => {
+    function column(props, declaredWidth) {
+      const col = document.createElement('div');
+      if (declaredWidth) {
+        col.setAttribute('width', declaredWidth);
+      }
+      return Object.assign(col, props);
+    }
+
+    function newProvider(props = {}) {
+      return Object.assign(document.createElement('div'), { sort: {}, params: {}, auto: true, page: 3 }, props);
+    }
+
+    async function tableWithProvider(provider) {
+      const el = await newTable();
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'clearSelection');
+      sinon.stub(el, 'notifyResize');
+      return el;
+    }
+
+    test('restores visibility, order and the layout-declared width of every column', async () => {
+      const el = await newTable();
+      el.columns = [
+        column(
+          { field: 'dc:title', hidden: true, hiddenBack: false, order: 2, width: '620px', resized: true },
+          '300px',
+        ),
+        column({ field: 'dc:creator', hidden: false, hiddenBack: true, order: 0, width: '90px', resized: true }),
+        column({ field: 'dc:modified', hidden: false, hiddenBack: false, order: 1, width: null, resized: false }),
+      ];
+
+      el.resetSettings();
+
+      expect(el.columns.map((c) => c.hidden)).to.deep.equal([false, true, false]);
+      expect(el.columns.map((c) => c.order)).to.deep.equal([0, 1, 2]);
+      expect(el.columns.map((c) => c.width)).to.deep.equal(['300px', null, null]);
+      expect(el.columns.map((c) => c.resized)).to.deep.equal([false, false, false]);
+    });
+
+    test('only sets the column properties that differ from the defaults', async () => {
+      const el = await newTable();
+      el.columns = [
+        column({ field: 'dc:title', hidden: false, hiddenBack: false, order: 0, width: null, filterValue: '' }),
+      ];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.resetSettings();
+
+      expect(setSpy).to.have.been.calledOnceWith('columns.0.resized', false);
+    });
+
+    test('clears the column filter values with the filter events suppressed', async () => {
+      const el = await newTable();
+      el.columns = [
+        column({ field: 'dc:title', filterValue: 'invoice' }),
+        column({ field: 'dc:creator', filterValue: '' }),
+      ];
+      let suppressedWhileClearing;
+      const setStub = sinon.stub(el, 'set').callsFake((path, value) => {
+        if (path === 'columns.0.filterValue') {
+          suppressedWhileClearing = el._suppressFilterEvents;
+        }
+        setStub.wrappedMethod.call(el, path, value);
+      });
+
+      el.resetSettings();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(setStub).to.not.have.been.calledWith('columns.1.filterValue');
+      expect(suppressedWhileClearing).to.be.true;
+      expect(el._suppressFilterEvents).to.be.false;
+    });
+
+    test('removes the filters from the provider and fetches once from the first page', async () => {
+      const provider = newProvider({ params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_path: '/ws' } });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' }), column({ field: 'dc:creator' })];
+      el.filters = [
+        { path: 'dc_title', value: 'invoice', name: 'Title', expression: '$term*' },
+        { path: 'dc_creator', value: 'bob', name: 'Author' },
+      ];
+
+      el.resetSettings();
+
+      expect(provider.params).to.deep.equal({ ecm_path: '/ws' });
+      expect(el.filters).to.deep.equal([]);
+      expect(provider.page).to.equal(1);
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+    });
+
+    test('does not fetch when there is no filter and the table never changed the sort', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title' })];
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(provider.page).to.equal(3);
+      expect(el.clearSelection).to.not.have.been.called;
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('gives the provider back the sort it had before the table first sorted it', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title' })];
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'desc' });
+      el.fetch.resetHistory();
+      el.clearSelection.resetHistory();
+
+      el.resetSettings();
+
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+    });
+
+    test('lets an auto provider fetch by itself when only the sort changed', async () => {
+      const provider = newProvider({ auto: true });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'asc' });
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({});
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('remembers the provider sort only before the first change', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('never restores a sort remembered for another provider', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' } });
+      el.nxProvider = second;
+
+      el.resetSettings();
+
+      expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      expect(el.sortOrder).to.deep.equal([]);
+    });
+
+    test('works without a page provider', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice', hidden: true, hiddenBack: false })];
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      const fetchSpy = sinon.spy(el, 'fetch');
+
+      el.resetSettings();
+
+      expect(el.columns[0].hidden).to.be.false;
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(fetchSpy).to.not.have.been.called;
+    });
+
+    test('fires a single composed settings-changed event with source reset', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', order: 1 }), column({ field: 'dc:creator', order: 0 })];
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
+
+      el.resetSettings();
+
+      expect(spy).to.have.been.calledOnce;
+      const event = spy.firstCall.args[0];
+      expect(event.detail).to.deep.equal({ source: 'reset' });
+      expect(event.composed).to.be.true;
+      expect(event.bubbles).to.be.true;
+    });
+  });
+
+  // ------------------------------------------------------------------
   // Column resize methods
   // ------------------------------------------------------------------
   suite('_onColumnResizeStart', () => {
