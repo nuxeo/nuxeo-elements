@@ -1234,17 +1234,35 @@ function hasRowDetailTemplate(node) {
       const sortChanged = this._resetSortOrder();
       if (filtersCleared || sortChanged) {
         this.clearSelection();
-        if (this.paginable) {
-          this.nxProvider.page = 1;
-        }
-        // Filter params are removed in place, which an auto provider cannot detect, so those always need a fetch.
-        if (filtersCleared || !this.nxProvider.auto) {
-          this.fetch();
-        }
+        this._refetchFromFirstRow(sortChanged);
       }
 
       this.notifyResize();
       this._fireSettingsChanged({ source: 'reset' });
+    }
+
+    /**
+     * Shows the results again from the first row once a reset changed the filters or the sort, with a single request.
+     * An auto provider fetches by itself when its sort or page changes, reading its params at that point, so the
+     * table only fetches when no such request is coming: always for other providers, and for an auto provider whose
+     * filters alone changed, since params removed in place go unnoticed.
+     */
+    _refetchFromFirstRow(sortChanged) {
+      const provider = this.nxProvider;
+      const pageChanges = this.paginable && provider.page !== 1;
+      if (this.paginable) {
+        provider.page = 1;
+      }
+      if (provider.auto && (sortChanged || pageChanges)) {
+        if (!this.paginable) {
+          // the automatic request reads the range from the provider: start it at the first row, not a scrolled one
+          provider.offset = 0;
+        }
+        // drop the rows of the previous results, so the automatic request does not mix with them
+        this.reset();
+      } else {
+        this.fetch();
+      }
     }
 
     /**
@@ -1295,27 +1313,35 @@ function hasRowDetailTemplate(node) {
      */
     _resetSortOrder() {
       this.sortOrder = [];
-      const remembered = this._defaultSort;
+      if (!this._hasPageProvider() || !this._defaultSorts) {
+        return false;
+      }
+      const defaultSort = this._defaultSorts.get(this.nxProvider);
       // Nothing to give back when the table never changed the sort of this provider.
-      if (!this._hasPageProvider() || !remembered || remembered.provider !== this.nxProvider) {
+      if (!defaultSort) {
         return false;
       }
       this._ppSort = {};
-      if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(remembered.sort)) {
+      if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(defaultSort)) {
         return false;
       }
-      this.nxProvider.sort = { ...remembered.sort };
+      this.nxProvider.sort = { ...defaultSort };
       return true;
     }
 
     /**
-     * Remembers the page provider sort the first time the table is about to change it, so that `resetSettings` can
-     * give it back. The provider is kept alongside, so a sort remembered for another provider is never restored.
+     * Remembers the sort of the page provider the first time the table is about to change it, so `resetSettings` can
+     * give it back. Each provider keeps its own first snapshot, so moving between providers never loses one.
      */
     _rememberDefaultSort() {
-      const remembered = this._defaultSort;
-      if (this._hasPageProvider() && (!remembered || remembered.provider !== this.nxProvider)) {
-        this._defaultSort = { provider: this.nxProvider, sort: { ...this.nxProvider.sort } };
+      if (!this._hasPageProvider()) {
+        return;
+      }
+      if (!this._defaultSorts) {
+        this._defaultSorts = new WeakMap();
+      }
+      if (!this._defaultSorts.has(this.nxProvider)) {
+        this._defaultSorts.set(this.nxProvider, { ...this.nxProvider.sort });
       }
     }
 
