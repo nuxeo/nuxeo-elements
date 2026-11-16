@@ -1216,9 +1216,9 @@ function hasRowDetailTemplate(node) {
 
     /**
      * Puts the table back to the layout it declares: column visibility, order and width, column filters and sort
-     * order. Results are fetched again only when a filter or the sort actually changed. Ends with a single
-     * `settings-changed` event whose `detail.source` is `'reset'`, so a host that stores the table settings can
-     * drop them instead of saving the defaults on top of them (ELEMENTS-2017).
+     * order. Results are fetched again only when a filter or the sort actually changed. The last event fired is a
+     * `settings-changed` whose `detail.source` is `'reset'` (a visibility change may fire the usual one before it),
+     * so a host that stores the table settings can drop them instead of saving the defaults (ELEMENTS-2017).
      */
     resetSettings() {
       // Clear the column filters with their events suppressed, as the settings setter does, so several cleared
@@ -1249,8 +1249,9 @@ function hasRowDetailTemplate(node) {
 
     /**
      * Restores one column to its layout defaults. The width is read from the `width` attribute: the property is
-     * not reflected, so the attribute keeps the layout value after a resize. `nuxeo-results` uses the same default
-     * when a table has no stored settings (WEBUI-2079), so a reset looks the same as a reload without settings.
+     * not reflected, so the attribute keeps the layout value after a resize. `nuxeo-results` applies the same default
+     * when it restores a table from empty settings (WEBUI-2079), so a table looks the same after a reset as after a
+     * reload that follows it.
      */
     _resetColumn(column, idx) {
       const declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
@@ -1314,7 +1315,7 @@ function hasRowDetailTemplate(node) {
     _rememberDefaultSort() {
       const remembered = this._defaultSort;
       if (this._hasPageProvider() && (!remembered || remembered.provider !== this.nxProvider)) {
-        this._defaultSort = { provider: this.nxProvider, sort: { ...(this.nxProvider.sort || {}) } };
+        this._defaultSort = { provider: this.nxProvider, sort: { ...this.nxProvider.sort } };
       }
     }
 

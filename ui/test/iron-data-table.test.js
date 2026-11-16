@@ -2361,6 +2361,39 @@ suite('iron-data-table extras', () => {
       expect(event.composed).to.be.true;
       expect(event.bubbles).to.be.true;
     });
+
+    test('fires the reset event last when the visibility of a column changes', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', hidden: true, hiddenBack: false })];
+      await flush();
+      const sources = [];
+      el.addEventListener('settings-changed', (e) => sources.push(e.detail && e.detail.source));
+
+      el.resetSettings();
+
+      expect(sources.length).to.be.above(1);
+      expect(sources[sources.length - 1]).to.equal('reset');
+    });
+
+    test('does not let real columns announce the filters it clears', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      const [titleColumn] = el.columns;
+      titleColumn.filterValue = 'invoice';
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+
+      el.resetSettings();
+
+      expect(titleColumn.filterValue).to.equal('');
+      expect(spy).to.not.have.been.called;
+    });
   });
 
   // ------------------------------------------------------------------
