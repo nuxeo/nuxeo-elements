@@ -2531,7 +2531,133 @@ suite('iron-data-table extras', () => {
       await sleep(40);
 
       expect(provider.params).to.deep.equal({});
-      expect(fetchStub).to.have.been.calledOnce;
+      expect(fetchStub.callCount).to.equal(1);
+    });
+
+    test('sends a single request through the real fetch of a paginable auto provider', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table paginable>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      // on a later page, with a filter applied
+      provider.page = 3;
+      provider.offset = 40;
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+
+      el.resetSettings();
+      await sleep(60);
+
+      expect(fetchStub.callCount).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      // the table moved on to the next page once the first one was loaded, without fetching it
+      expect(provider.page).to.equal(2);
+    });
+
+    test('gives a provider back its default sort after another provider was sorted meanwhile', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+      // back to the first provider, reset without sorting it again
+      el.nxProvider = first;
+
+      el.resetSettings();
+
+      expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('gives back the sort chosen elsewhere before the table sorted again, not an older one', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // e.g. the sort selector of the grid view, then a header click back in the table
+      provider.sort = { 'dc:modified': 'desc' };
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetSettings();
+
+      expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
+    });
+
+    test('leaves an equal sort set elsewhere since, as it is not the one the table applied', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // the sort selector of the grid view picks the same sort, as a new object
+      const chosenElsewhere = { 'dc:title': 'asc' };
+      provider.sort = chosenElsewhere;
+
+      el.resetSettings();
+
+      expect(provider.sort).to.equal(chosenElsewhere);
+    });
+
+    test('keeps the automatic fetch of a sort changed while the reset of a paginable table was loading', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table paginable>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      let finishReset;
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+      fetchStub.onFirstCall().returns(
+        new Promise((resolve) => {
+          finishReset = resolve;
+        }),
+      );
+
+      el.resetSettings();
+      // while the reset request is loading, a new sort is applied and schedules its own automatic fetch
+      provider.sort = { 'dc:modified': 'desc' };
+      finishReset({ entries: [], resultsCount: 0 });
+      await sleep(60);
+
+      expect(fetchStub.callCount).to.equal(2);
+    });
+
+    test('_providerRequest changes with what an automatic fetch would request, not with the page', async () => {
+      const el = await newTable();
+      const provider = newProvider({ provider: 'pp', params: { a: 1 }, sort: { 'dc:title': 'asc' } });
+      const request = el._providerRequest(provider);
+
+      provider.page = 7;
+      provider.pageSize = 40;
+      expect(el._providerRequest(provider)).to.equal(request);
+
+      provider.query = 'SELECT * FROM Document';
+      expect(el._providerRequest(provider)).to.not.equal(request);
     });
   });
 

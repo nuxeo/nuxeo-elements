@@ -1200,6 +1200,7 @@ function hasRowDetailTemplate(node) {
         this._rememberDefaultSort();
         this._ppSort = sortMap;
         this.nxProvider.sort = sortMap;
+        this._rememberAppliedSort();
         if (!this.nxProvider.auto) {
           needsFetch = true;
         }
@@ -1262,10 +1263,32 @@ function hasRowDetailTemplate(node) {
         provider.offset = 0;
         provider.page = 1;
       }
-      this.fetch();
+      const fetched = this.fetch();
       if (provider.auto && typeof provider.cancelAutoFetch === 'function') {
         provider.cancelAutoFetch();
+        if (this.paginable && fetched) {
+          // Once the first page is loaded the table moves the provider to the next one, which schedules another
+          // automatic fetch: cancel that one too, unless what the provider fetches changed meanwhile and needs its own.
+          const fetchedFor = this._providerRequest(provider);
+          fetched.then(
+            () => {
+              if (this._providerRequest(provider) === fetchedFor) {
+                provider.cancelAutoFetch();
+              }
+            },
+            // a failed fetch does not move the page, so there is nothing of the table's own to cancel
+            (error) => error,
+          );
+        }
       }
+    }
+
+    /**
+     * Describes what a page provider fetches, apart from the page and its size: its page provider or query, params and
+     * sort. Two equal descriptions mean an automatic fetch would request the same results.
+     */
+    _providerRequest(provider) {
+      return JSON.stringify([provider.provider, provider.query, provider.params || {}, provider.sort || {}]);
     }
 
     /**
@@ -1310,37 +1333,55 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Clears the sort order and gives the page provider back the sort it had before the table first changed it, as
-     * long as the provider still holds the sort the table applied: a sort chosen elsewhere since, e.g. with the sort
-     * selector of another view, is left alone.
+     * Clears the sort order and gives the page provider back the sort it had before the table changed it, as long as
+     * the provider still holds the sort the table applied to it: a sort chosen elsewhere since, e.g. with the sort
+     * selector of the grid view, is left alone, so that selector keeps matching the results.
      *
      * @return {boolean} `true` when the provider sort changed.
      */
     _resetSortOrder() {
-      // `_ppSort` is the sort the table last applied, which may belong to another provider: always forget it with the
-      // sort order, so the next header click is compared to an empty sort and applied.
-      const appliedSort = this._ppSort;
+      // `_ppSort` is the sort the table last applied, possibly to another provider: forget it with the sort order, so
+      // the next header click is compared to an empty sort and applied.
       this.sortOrder = [];
       this._ppSort = {};
-      if (!this._hasPageProvider() || !this._defaultSorts) {
+      if (!this._hasPageProvider() || !this._defaultSorts || !this._appliedSorts) {
         return false;
       }
-      const defaultSort = this._defaultSorts.get(this.nxProvider);
-      // Nothing to give back when the table never changed the sort of this provider.
-      if (!defaultSort) {
+      const provider = this.nxProvider;
+      const defaultSort = this._defaultSorts.get(provider);
+      const appliedSort = this._appliedSorts.get(provider);
+      this._appliedSorts.delete(provider);
+      // Nothing to give back when the table never sorted this provider, or when its sort has been replaced since: the
+      // table gives the provider the sort object itself, so any other object, even an equal one, was set elsewhere.
+      if (!defaultSort || !appliedSort || provider.sort !== appliedSort) {
         return false;
       }
-      const providerSort = JSON.stringify(this.nxProvider.sort || {});
-      if (providerSort === JSON.stringify(defaultSort) || providerSort !== JSON.stringify(appliedSort || {})) {
+      if (JSON.stringify(appliedSort) === JSON.stringify(defaultSort)) {
         return false;
       }
-      this.nxProvider.sort = { ...defaultSort };
+      provider.sort = { ...defaultSort };
       return true;
     }
 
     /**
-     * Remembers the sort of the page provider the first time the table is about to change it, so `resetSettings` can
-     * give it back. Each provider keeps its own first snapshot, so moving between providers never loses one.
+     * Records the sort the table has just applied to its page provider, from a header click or restored settings. It is
+     * kept per provider, so `_resetSortOrder` compares a provider's sort with what the table applied to that provider.
+     */
+    _rememberAppliedSort() {
+      // Both paths give the provider the `_ppSort` object itself: anything else means nothing was written this time.
+      if (!this._hasPageProvider() || this.nxProvider.sort !== this._ppSort) {
+        return;
+      }
+      if (!this._appliedSorts) {
+        this._appliedSorts = new WeakMap();
+      }
+      this._appliedSorts.set(this.nxProvider, this._ppSort);
+    }
+
+    /**
+     * Remembers the sort of the page provider before the table changes it, so `resetSettings` can give it back. It is
+     * kept per provider, and taken again whenever the provider no longer holds the sort the table last applied: a sort
+     * set elsewhere since, e.g. with the sort selector of the grid view or for another folder, is the one to give back.
      */
     _rememberDefaultSort() {
       if (!this._hasPageProvider()) {
@@ -1349,8 +1390,10 @@ function hasRowDetailTemplate(node) {
       if (!this._defaultSorts) {
         this._defaultSorts = new WeakMap();
       }
-      if (!this._defaultSorts.has(this.nxProvider)) {
-        this._defaultSorts.set(this.nxProvider, { ...this.nxProvider.sort });
+      const provider = this.nxProvider;
+      const appliedSort = this._appliedSorts ? this._appliedSorts.get(provider) : undefined;
+      if (!this._defaultSorts.has(provider) || provider.sort !== appliedSort) {
+        this._defaultSorts.set(provider, { ...provider.sort });
       }
     }
 
@@ -1788,6 +1831,7 @@ function hasRowDetailTemplate(node) {
       }
       this._rememberDefaultSort();
       this._sortDirectionChanged(e);
+      this._rememberAppliedSort();
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
