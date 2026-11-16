@@ -50,6 +50,7 @@ import './data-table-icons.js';
 import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
+import { applyUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -1196,11 +1197,9 @@ function hasRowDetailTemplate(node) {
           return acc;
         }, {});
 
-        // keep provider sort aligned with the table's sortOrder
-        this._rememberDefaultSort();
+        // keep provider sort aligned with the table's sortOrder; a restored sort is a sort the user chose (ELEMENTS-2017)
         this._ppSort = sortMap;
-        this.nxProvider.sort = sortMap;
-        this._rememberAppliedSort();
+        applyUserSort(this.nxProvider, sortMap);
         if (!this.nxProvider.auto) {
           needsFetch = true;
         }
@@ -1333,9 +1332,9 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Clears the sort order and gives the page provider back the sort it had before the table changed it, as long as
-     * the provider still holds the sort the table applied to it: a sort chosen elsewhere since, e.g. with the sort
-     * selector of the grid view, is left alone, so that selector keeps matching the results.
+     * Clears the sort order and gives the page provider back the sort it had before the user changed it, from a table
+     * header or elsewhere (e.g. the sort selector of the grid view), as long as it still holds the last sort the user
+     * chose: a sort the page set since, e.g. for another folder, is left alone.
      *
      * @return {boolean} `true` when the provider sort changed.
      */
@@ -1344,57 +1343,7 @@ function hasRowDetailTemplate(node) {
       // the next header click is compared to an empty sort and applied.
       this.sortOrder = [];
       this._ppSort = {};
-      if (!this._hasPageProvider() || !this._defaultSorts || !this._appliedSorts) {
-        return false;
-      }
-      const provider = this.nxProvider;
-      const defaultSort = this._defaultSorts.get(provider);
-      const appliedSort = this._appliedSorts.get(provider);
-      this._appliedSorts.delete(provider);
-      // Nothing to give back when the table never sorted this provider, or when its sort has been replaced since: the
-      // table gives the provider the sort object itself, so any other object, even an equal one, was set elsewhere.
-      if (!defaultSort || !appliedSort || provider.sort !== appliedSort) {
-        return false;
-      }
-      if (JSON.stringify(appliedSort) === JSON.stringify(defaultSort)) {
-        return false;
-      }
-      provider.sort = { ...defaultSort };
-      return true;
-    }
-
-    /**
-     * Records the sort the table has just applied to its page provider, from a header click or restored settings. It is
-     * kept per provider, so `_resetSortOrder` compares a provider's sort with what the table applied to that provider.
-     */
-    _rememberAppliedSort() {
-      // Both paths give the provider the `_ppSort` object itself: anything else means nothing was written this time.
-      if (!this._hasPageProvider() || this.nxProvider.sort !== this._ppSort) {
-        return;
-      }
-      if (!this._appliedSorts) {
-        this._appliedSorts = new WeakMap();
-      }
-      this._appliedSorts.set(this.nxProvider, this._ppSort);
-    }
-
-    /**
-     * Remembers the sort of the page provider before the table changes it, so `resetSettings` can give it back. It is
-     * kept per provider, and taken again whenever the provider no longer holds the sort the table last applied: a sort
-     * set elsewhere since, e.g. with the sort selector of the grid view or for another folder, is the one to give back.
-     */
-    _rememberDefaultSort() {
-      if (!this._hasPageProvider()) {
-        return;
-      }
-      if (!this._defaultSorts) {
-        this._defaultSorts = new WeakMap();
-      }
-      const provider = this.nxProvider;
-      const appliedSort = this._appliedSorts ? this._appliedSorts.get(provider) : undefined;
-      if (!this._defaultSorts.has(provider) || provider.sort !== appliedSort) {
-        this._defaultSorts.set(provider, { ...provider.sort });
-      }
+      return this._hasPageProvider() && restoreDefaultSort(this.nxProvider);
     }
 
     _onCheckBoxTap(e) {
@@ -1829,9 +1778,7 @@ function hasRowDetailTemplate(node) {
       if (this.paginable) {
         this.nxProvider.page = 1;
       }
-      this._rememberDefaultSort();
       this._sortDirectionChanged(e);
-      this._rememberAppliedSort();
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
