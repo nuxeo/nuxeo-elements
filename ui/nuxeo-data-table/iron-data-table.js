@@ -1197,6 +1197,7 @@ function hasRowDetailTemplate(node) {
         }, {});
 
         // keep provider sort aligned with the table's sortOrder
+        this._rememberDefaultSort();
         this._ppSort = sortMap;
         this.nxProvider.sort = sortMap;
         if (!this.nxProvider.auto) {
@@ -1210,6 +1211,110 @@ function hasRowDetailTemplate(node) {
       // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
       if (needsFetch && typeof this.fetch === 'function') {
         this.fetch();
+      }
+    }
+
+    /**
+     * Puts the table back to the layout it declares: column visibility, order and width, column filters and sort
+     * order. Results are fetched again only when a filter or the sort actually changed. Ends with a single
+     * `settings-changed` event whose `detail.source` is `'reset'`, so a host that stores the table settings can
+     * drop them instead of saving the defaults on top of them (ELEMENTS-2017).
+     */
+    resetSettings() {
+      // Clear the column filters with their events suppressed, as the settings setter does, so several cleared
+      // filters do not each start a fetch that could abort the others (WEBUI-1885). The provider is updated below.
+      this._suppressFilterEvents = true;
+      try {
+        (this.columns || []).forEach((column, idx) => this._resetColumn(column, idx));
+      } finally {
+        this._suppressFilterEvents = false;
+      }
+
+      const filtersCleared = this._clearFilters();
+      const sortChanged = this._resetSortOrder();
+      if (filtersCleared || sortChanged) {
+        this.clearSelection();
+        if (this.paginable) {
+          this.nxProvider.page = 1;
+        }
+        // Filter params are removed in place, which an auto provider cannot detect, so those always need a fetch.
+        if (filtersCleared || !this.nxProvider.auto) {
+          this.fetch();
+        }
+      }
+
+      this.notifyResize();
+      this._fireSettingsChanged({ source: 'reset' });
+    }
+
+    /**
+     * Restores one column to its layout defaults. The width is read from the `width` attribute: the property is
+     * not reflected, so the attribute keeps the layout value after a resize. `nuxeo-results` uses the same default
+     * when a table has no stored settings (WEBUI-2079), so a reset looks the same as a reload without settings.
+     */
+    _resetColumn(column, idx) {
+      const declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
+      const defaults = {
+        hidden: !!column.hiddenBack,
+        order: idx,
+        width: declaredWidth || null,
+        resized: false,
+        filterValue: '',
+      };
+      Object.keys(defaults).forEach((prop) => {
+        if (column[prop] !== defaults[prop]) {
+          this.set(`columns.${idx}.${prop}`, defaults[prop]);
+        }
+      });
+    }
+
+    /**
+     * Removes the column filters from the page provider params and from `filters`.
+     *
+     * @return {boolean} `true` when there was at least one filter to remove.
+     */
+    _clearFilters() {
+      if (!this._hasPageProvider() || !this.filters || this.filters.length === 0) {
+        return false;
+      }
+      const { params } = this.nxProvider;
+      if (params) {
+        this.filters.forEach((filter) => {
+          delete params[filter.path];
+        });
+      }
+      this.set('filters', []);
+      return true;
+    }
+
+    /**
+     * Clears the sort order and gives the page provider back the sort it had before the table first changed it.
+     *
+     * @return {boolean} `true` when the provider sort changed.
+     */
+    _resetSortOrder() {
+      this.sortOrder = [];
+      const remembered = this._defaultSort;
+      // Nothing to give back when the table never changed the sort of this provider.
+      if (!this._hasPageProvider() || !remembered || remembered.provider !== this.nxProvider) {
+        return false;
+      }
+      this._ppSort = {};
+      if (JSON.stringify(this.nxProvider.sort || {}) === JSON.stringify(remembered.sort)) {
+        return false;
+      }
+      this.nxProvider.sort = { ...remembered.sort };
+      return true;
+    }
+
+    /**
+     * Remembers the page provider sort the first time the table is about to change it, so that `resetSettings` can
+     * give it back. The provider is kept alongside, so a sort remembered for another provider is never restored.
+     */
+    _rememberDefaultSort() {
+      const remembered = this._defaultSort;
+      if (this._hasPageProvider() && (!remembered || remembered.provider !== this.nxProvider)) {
+        this._defaultSort = { provider: this.nxProvider, sort: { ...(this.nxProvider.sort || {}) } };
       }
     }
 
@@ -1645,6 +1750,7 @@ function hasRowDetailTemplate(node) {
       if (this.paginable) {
         this.nxProvider.page = 1;
       }
+      this._rememberDefaultSort();
       this._sortDirectionChanged(e);
     }
 
