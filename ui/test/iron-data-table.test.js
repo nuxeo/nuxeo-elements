@@ -2186,6 +2186,7 @@ suite('iron-data-table extras', () => {
       el.nxProvider = provider;
       sinon.stub(el, '_hasPageProvider').returns(true);
       sinon.stub(el, 'fetch');
+      sinon.stub(el, 'reset');
       sinon.stub(el, 'clearSelection');
       sinon.stub(el, 'notifyResize');
       return el;
@@ -2245,7 +2246,10 @@ suite('iron-data-table extras', () => {
     });
 
     test('removes the filters from the provider and fetches once from the first page', async () => {
-      const provider = newProvider({ params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_path: '/ws' } });
+      const provider = newProvider({
+        params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_path: '/ws' },
+        auto: false,
+      });
       const el = await tableWithProvider(provider);
       el.paginable = true;
       el.columns = [column({ field: 'dc:title', filterValue: 'invoice' }), column({ field: 'dc:creator' })];
@@ -2294,8 +2298,8 @@ suite('iron-data-table extras', () => {
       expect(el.fetch).to.have.been.calledOnce;
     });
 
-    test('lets an auto provider fetch by itself when only the sort changed', async () => {
-      const provider = newProvider({ auto: true });
+    test('lets an auto provider fetch by itself from the first row when the sort changed', async () => {
+      const provider = newProvider({ auto: true, offset: 40 });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
@@ -2304,7 +2308,53 @@ suite('iron-data-table extras', () => {
       el.resetSettings();
 
       expect(provider.sort).to.deep.equal({});
+      expect(provider.offset).to.equal(0);
+      expect(el.reset).to.have.been.calledOnce;
       expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('lets an auto provider fetch by itself when its page goes back to the first one', async () => {
+      const provider = newProvider({ auto: true, page: 3, params: { dc_title: 'invoice*' } });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      el.resetSettings();
+
+      expect(provider.params).to.deep.equal({});
+      expect(provider.page).to.equal(1);
+      expect(el.reset).to.have.been.calledOnce;
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('fetches for an auto provider when only its filters changed', async () => {
+      const provider = newProvider({ auto: true, params: { dc_title: 'invoice*' } });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      el.resetSettings();
+
+      expect(provider.params).to.deep.equal({});
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(el.reset).to.not.have.been.called;
+    });
+
+    test('restores the sort of each provider after moving between them', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
+      el._sort({ detail: { path: 'dc:creator', direction: 'asc' } });
+      el.nxProvider = first;
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetSettings();
+
+      expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
     });
 
     test('remembers the provider sort only before the first change', async () => {
