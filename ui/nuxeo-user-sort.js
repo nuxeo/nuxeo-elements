@@ -58,3 +58,8 @@ export function restoreDefaultSort(provider) {
   provider.sort = defaultSort;
   return true;
 }
+
+// Also reachable as Nuxeo.UserSort, so an application can use it when present without depending on an Elements build
+// that provides this module.
+window.Nuxeo = window.Nuxeo || {};
+Nuxeo.UserSort = { applyUserSort, restoreDefaultSort };
