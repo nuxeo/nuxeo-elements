@@ -74,6 +74,11 @@ suite('nuxeo-user-sort (ELEMENTS-2017)', () => {
     expect(other.sort).to.deep.equal({ 'dc:modified': 'desc' });
   });
 
+  test('is also reachable as Nuxeo.UserSort, for applications that must not import it', () => {
+    expect(Nuxeo.UserSort.applyUserSort).to.equal(applyUserSort);
+    expect(Nuxeo.UserSort.restoreDefaultSort).to.equal(restoreDefaultSort);
+  });
+
   test('gives back an empty sort when the provider had none', () => {
     const unsorted = {};
     applyUserSort(unsorted, { 'dc:title': 'asc' });
