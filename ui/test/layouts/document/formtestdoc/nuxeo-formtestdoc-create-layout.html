@@ -1,0 +1,44 @@
+<!--
+`nuxeo-formtestdoc-create-layout`
+Mirrors the ELEMENTS-2143 customer layout: an optional FAQ table whose row form requires Question.
+@group Nuxeo UI
+@element nuxeo-formtestdoc-create-layout
+-->
+<dom-module id="nuxeo-formtestdoc-create-layout">
+  <template>
+    <nuxeo-input
+      role="widget"
+      value="{{document.properties.dc:title}}"
+      label="Title"
+      type="text"
+      required="true"
+      name="title"
+    ></nuxeo-input>
+
+    <nuxeo-data-table role="widget" label="FAQ" items="{{document.properties.my:faq}}" editable>
+      <nuxeo-data-table-column name="Question">
+        <template>[[item.question]]</template>
+      </nuxeo-data-table-column>
+      <nuxeo-data-table-form>
+        <template>
+          <nuxeo-input label="Question" name="question" value="{{item.question}}" required></nuxeo-input>
+        </template>
+      </nuxeo-data-table-form>
+    </nuxeo-data-table>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-formtestdoc-create-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype FormTestDoc
+         */
+        document: {
+          type: Object,
+        },
+      },
+    });
+  </script>
+</dom-module>

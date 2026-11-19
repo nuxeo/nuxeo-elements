@@ -19,6 +19,7 @@ import '@webcomponents/html-imports/html-imports.min.js';
 import '../nuxeo-document-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-textarea';
+import '../nuxeo-data-table/iron-data-table.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import { fixture, flush, isElementVisible, html, waitForEvent } from '@nuxeo/testing-helpers';
 import { getWidgetFromLayout, waitForLayoutLoad } from './ui-test-helpers.js';
@@ -376,5 +377,155 @@ suite('nuxeo-document-layout', () => {
     // only the description field should be flagged as invalid
     expect(getWidgetFromLayout('Title', documentLayout).invalid).to.be.false;
     expect(getWidgetFromLayout('Description', documentLayout).invalid).to.be.true;
+  });
+
+  suite('Required list of complex entries rejected by the server (ELEMENTS-2143)', () => {
+    // The client cannot see whether a list of complex entries is required, so an empty one is only
+    // rejected on save. The server message does not name the field, the layout has to.
+    const notNullReport = (field) => {
+      return {
+        'entity-type': 'validation_report',
+        has_error: true,
+        number: 1,
+        violations: [
+          {
+            messageKey: 'label.schema.constraint.violation.NotNullConstraint',
+            invalid_value: null,
+            constraint: { 'entity-type': 'validation_constraint', name: 'NotNullConstraint', parameters: {} },
+            path: [{ field_name: field, is_list_item: false }],
+          },
+        ],
+      };
+    };
+
+    const buildFaqLayout = () => buildLayout({ type: 'FormTestDoc', uid: '1', properties: { 'my:faq': [] } }, 'create');
+    const faqTable = (dl) => dl.element.shadowRoot.querySelector('nuxeo-data-table');
+
+    suiteSetup(() => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.NotNullConstraint'] = 'Value is required.';
+    });
+
+    test('Should accept an empty optional FAQ list on the client', async () => {
+      documentLayout = await buildFaqLayout();
+      getWidgetFromLayout('title', documentLayout).value = 'a title';
+      expect(await documentLayout.validate()).to.be.true;
+      expect(faqTable(documentLayout).invalid).to.be.false;
+    });
+
+    test('Should name the field in the summary and inline, and flag the table', async () => {
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+
+      documentLayout.reportValidation(notNullReport('my:faq'));
+      flush();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+      expect(errors).to.have.lengthOf(1);
+      expect(errors[0].textContent).to.equal('FAQ is required.');
+      expect(table.invalid).to.be.true;
+      expect(table.errorMessage).to.equal('FAQ is required.');
+      expect(table.$.table.getAttribute('aria-invalid')).to.equal('true');
+      expect(table.$.table.getAttribute('aria-describedby')).to.equal(table.shadowRoot.querySelector('.error').id);
+    });
+
+    test('Should keep the server message for a property bound to no widget', async () => {
+      documentLayout = await buildFaqLayout();
+
+      documentLayout.reportValidation(notNullReport('my:other'));
+      flush();
+
+      const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+      expect(errors).to.have.lengthOf(1);
+      expect(errors[0].textContent).to.equal('Value is required.');
+    });
+
+    test('Should keep the server message when the widget has no label to name it by', async () => {
+      documentLayout = await buildFaqLayout();
+      sinon.stub(documentLayout.$.layout, '_requiredViolationMessage').returns('');
+
+      documentLayout.reportValidation(notNullReport('my:faq'));
+      flush();
+
+      const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+      expect(errors).to.have.lengthOf(1);
+      expect(errors[0].textContent).to.equal('Value is required.');
+      expect(faqTable(documentLayout).invalid).to.be.true;
+    });
+
+    test('Should not name the list for a required field nested in one of its rows', async () => {
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      const report = notNullReport('my:faq');
+      report.violations[0].path = [
+        { field_name: 'my:faq', is_list_item: false },
+        { field_name: 'item', is_list_item: true, index: 0 },
+        { field_name: 'question', is_list_item: false },
+      ];
+
+      documentLayout.reportValidation(report);
+      flush();
+
+      const messages = Array.from(documentLayout.shadowRoot.querySelectorAll('span.error')).map((e) => e.textContent);
+      expect(messages).to.not.include('FAQ is required.');
+      expect(messages).to.include('Value is required.');
+      expect(table.invalid).to.be.true;
+      expect(table.errorMessage).to.not.equal('FAQ is required.');
+    });
+
+    test('Should replace an injected required message when the server reports another failure', async () => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      const sizeReport = notNullReport('my:faq');
+      sizeReport.violations[0].messageKey = 'label.schema.constraint.violation.SizeConstraint';
+      sizeReport.violations[0].constraint = { 'entity-type': 'validation_constraint', name: 'SizeConstraint' };
+
+      documentLayout.reportValidation(notNullReport('my:faq'));
+      expect(table.errorMessage).to.equal('FAQ is required.');
+
+      documentLayout.reportValidation(sizeReport);
+      flush();
+      expect(table.errorMessage).to.equal('Wrong size.');
+      expect(documentLayout.shadowRoot.querySelector('span.error').textContent).to.equal('Wrong size.');
+    });
+
+    test('Should keep a message the author configured when the server reports another failure', async () => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
+      documentLayout = await buildFaqLayout();
+      const table = faqTable(documentLayout);
+      table.errorMessage = 'Check the FAQ.';
+      const sizeReport = notNullReport('my:faq');
+      sizeReport.violations[0].messageKey = 'label.schema.constraint.violation.SizeConstraint';
+      sizeReport.violations[0].constraint = { 'entity-type': 'validation_constraint', name: 'SizeConstraint' };
+
+      documentLayout.reportValidation(sizeReport);
+      expect(table.errorMessage).to.equal('Check the FAQ.');
+    });
+
+    test('Should fall back to the constraint message when the violation has no parameters', async () => {
+      window.nuxeo.I18n.en['label.schema.constraint.violation.SizeConstraint'] = 'Wrong size.';
+      documentLayout = await buildFaqLayout();
+
+      documentLayout.reportValidation({
+        'entity-type': 'validation_report',
+        has_error: true,
+        number: 1,
+        violations: [
+          {
+            messageKey: 'label.schema.constraint.violation.SizeConstraint.untranslated',
+            constraint: { 'entity-type': 'validation_constraint', name: 'SizeConstraint' },
+            path: [{ field_name: 'my:faq', is_list_item: false }],
+          },
+        ],
+      });
+      flush();
+
+      const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+      expect(errors).to.have.lengthOf(1);
+      expect(errors[0].textContent).to.equal('Wrong size.');
+      // only a required violation names the field; the table message is left alone
+      expect(faqTable(documentLayout).errorMessage).to.not.be.ok;
+    });
   });
 });
