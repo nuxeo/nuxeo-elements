@@ -50,7 +50,7 @@ import './data-table-icons.js';
 import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
-import { applyUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
+import { applyUserSort, hasUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -1066,6 +1066,17 @@ function hasRowDetailTemplate(node) {
         columns: {},
         sortOrder,
       };
+      // No column is sorted and the page provider keeps the sort its page gave it, e.g. after Reset Layout: leave the
+      // sort order out, so restoring these settings keeps that sort instead of replacing it with none. A sort the user
+      // cleared from a column header is still saved as an empty sort order (ELEMENTS-2017).
+      if (
+        Array.isArray(sortOrder) &&
+        sortOrder.length === 0 &&
+        this._hasPageProvider() &&
+        !hasUserSort(this.nxProvider)
+      ) {
+        delete tableSettings.sortOrder;
+      }
 
       if (this.columns) {
         this.columns.forEach((column, idx) => {
