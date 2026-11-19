@@ -299,6 +299,8 @@ function hasRowDetailTemplate(node) {
                 <nuxeo-data-table-settings
                   role="columnheader"
                   columns="{{columns}}"
+                  scope-enabled="[[settingsScopeEnabled]]"
+                  scope="{{settingsScope}}"
                   hidden$="[[!settingsEnabled]]"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
@@ -524,6 +526,22 @@ function hasRowDetailTemplate(node) {
           type: Boolean,
           reflectToAttribute: true,
           value: false,
+        },
+        /**
+         * If enabled, the column settings let the user choose where column changes apply (see `settingsScope`).
+         * The user's choice is announced with a `settings-scope-selected` event.
+         */
+        settingsScopeEnabled: {
+          type: Boolean,
+          value: false,
+        },
+        /**
+         * Where column changes apply: `all` (every document of this type) or `document` (this document only).
+         */
+        settingsScope: {
+          type: String,
+          value: 'all',
+          notify: true,
         },
         /**
          * If enabled, it allows to select multiple documents and apply an action on them,
