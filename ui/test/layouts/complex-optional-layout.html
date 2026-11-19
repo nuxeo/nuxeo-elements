@@ -1,0 +1,34 @@
+<!--
+Mirrors a layout with an optional list of complex entries whose row form requires a sub-field: the
+table and its single column carry no `required` and no `field`, the row form binds `item.question`
+(ELEMENTS-2143). The required Question constrains each row, not the number of rows.
+-->
+<dom-module id="complex-optional-layout">
+  <template>
+    <nuxeo-input name="title" label="Title" value="[[title]]" required></nuxeo-input>
+
+    <nuxeo-data-table label="FAQ" items="[[items]]" editable>
+      <nuxeo-data-table-column name="Question">
+        <template>[[item.question]]</template>
+      </nuxeo-data-table-column>
+
+      <nuxeo-data-table-form>
+        <template>
+          <nuxeo-input label="Question" name="question" value="{{item.question}}" required></nuxeo-input>
+        </template>
+      </nuxeo-data-table-form>
+    </nuxeo-data-table>
+  </template>
+  <script>
+    Polymer({
+      is: 'complex-optional-layout',
+      properties: {
+        title: String,
+        items: {
+          type: Array,
+          value: () => [],
+        },
+      },
+    });
+  </script>
+</dom-module>
