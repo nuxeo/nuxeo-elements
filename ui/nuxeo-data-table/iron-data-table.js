@@ -301,6 +301,7 @@ function hasRowDetailTemplate(node) {
                   role="columnheader"
                   columns="{{columns}}"
                   hidden$="[[!settingsEnabled]]"
+                  on-reset-layout="resetLayout"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
             </div>
@@ -1215,12 +1216,13 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Puts the table back to the layout it declares: column visibility, order and width, column filters and sort
-     * order. Results are fetched again only when a filter or the sort actually changed. The last event fired is a
-     * `settings-changed` whose `detail.source` is `'reset'` (a visibility change may fire the usual one before it),
-     * so a host that stores the table settings can drop them instead of saving the defaults (ELEMENTS-2017).
+     * Puts the table back to the layout it declares: column order and width, column filters and sort order. Column
+     * visibility is left as is: Reset Columns, in the layout settings dialog, restores it. Results are fetched again
+     * only when a filter or the sort actually changed. Fires a single `settings-changed` whose `detail.source` is
+     * `'reset-layout'`, so a host that stores the table settings saves the new ones and can reset controls of its own,
+     * such as a sort selector (ELEMENTS-2017).
      */
-    resetSettings() {
+    resetLayout() {
       // A filter typed just before the reset is still waiting for its debounce: drop it, or it comes back afterwards.
       // The header row is rendered in light DOM; filters of a table nested in a row detail belong to that table.
       this.querySelectorAll('nuxeo-data-table-column-filter').forEach((filter) => {
@@ -1246,7 +1248,7 @@ function hasRowDetailTemplate(node) {
       }
 
       this.notifyResize();
-      this._fireSettingsChanged({ source: 'reset' });
+      this._fireSettingsChanged({ source: 'reset-layout' });
     }
 
     /**
@@ -1291,15 +1293,14 @@ function hasRowDetailTemplate(node) {
     }
 
     /**
-     * Restores one column to its layout defaults. The width is read from the `width` attribute: the property is
-     * not reflected, so the attribute keeps the layout value after a resize. `nuxeo-results` applies the same default
-     * when it restores a table from empty settings (WEBUI-2079), so a table looks the same after a reset as after a
-     * reload that follows it.
+     * Restores the order, width and filter of one column to its layout defaults, leaving its visibility as is. The
+     * width is read from the `width` attribute: the property is not reflected, so the attribute keeps the layout value
+     * after a resize. `nuxeo-results` applies the same default when it restores a table from empty settings
+     * (WEBUI-2079), so a column looks the same after a reset as on a table that was never customised.
      */
     _resetColumn(column, idx) {
       const declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
       const defaults = {
-        hidden: !!column.hiddenBack,
         order: idx,
         width: declaredWidth || null,
         resized: false,

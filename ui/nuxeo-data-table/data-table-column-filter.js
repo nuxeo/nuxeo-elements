@@ -120,7 +120,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
     /**
      * Drops an edit still waiting for its debounce and shows the committed value again, so text typed just before the
-     * table resets its settings does not come back as a filter afterwards (ELEMENTS-2017).
+     * table resets its layout does not come back as a filter afterwards (ELEMENTS-2017).
      */
     discardPendingEdit() {
       if (!this._debouncer || !this._debouncer.isActive()) {

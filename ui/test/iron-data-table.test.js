@@ -2167,9 +2167,9 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
-  // resetSettings (ELEMENTS-2017)
+  // resetLayout (ELEMENTS-2017)
   // ------------------------------------------------------------------
-  suite('resetSettings', () => {
+  suite('resetLayout', () => {
     function column(props, declaredWidth) {
       const col = document.createElement('div');
       if (declaredWidth) {
@@ -2197,7 +2197,7 @@ suite('iron-data-table extras', () => {
       return el;
     }
 
-    test('restores visibility, order and the layout-declared width of every column', async () => {
+    test('restores the order and the layout-declared width of every column, keeping their visibility', async () => {
       const el = await newTable();
       el.columns = [
         column(
@@ -2208,9 +2208,10 @@ suite('iron-data-table extras', () => {
         column({ field: 'dc:modified', hidden: false, hiddenBack: false, order: 1, width: null, resized: false }),
       ];
 
-      el.resetSettings();
+      el.resetLayout();
 
-      expect(el.columns.map((c) => c.hidden)).to.deep.equal([false, true, false]);
+      // Reset Columns, in the layout settings dialog, restores the visibility
+      expect(el.columns.map((c) => c.hidden)).to.deep.equal([true, false, false]);
       expect(el.columns.map((c) => c.order)).to.deep.equal([0, 1, 2]);
       expect(el.columns.map((c) => c.width)).to.deep.equal(['300px', null, null]);
       expect(el.columns.map((c) => c.resized)).to.deep.equal([false, false, false]);
@@ -2223,7 +2224,7 @@ suite('iron-data-table extras', () => {
       ];
       const setSpy = sinon.spy(el, 'set');
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(setSpy).to.have.been.calledOnceWith('columns.0.resized', false);
     });
@@ -2242,7 +2243,7 @@ suite('iron-data-table extras', () => {
         setStub.wrappedMethod.call(el, path, value);
       });
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(el.columns[0].filterValue).to.equal('');
       expect(setStub).to.not.have.been.calledWith('columns.1.filterValue');
@@ -2264,7 +2265,7 @@ suite('iron-data-table extras', () => {
         { path: 'dc_creator', value: 'bob', name: 'Author' },
       ];
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.params).to.deep.equal({ ecm_path: '/ws' });
       expect(el.filters).to.deep.equal([]);
@@ -2281,7 +2282,7 @@ suite('iron-data-table extras', () => {
       const el = await tableWithProvider(provider);
       el.columns = [column({ field: 'dc:title' })];
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
       expect(provider.page).to.equal(3);
@@ -2298,7 +2299,7 @@ suite('iron-data-table extras', () => {
       el.fetch.resetHistory();
       el.clearSelection.resetHistory();
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(el.sortOrder).to.deep.equal([]);
       expect(el._ppSort).to.deep.equal({});
@@ -2314,7 +2315,7 @@ suite('iron-data-table extras', () => {
       el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
       expect(provider.sort).to.deep.equal({ 'dc:title': 'asc' });
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({});
       expect(el.fetch).to.have.been.calledOnce;
@@ -2329,7 +2330,7 @@ suite('iron-data-table extras', () => {
       el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
       el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.params).to.deep.equal({});
       expect(provider.page).to.equal(1);
@@ -2346,7 +2347,7 @@ suite('iron-data-table extras', () => {
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
       el.nxProvider = second;
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(el._ppSort).to.deep.equal({});
       expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
@@ -2366,7 +2367,7 @@ suite('iron-data-table extras', () => {
       el.nxProvider = first;
       el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
     });
@@ -2378,7 +2379,7 @@ suite('iron-data-table extras', () => {
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
       el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
     });
@@ -2391,7 +2392,7 @@ suite('iron-data-table extras', () => {
       const second = newProvider({ sort: { 'dc:modified': 'desc' } });
       el.nxProvider = second;
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
       expect(el.sortOrder).to.deep.equal([]);
@@ -2403,40 +2404,58 @@ suite('iron-data-table extras', () => {
       el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
       const fetchSpy = sinon.spy(el, 'fetch');
 
-      el.resetSettings();
+      el.resetLayout();
 
-      expect(el.columns[0].hidden).to.be.false;
+      expect(el.columns[0].hidden).to.be.true;
       expect(el.columns[0].filterValue).to.equal('');
       expect(el.sortOrder).to.deep.equal([]);
       expect(fetchSpy).to.not.have.been.called;
     });
 
-    test('fires a single composed settings-changed event with source reset', async () => {
+    test('fires a single composed settings-changed event with source reset-layout', async () => {
       const el = await newTable();
       el.columns = [column({ field: 'dc:title', order: 1 }), column({ field: 'dc:creator', order: 0 })];
       const spy = sinon.spy();
       el.addEventListener('settings-changed', spy);
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(spy).to.have.been.calledOnce;
       const event = spy.firstCall.args[0];
-      expect(event.detail).to.deep.equal({ source: 'reset' });
+      expect(event.detail).to.deep.equal({ source: 'reset-layout' });
       expect(event.composed).to.be.true;
       expect(event.bubbles).to.be.true;
     });
 
-    test('fires the reset event last when the visibility of a column changes', async () => {
+    test('keeps a hidden column hidden and fires no other settings-changed event', async () => {
       const el = await newTable();
       el.columns = [column({ field: 'dc:title', hidden: true, hiddenBack: false })];
       await flush();
       const sources = [];
       el.addEventListener('settings-changed', (e) => sources.push(e.detail && e.detail.source));
 
-      el.resetSettings();
+      el.resetLayout();
 
-      expect(sources.length).to.be.above(1);
-      expect(sources[sources.length - 1]).to.equal('reset');
+      expect(el.columns[0].hidden).to.be.true;
+      expect(sources).to.deep.equal(['reset-layout']);
+    });
+
+    test('runs when Reset Layout is pressed in the layout settings dialog', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table settings-enabled>
+            <nuxeo-data-table-column name="Title" field="dc:title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      // the header row, with the settings dialog, is rendered in the table's light DOM
+      const settings = el.querySelector('nuxeo-data-table-settings');
+      const resetLayout = sinon.stub(el, 'resetLayout');
+
+      settings.shadowRoot.querySelector('#resetLayout').click();
+
+      expect(resetLayout).to.have.been.calledOnce;
     });
 
     test('does not let real columns announce the filters it clears', async () => {
@@ -2453,7 +2472,7 @@ suite('iron-data-table extras', () => {
       const spy = sinon.spy();
       el.addEventListener('column-filter-changed', spy);
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(titleColumn.filterValue).to.equal('');
       expect(spy).to.not.have.been.called;
@@ -2480,7 +2499,7 @@ suite('iron-data-table extras', () => {
       input.value = 'invoice';
       expect(filter._debouncer.isActive()).to.be.true;
 
-      el.resetSettings();
+      el.resetLayout();
       await sleep(300);
 
       expect(discardSpy).to.have.been.calledOnce;
@@ -2498,7 +2517,7 @@ suite('iron-data-table extras', () => {
       provider.sort = { 'dc:modified': 'desc' };
       el.fetch.resetHistory();
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
       expect(el.sortOrder).to.deep.equal([]);
@@ -2528,7 +2547,7 @@ suite('iron-data-table extras', () => {
       await sleep(40);
       fetchStub.resetHistory();
 
-      el.resetSettings();
+      el.resetLayout();
       await sleep(40);
 
       expect(provider.params).to.deep.equal({});
@@ -2559,7 +2578,7 @@ suite('iron-data-table extras', () => {
       await sleep(40);
       fetchStub.resetHistory();
 
-      el.resetSettings();
+      el.resetLayout();
       await sleep(60);
 
       expect(fetchStub.callCount).to.equal(1);
@@ -2579,7 +2598,7 @@ suite('iron-data-table extras', () => {
       // back to the first provider, reset without sorting it again
       el.nxProvider = first;
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
     });
@@ -2593,7 +2612,7 @@ suite('iron-data-table extras', () => {
       provider.sort = { 'dc:modified': 'desc' };
       el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
     });
@@ -2607,7 +2626,7 @@ suite('iron-data-table extras', () => {
       const setByThePage = { 'dc:title': 'asc' };
       provider.sort = setByThePage;
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.equal(setByThePage);
     });
@@ -2621,7 +2640,7 @@ suite('iron-data-table extras', () => {
       applyUserSort(provider, { 'dc:coverage': 'asc' });
       el.fetch.resetHistory();
 
-      el.resetSettings();
+      el.resetLayout();
 
       expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
       expect(el.fetch.callCount).to.equal(1);
@@ -2654,7 +2673,7 @@ suite('iron-data-table extras', () => {
         }),
       );
 
-      el.resetSettings();
+      el.resetLayout();
       // while the reset request is loading, a new sort is applied and schedules its own automatic fetch
       provider.sort = { 'dc:modified': 'desc' };
       finishReset({ entries: [], resultsCount: 0 });
