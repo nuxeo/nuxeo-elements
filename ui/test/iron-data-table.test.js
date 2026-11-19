@@ -2682,6 +2682,44 @@ suite('iron-data-table extras', () => {
       expect(fetchStub.callCount).to.equal(2);
     });
 
+    test('keeps a page default sort through the settings it saves and their restore after a reload', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+
+      el.resetLayout();
+      const saved = JSON.parse(JSON.stringify(el.settings));
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(saved).to.not.have.property('sortOrder');
+      // after a reload, the page gives its default sort to a new provider, then the saved settings are restored
+      const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const restored = await tableWithProvider(reloaded);
+      restored.columns = [];
+      restored.settings = saved;
+      expect(reloaded.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(restored.sortOrder).to.deep.equal([]);
+    });
+
+    test('still saves and restores a sort the user cleared from a column header', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el._sort({ detail: { path: 'dc:title', direction: null } });
+      expect(provider.sort).to.deep.equal({});
+
+      const saved = JSON.parse(JSON.stringify(el.settings));
+
+      expect(saved.sortOrder).to.deep.equal([]);
+      const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const restored = await tableWithProvider(reloaded);
+      restored.columns = [];
+      restored.settings = saved;
+      expect(reloaded.sort).to.deep.equal({});
+    });
+
     test('_providerRequest changes with what an automatic fetch would request, not with the page', async () => {
       const el = await newTable();
       const provider = newProvider({ provider: 'pp', params: { a: 1 }, sort: { 'dc:title': 'asc' } });
