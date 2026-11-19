@@ -18,6 +18,25 @@ limitations under the License.
 import '@polymer/polymer/polymer-legacy.js';
 import './nuxeo-es-search.js';
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
+
+/**
+ * Returns the Web UI timezone (`org.nuxeo.web.ui.timezone`) as the IANA id the search backend expects,
+ * or `undefined` when it is unset or unknown so callers keep the browser timezone.
+ */
+function configuredTimezone() {
+  const timezone = config.get('timezone');
+  if (!timezone || typeof timezone !== 'string' || !timezone.trim()) {
+    return undefined;
+  }
+  try {
+    // Intl rejects unknown zones and returns the canonical spelling (e.g. `america/new_york` -> `America/New_York`),
+    // which matters because the search backend resolves zone ids case-sensitively.
+    return new Intl.DateTimeFormat('en-US', { timeZone: timezone.trim() }).resolvedOptions().timeZone;
+  } catch (_e) {
+    return undefined;
+  }
+}
 
 window.Nuxeo = window.Nuxeo || {};
 /**
@@ -151,12 +170,13 @@ Nuxeo.AggregateDataBehavior = {
      * Timezone to use for key in the date intervals aggregates.
      * Format is either an ISO 8601 UTC offset (e.g. +01:00 or -08:00)
      * or a timezone ID as specified in the IANA timezone database.
-     * Default is the client's browser timezone.
+     * Default is the Web UI timezone (`org.nuxeo.web.ui.timezone`) when it is set to a known zone,
+     * otherwise the client's browser timezone.
      */
     timezone: {
       type: Function,
       value() {
-        return moment().format('Z');
+        return configuredTimezone() || moment().format('Z');
       },
     },
 
@@ -383,6 +403,11 @@ Nuxeo.AggregateDataBehavior = {
     }
     if (this.endDate) {
       range.lte = this.endDate;
+    }
+    // With a Web UI timezone, read date-only bounds as calendar days in that zone, like the histogram buckets.
+    // Without one, keep the historical behavior (date-only bounds are UTC days).
+    if (this.timezone && configuredTimezone()) {
+      range.time_zone = this.timezone;
     }
     return term;
   },
