@@ -1150,7 +1150,11 @@ function hasRowDetailTemplate(node) {
 
         // Re-enable per-column events and apply restored filters to the provider once
         this._suppressFilterEvents = false;
-        if (this._removeColumnFilters(clearedFilters)) {
+        // Whether the restored settings change the filters, which changes the results: a selection made among the
+        // filtered ones then no longer applies, as for a filter the user changes. Settings applied again with the same
+        // filters, e.g. once a save completes, keep the selection (ELEMENTS-2017).
+        let filtersAltered = this._removeColumnFilters(clearedFilters);
+        if (filtersAltered) {
           needsFetch = true;
           filtersChanged = true;
         }
@@ -1161,12 +1165,16 @@ function hasRowDetailTemplate(node) {
             const column = this.columns[entry.index];
             const effectiveFilterBy = column.filterBy || column.field || null;
             if (effectiveFilterBy && entry.value) {
+              const previousParam = this.nxProvider.params[effectiveFilterBy];
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
                 this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
+              }
+              if (this.nxProvider.params[effectiveFilterBy] !== previousParam) {
+                filtersAltered = true;
               }
               // Also add to filters array so user can later clear it
               const existingIdx = this.filters.findIndex((f) => f.path === effectiveFilterBy);
@@ -1187,6 +1195,9 @@ function hasRowDetailTemplate(node) {
           });
           needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
           filtersChanged = true;
+        }
+        if (filtersAltered) {
+          this.clearSelection();
         }
       }
 
