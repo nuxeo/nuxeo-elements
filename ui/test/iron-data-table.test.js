@@ -2828,6 +2828,21 @@ suite('iron-data-table extras', () => {
       expect(provider.params).to.deep.equal({ dc_title: 'invoice' });
     });
 
+    test('keeps the selection when settings are applied again with the same values of a multiple-value filter', async () => {
+      const provider = newProvider({ params: { dc_creator: ['bob', 'alice'] }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:creator', filterBy: 'dc_creator', filterValue: ['bob', 'alice'] })];
+      el.filters = [{ path: 'dc_creator', value: ['bob', 'alice'], name: 'Author' }];
+
+      // as read back from the stored settings: equal values in a new array
+      el.settings = JSON.parse(
+        JSON.stringify({ columns: { 'dc:creator': { hidden: false, filterValue: ['bob', 'alice'] } } }),
+      );
+
+      expect(el.clearSelection.callCount).to.equal(0);
+      expect(provider.params).to.deep.equal({ dc_creator: ['bob', 'alice'] });
+    });
+
     test('clears the selection when restored settings change the value of a filter', async () => {
       const provider = newProvider({ params: { dc_title: 'invoice' }, auto: false });
       const el = await tableWithProvider(provider);
