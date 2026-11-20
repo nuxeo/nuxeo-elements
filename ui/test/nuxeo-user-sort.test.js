@@ -8,7 +8,7 @@ You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 */
-import { applyUserSort, hasUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
+import { applyUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
 
 suite('nuxeo-user-sort (ELEMENTS-2017)', () => {
   const pageDefault = { 'dc:created': 'asc' };
@@ -77,23 +77,6 @@ suite('nuxeo-user-sort (ELEMENTS-2017)', () => {
   test('is also reachable as Nuxeo.UserSort, for applications that must not import it', () => {
     expect(Nuxeo.UserSort.applyUserSort).to.equal(applyUserSort);
     expect(Nuxeo.UserSort.restoreDefaultSort).to.equal(restoreDefaultSort);
-    expect(Nuxeo.UserSort.hasUserSort).to.equal(hasUserSort);
-  });
-
-  test('tells whether the provider holds the last sort the user chose', () => {
-    expect(hasUserSort(provider)).to.be.false;
-
-    applyUserSort(provider, { 'dc:title': 'asc' });
-    expect(hasUserSort(provider)).to.be.true;
-
-    // a sort set by the page since, even an equal one
-    provider.sort = { 'dc:title': 'asc' };
-    expect(hasUserSort(provider)).to.be.false;
-
-    applyUserSort(provider, {});
-    expect(hasUserSort(provider)).to.be.true;
-    restoreDefaultSort(provider);
-    expect(hasUserSort(provider)).to.be.false;
   });
 
   test('gives back an empty sort when the provider had none', () => {

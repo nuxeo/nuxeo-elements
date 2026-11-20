@@ -50,7 +50,7 @@ import './data-table-icons.js';
 import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
-import { applyUserSort, hasUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
+import { applyUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -1066,17 +1066,6 @@ function hasRowDetailTemplate(node) {
         columns: {},
         sortOrder,
       };
-      // No column is sorted and the page provider keeps the sort its page gave it, e.g. after Reset Layout: leave the
-      // sort order out, so restoring these settings keeps that sort instead of replacing it with none. A sort the user
-      // cleared from a column header is still saved as an empty sort order (ELEMENTS-2017).
-      if (
-        Array.isArray(sortOrder) &&
-        sortOrder.length === 0 &&
-        this._hasPageProvider() &&
-        !hasUserSort(this.nxProvider)
-      ) {
-        delete tableSettings.sortOrder;
-      }
 
       if (this.columns) {
         this.columns.forEach((column, idx) => {
@@ -1113,6 +1102,7 @@ function hasRowDetailTemplate(node) {
         // avoid firing many fetches that may abort each other (WEBUI-1885)
         this._suppressFilterEvents = true;
         const restoredFilters = [];
+        const clearedFilters = [];
         this.columns.forEach(function(column, idx) {
           const key = column.field ? column.field : `col-${idx}`;
           const colSettings = settings.columns[key] || {};
@@ -1147,11 +1137,19 @@ function hasRowDetailTemplate(node) {
               value: colSettings.filterValue,
               expression: colSettings.filterExpression || null,
             });
+          } else if (Object.prototype.hasOwnProperty.call(settings.columns, key) && column.filterValue) {
+            // A column the settings list without a filter value has no filter: clear the one it still shows, e.g. from
+            // an older copy of the settings applied before these (ELEMENTS-2017)
+            this.set(`columns.${idx}.filterValue`, '');
+            clearedFilters.push(idx);
           }
         }, this);
 
         // Re-enable per-column events and apply restored filters to the provider once
         this._suppressFilterEvents = false;
+        if (this._removeColumnFilters(clearedFilters)) {
+          needsFetch = true;
+        }
         if (restoredFilters.length > 0 && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
           if (this.paginable) {
             this.nxProvider.page = 1;
@@ -1209,9 +1207,14 @@ function hasRowDetailTemplate(node) {
           return acc;
         }, {});
 
-        // keep provider sort aligned with the table's sortOrder; a restored sort is a sort the user chose (ELEMENTS-2017)
+        // keep provider sort aligned with the table's sortOrder (ELEMENTS-2017): a restored sort is a sort the user chose,
+        // and no sort at all, as saved after Reset Layout, gives the provider back the sort its page gave it
         this._ppSort = sortMap;
-        applyUserSort(this.nxProvider, sortMap);
+        if (Object.keys(sortMap).length > 0) {
+          applyUserSort(this.nxProvider, sortMap);
+        } else {
+          restoreDefaultSort(this.nxProvider);
+        }
         if (!this.nxProvider.auto) {
           needsFetch = true;
         }
@@ -1322,6 +1325,36 @@ function hasRowDetailTemplate(node) {
           this.set(`columns.${idx}.${prop}`, defaults[prop]);
         }
       });
+    }
+
+    /**
+     * Removes the filters of the given columns from `filters`, and from the page provider params when the table set
+     * them, leaving params the table does not filter on, such as search criteria, alone (ELEMENTS-2017).
+     *
+     * @param {Array<number>} indexes The indexes of the columns, whose filter value is already cleared.
+     * @return {boolean} `true` when a filter was removed.
+     */
+    _removeColumnFilters(indexes) {
+      if (indexes.length === 0 || !this._hasPageProvider() || !this.filters) {
+        return false;
+      }
+      let removed = false;
+      indexes.forEach((idx) => {
+        const column = this.columns[idx];
+        const path = column.filterBy || column.field || null;
+        const filterIdx = path ? this.filters.findIndex((filter) => filter.path === path) : -1;
+        if (filterIdx !== -1) {
+          this.splice('filters', filterIdx, 1);
+          if (this.nxProvider.params) {
+            delete this.nxProvider.params[path];
+          }
+          removed = true;
+        }
+      });
+      if (removed && this.paginable) {
+        this.nxProvider.page = 1;
+      }
+      return removed;
     }
 
     /**
