@@ -1011,6 +1011,138 @@ suite('nuxeo-data-table', () => {
       expect(table._isWidgetRequired()).to.be.false;
       expect(table.validate()).to.be.true;
     });
+
+    test('still requires a scalar list whose entry widget binds the whole item', async () => {
+      const table = await multivaluedFixture(
+        [],
+        scalarColumn,
+        html`
+          <input name="stringlist" value="{{item::input}}" required />
+        `,
+      );
+      expect(table._isWidgetRequired()).to.be.true;
+      expect(table.validate()).to.be.false;
+    });
+  });
+
+  suite('required field in the row form of a complex list (ELEMENTS-2143)', () => {
+    // A required sub-field constrains each row, not the number of rows: an optional list of complex
+    // entries must stay valid when empty. A list the schema declares required is enforced by the server.
+    async function complexFixture(columns, formWidgets, required = false) {
+      const table = await fixture(html`
+        <nuxeo-data-table editable .items="${[]}" ?required="${required}">
+          ${columns}
+          <nuxeo-data-table-form>
+            <template>
+              ${formWidgets}
+            </template>
+          </nuxeo-data-table-form>
+        </nuxeo-data-table>
+      `);
+      await flush();
+      return table;
+    }
+
+    // Mirrors the customer layout: one column with no `field`, the row form binding `item.question`.
+    const questionColumn = html`
+      <nuxeo-data-table-column name="Question"><template>[[item.question]]</template></nuxeo-data-table-column>
+    `;
+    const requiredQuestion = html`
+      <input name="question" value="{{item.question::input}}" required />
+    `;
+
+    test('allows an empty one-column complex list whose row form has a required field', async () => {
+      const table = await complexFixture(questionColumn, requiredQuestion);
+      expect(table._isWidgetRequired()).to.be.false;
+      expect(table.validate()).to.be.true;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(table.errorMessage).to.not.be.ok;
+      expect(table.$.table.hasAttribute('aria-required')).to.be.false;
+      expect(table.$.table.getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('refreshes the required state when a scalar row form is replaced by a complex one', async () => {
+      const table = await complexFixture(
+        questionColumn,
+        html`
+          <input name="stringlist" value="{{item::input}}" required />
+        `,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(table._isWidgetRequired()).to.be.true;
+      expect(table.$.table.getAttribute('aria-required')).to.equal('true');
+
+      // same `_formRequired`, but the new form binds a sub-field of complex entries
+      const form = document.createElement('nuxeo-data-table-form');
+      form.innerHTML = '<template><input name="question" value="{{item.question::input}}" required /></template>';
+      table.replaceChild(form, table.querySelector('nuxeo-data-table-form'));
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(table._formRequired).to.be.true;
+      expect(table._isWidgetRequired()).to.be.false;
+      expect(table.$.table.hasAttribute('aria-required')).to.be.false;
+    });
+
+    test('keeps the required indicator on the column of the required field', async () => {
+      const table = await complexFixture(questionColumn, requiredQuestion);
+      expect(table.columns.map((column) => column.required)).to.deep.equal([true]);
+    });
+
+    test('allows an empty multi-column complex list whose row form has a required field', async () => {
+      const table = await complexFixture(
+        html`
+          <nuxeo-data-table-column name="Question" field="question">
+            <template>[[item.question]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Answer" field="answer">
+            <template>[[item.answer]]</template>
+          </nuxeo-data-table-column>
+        `,
+        html`
+          ${requiredQuestion}
+          <input name="answer" value="{{item.answer::input}}" />
+        `,
+      );
+      expect(table.columns.map((column) => column.required)).to.deep.equal([true, false]);
+      expect(table.validate()).to.be.true;
+    });
+
+    test('still fails an empty complex list when the table itself is required', async () => {
+      const table = await complexFixture(questionColumn, requiredQuestion, true);
+      expect(table.validate()).to.be.false;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(table.errorMessage).to.be.ok;
+      expect(table.$.table.getAttribute('aria-required')).to.equal('true');
+      expect(table.$.table.getAttribute('aria-invalid')).to.equal('true');
+    });
+
+    test('still requires the row field when adding and editing an entry', async () => {
+      const table = await complexFixture(questionColumn, requiredQuestion);
+      const form = table.querySelector('nuxeo-data-table-form');
+      table._createEntry();
+      await flush();
+      table._validateEntry();
+      expect(table.items).to.deep.equal([]);
+      expect(form.validateItem()).to.be.false;
+
+      const input = form.shadowRoot.querySelector('input');
+      input.value = 'What is Nuxeo?';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      table._validateEntry();
+      await flush();
+      expect(table.items).to.deep.equal([{ question: 'What is Nuxeo?' }]);
+      expect(table.validate()).to.be.true;
+
+      table._editEntry(new CustomEvent('edit-entry', { detail: { index: 0 } }));
+      await flush();
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      table._validateEntry();
+      expect(form.validateItem()).to.be.false;
+      expect(table.items).to.deep.equal([{ question: 'What is Nuxeo?' }]);
+      table.$.dialog.close();
+    });
   });
 
   suite('Accessibility', () => {
