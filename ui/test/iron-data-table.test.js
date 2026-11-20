@@ -2765,6 +2765,9 @@ suite('iron-data-table extras', () => {
       expect(provider.page).to.equal(1);
       expect(provider.offset).to.equal(0);
       expect(el.fetch.callCount).to.equal(1);
+      // rows selected among the filtered results do not stay selected among the others
+      expect(el.clearSelection.callCount).to.equal(1);
+      expect(el.clearSelection.calledBefore(el.fetch)).to.be.true;
     });
 
     test('restores filters with a single request for a paginable auto provider', async () => {
@@ -2809,6 +2812,33 @@ suite('iron-data-table extras', () => {
       expect(el.columns[0].filterValue).to.equal('');
       expect(provider.params).to.deep.equal({ dc_title: 'from the search form' });
       expect(el.fetch.callCount).to.equal(0);
+      expect(el.clearSelection.callCount).to.equal(0);
+    });
+
+    test('keeps the selection when settings are applied again with the same filters', async () => {
+      const provider = newProvider({ params: { dc_title: 'invoice' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      // e.g. the saved settings applied again once a save completes
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'invoice' } } };
+
+      expect(el.clearSelection.callCount).to.equal(0);
+      expect(provider.params).to.deep.equal({ dc_title: 'invoice' });
+    });
+
+    test('clears the selection when restored settings change the value of a filter', async () => {
+      const provider = newProvider({ params: { dc_title: 'invoice' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'report' } } };
+
+      expect(provider.params).to.deep.equal({ dc_title: 'report' });
+      expect(el.clearSelection.callCount).to.equal(1);
+      expect(el.clearSelection.calledBefore(el.fetch)).to.be.true;
     });
 
     test('_providerRequest changes with what an automatic fetch would request, not with the page', async () => {
