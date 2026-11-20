@@ -23,6 +23,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
+import { applyUserSort, restoreDefaultSort } from './nuxeo-user-sort.js';
 
 // Locale independent ordering, matching the default `Array.prototype.sort()` comparison of UTF-16
 // code units. Used to build signatures that are compared across invocations, so the resulting order
@@ -552,7 +553,13 @@ export const PageProviderDisplayBehavior = [
         if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
           this.clearSelection();
           this._ppSort = tmpSort;
-          this.nxProvider.sort = this._ppSort;
+          // through applyUserSort, so a reset can give the provider its sort from before back; with no column sorted any
+          // more, the provider gets that sort back right away, as restored settings without a sort do (ELEMENTS-2017)
+          if (this.sortOrder.length > 0) {
+            applyUserSort(this.nxProvider, this._ppSort);
+          } else {
+            restoreDefaultSort(this.nxProvider);
+          }
           this._fireSettingsChanged({ source: 'sort' });
           if (!this.nxProvider.auto) {
             this.fetch();
