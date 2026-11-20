@@ -2692,7 +2692,7 @@ suite('iron-data-table extras', () => {
       const saved = JSON.parse(JSON.stringify(el.settings));
 
       expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
-      expect(saved).to.not.have.property('sortOrder');
+      expect(saved.sortOrder).to.deep.equal([]);
       // after a reload, the page gives its default sort to a new provider, then the saved settings are restored
       const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const restored = await tableWithProvider(reloaded);
@@ -2702,22 +2702,79 @@ suite('iron-data-table extras', () => {
       expect(restored.sortOrder).to.deep.equal([]);
     });
 
-    test('still saves and restores a sort the user cleared from a column header', async () => {
+    test('gives a table sorted since its saved reset settings the page default sort back when they are restored', async () => {
       const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const el = await tableWithProvider(provider);
       el.columns = [];
       el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
-      el._sort({ detail: { path: 'dc:title', direction: null } });
-      expect(provider.sort).to.deep.equal({});
-
+      el.resetLayout();
       const saved = JSON.parse(JSON.stringify(el.settings));
+      el._sort({ detail: { path: 'dc:creator', direction: 'desc' } });
+      expect(provider.sort).to.deep.equal({ 'dc:creator': 'desc' });
 
+      el.settings = saved;
+
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('gives the page default sort back when the last column sort is cleared, also after a reload', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+
+      el._sort({ detail: { path: 'dc:title', direction: null } });
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      const saved = JSON.parse(JSON.stringify(el.settings));
       expect(saved.sortOrder).to.deep.equal([]);
       const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
       const restored = await tableWithProvider(reloaded);
       restored.columns = [];
       restored.settings = saved;
-      expect(reloaded.sort).to.deep.equal({});
+      expect(reloaded.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('clears a filter that restored settings list a column without, keeping other params and filters', async () => {
+      const provider = newProvider({
+        params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_fulltext: 'searched' },
+        auto: false,
+        page: 3,
+      });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [
+        column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' }),
+        column({ field: 'dc:creator', filterBy: 'dc_creator', filterValue: 'bob' }),
+      ];
+      el.filters = [
+        { path: 'dc_title', value: 'invoice', name: 'Title', expression: '$term*' },
+        { path: 'dc_creator', value: 'bob', name: 'Author' },
+      ];
+
+      // e.g. the settings Reset Layout saved in another browser, applied after an older local copy with a filter
+      el.settings = { columns: { 'dc:title': { hidden: false, order: 0 } } };
+
+      expect(el.columns.map((c) => c.filterValue)).to.deep.equal(['', 'bob']);
+      expect(provider.params).to.deep.equal({ dc_creator: 'bob', ecm_fulltext: 'searched' });
+      expect(el.filters.map((f) => f.path)).to.deep.equal(['dc_creator']);
+      expect(provider.page).to.equal(1);
+      expect(el.fetch.callCount).to.equal(1);
+    });
+
+    test('leaves the params alone for a column restored without a filter the table never set', async () => {
+      const provider = newProvider({ params: { dc_title: 'from the search form' }, auto: true });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'typed' })];
+      el.filters = [];
+
+      el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(provider.params).to.deep.equal({ dc_title: 'from the search form' });
+      expect(el.fetch.callCount).to.equal(0);
     });
 
     test('_providerRequest changes with what an automatic fetch would request, not with the page', async () => {

@@ -59,18 +59,7 @@ export function restoreDefaultSort(provider) {
   return true;
 }
 
-/**
- * Whether a page provider holds the last sort the user chose, rather than a sort the page gave it.
- *
- * @param {Object} provider The page provider.
- * @return {boolean} `true` when the sort of the provider is the last one passed to `applyUserSort`.
- */
-export function hasUserSort(provider) {
-  const entry = userSorts.get(provider);
-  return !!entry && provider.sort === entry.userSort;
-}
-
 // Also reachable as Nuxeo.UserSort, so an application can use it when present without depending on an Elements build
 // that provides this module.
 window.Nuxeo = window.Nuxeo || {};
-Nuxeo.UserSort = { applyUserSort, restoreDefaultSort, hasUserSort };
+Nuxeo.UserSort = { applyUserSort, restoreDefaultSort };
