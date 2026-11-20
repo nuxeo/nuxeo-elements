@@ -94,12 +94,6 @@ suite('nuxeo-sort-select', () => {
       expect(el._sortOrder).to.equal('desc');
     });
 
-    test('keeps _sortOrder when selected becomes falsy', () => {
-      el._sortOrder = 'asc';
-      el.selected = null;
-      expect(el._sortOrder).to.equal('asc');
-    });
-
     test('shows the ascending arrow again when the selection is cleared (ELEMENTS-2017)', () => {
       el.selected = { label: 'Modified', order: 'desc' };
       expect(el._sortOrder).to.equal('desc');

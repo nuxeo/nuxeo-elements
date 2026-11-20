@@ -2742,6 +2742,7 @@ suite('iron-data-table extras', () => {
         params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_fulltext: 'searched' },
         auto: false,
         page: 3,
+        offset: 40,
       });
       const el = await tableWithProvider(provider);
       el.paginable = true;
@@ -2760,7 +2761,40 @@ suite('iron-data-table extras', () => {
       expect(el.columns.map((c) => c.filterValue)).to.deep.equal(['', 'bob']);
       expect(provider.params).to.deep.equal({ dc_creator: 'bob', ecm_fulltext: 'searched' });
       expect(el.filters.map((f) => f.path)).to.deep.equal(['dc_creator']);
+      // fetched again from the first row: the offset of the later page would otherwise win over the first page
       expect(provider.page).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch.callCount).to.equal(1);
+    });
+
+    test('restores filters with a single request for a paginable auto provider', async () => {
+      const provider = newProvider({ params: {}, auto: true, page: 3, offset: 40 });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title' })];
+      el.filters = [];
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'invoice' } } };
+
+      expect(provider.params).to.deep.equal({ dc_title: 'invoice' });
+      expect(provider.page).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch.callCount).to.equal(1);
+      // the automatic fetch the page change scheduled would repeat the request
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
+    });
+
+    test('keeps the page when restored settings only change the sort', async () => {
+      const provider = newProvider({ sort: {}, auto: false, page: 3, offset: 40 });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title' })];
+
+      el.settings = { columns: { 'dc:title': { hidden: false } }, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'asc' });
+      expect(provider.page).to.equal(3);
+      expect(provider.offset).to.equal(40);
       expect(el.fetch.callCount).to.equal(1);
     });
 

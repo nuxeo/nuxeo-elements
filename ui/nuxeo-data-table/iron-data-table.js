@@ -1098,6 +1098,8 @@ function hasRowDetailTemplate(node) {
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
       let needsFetch = false;
+      // restored or cleared column filters change the results, which are then fetched again from the first row
+      let filtersChanged = false;
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
         // avoid firing many fetches that may abort each other (WEBUI-1885)
@@ -1138,7 +1140,7 @@ function hasRowDetailTemplate(node) {
               value: colSettings.filterValue,
               expression: colSettings.filterExpression || null,
             });
-          } else if (Object.prototype.hasOwnProperty.call(settings.columns, key) && column.filterValue) {
+          } else if (settings.columns[key] && column.filterValue) {
             // A column the settings list without a filter value has no filter: clear the one it still shows, e.g. from
             // an older copy of the settings applied before these (ELEMENTS-2017)
             this.set(`columns.${idx}.filterValue`, '');
@@ -1150,12 +1152,11 @@ function hasRowDetailTemplate(node) {
         this._suppressFilterEvents = false;
         if (this._removeColumnFilters(clearedFilters)) {
           needsFetch = true;
+          filtersChanged = true;
         }
         if (restoredFilters.length > 0 && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
-          if (this.paginable) {
-            this.nxProvider.page = 1;
-          }
-          // Apply restored filters to nxProvider.params AND to this.filters array
+          // Apply restored filters to nxProvider.params AND to this.filters array (the fetch below starts from the first
+          // page)
           restoredFilters.forEach((entry) => {
             const column = this.columns[entry.index];
             const effectiveFilterBy = column.filterBy || column.field || null;
@@ -1185,6 +1186,7 @@ function hasRowDetailTemplate(node) {
             }
           });
           needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
+          filtersChanged = true;
         }
       }
 
@@ -1224,9 +1226,15 @@ function hasRowDetailTemplate(node) {
         this.notifyResize();
       }
 
-      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
+      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966). Changed filters fetch
+      // from the first row, as Reset Layout does: from the first page without the offset of a later one, and without the
+      // automatic fetches of an auto provider repeating the request (ELEMENTS-2017).
       if (needsFetch && typeof this.fetch === 'function') {
-        this.fetch();
+        if (filtersChanged) {
+          this._refetchFromFirstRow();
+        } else {
+          this.fetch();
+        }
       }
     }
 
@@ -1310,8 +1318,8 @@ function hasRowDetailTemplate(node) {
     /**
      * Restores the order, width and filter of one column to its layout defaults, leaving its visibility as is. The
      * width is read from the `width` attribute: the property is not reflected, so the attribute keeps the layout value
-     * after a resize. `nuxeo-results` applies the same default when it restores a table from empty settings
-     * (WEBUI-2079), so a column looks the same after a reset as on a table that was never customised.
+     * after a resize; a column that declares none gets `null`, so it sizes from its flex. These are the defaults
+     * `nuxeo-results` applies when it restores a table from empty settings (WEBUI-2079).
      */
     _resetColumn(column, idx) {
       const declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
@@ -1352,9 +1360,6 @@ function hasRowDetailTemplate(node) {
           removed = true;
         }
       });
-      if (removed && this.paginable) {
-        this.nxProvider.page = 1;
-      }
       return removed;
     }
 
