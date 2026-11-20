@@ -488,6 +488,16 @@ import config from './config.js';
       }
     }
 
+    /**
+     * Cancels the automatic fetch that a property change scheduled, as long as it has not run yet. For a caller that
+     * changes several properties and fetches right away by itself, so the results are requested only once.
+     */
+    cancelAutoFetch() {
+      if (this._debouncer) {
+        this._debouncer.cancel();
+      }
+    }
+
     _computePath(provider, query) {
       let path = '';
       if (query) {

@@ -128,6 +128,33 @@ suite('nuxeo-data-table-column-filter (WEBUI-1885)', () => {
     });
   });
 
+  suite('discardPendingEdit (ELEMENTS-2017)', () => {
+    test('drops an edit still waiting for its debounce and shows the committed value again', async () => {
+      el.value = 'committed';
+      await flush();
+      const input = el.shadowRoot.querySelector('paper-input');
+      input.value = 'typed';
+      expect(el._debouncer.isActive()).to.be.true;
+
+      el.discardPendingEdit();
+      await sleep(300);
+
+      expect(el._debouncer.isActive()).to.be.false;
+      expect(input.value).to.equal('committed');
+      expect(el.value).to.equal('committed');
+    });
+
+    test('leaves the input alone when no edit is pending', () => {
+      el.value = 'committed';
+      const input = el.shadowRoot.querySelector('paper-input');
+
+      el.discardPendingEdit();
+
+      expect(input.value).to.equal('committed');
+      expect(el.value).to.equal('committed');
+    });
+  });
+
   suite('required indicator (ELEMENTS-1891)', () => {
     test('is hidden by default', () => {
       expect(el.required).to.be.false;

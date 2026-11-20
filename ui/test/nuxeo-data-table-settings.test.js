@@ -83,6 +83,66 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
+  suite('layout settings dialog (ELEMENTS-2017)', () => {
+    const dialog = () => element.shadowRoot.querySelector('#columnsSettingsPopup');
+    const buttons = () => [...dialog().querySelectorAll('paper-button')];
+
+    test('is titled with the layout settings and lists the columns under a Visible Columns heading', () => {
+      expect(
+        dialog()
+          .querySelector('h2')
+          .textContent.trim(),
+      ).to.equal(element.i18n('tableSettings.columnSettings'));
+      const heading = dialog().querySelector('h3.subheading');
+      expect(heading.textContent.trim()).to.equal(element.i18n('tableSettings.columnSettings.visibleColumns'));
+      expect(heading.compareDocumentPosition(dialog().querySelector('paper-dialog-scrollable'))).to.equal(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+
+    test('shows Reset Columns, Reset Layout and Done, with Done as the only primary button', () => {
+      expect(buttons().map((b) => b.textContent.trim())).to.deep.equal([
+        element.i18n('tableSettings.columnSettings.reset'),
+        element.i18n('tableSettings.columnSettings.resetLayout'),
+        element.i18n('tableSettings.columnSettings.done'),
+      ]);
+      expect(buttons().map((b) => b.classList.contains('primary'))).to.deep.equal([false, false, true]);
+    });
+
+    test('Reset Columns still restores the visibility only', () => {
+      element.columns = [
+        { name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false, width: '400px', order: 1 },
+        { name: 'Modified', hidden: false, hiddenBack: true, alwaysVisible: false, width: null, order: 0 },
+      ];
+      const layoutSpy = sinon.spy();
+      element.addEventListener('reset-layout', layoutSpy);
+
+      buttons()[0].click();
+
+      expect(element.columns.map((c) => c.hidden)).to.deep.equal([false, true]);
+      expect(element.columns.map((c) => c.width)).to.deep.equal(['400px', null]);
+      expect(element.columns.map((c) => c.order)).to.deep.equal([1, 0]);
+      expect(layoutSpy).to.not.have.been.called;
+    });
+
+    test('Reset Layout asks the table to reset its layout and leaves the visibility alone', () => {
+      const spy = sinon.spy();
+      element.addEventListener('reset-layout', spy);
+      const settingsSpy = sinon.spy();
+      element.addEventListener('settings-changed', settingsSpy);
+      const before = element.columns.map((c) => c.hidden);
+
+      element.shadowRoot.querySelector('#resetLayout').click();
+
+      expect(spy).to.have.been.calledOnce;
+      // handled by the table that renders the dialog, and by nothing above it
+      expect(spy.firstCall.args[0].bubbles).to.be.false;
+      expect(spy.firstCall.args[0].composed).to.be.false;
+      expect(element.columns.map((c) => c.hidden)).to.deep.equal(before);
+      expect(settingsSpy).to.not.have.been.called;
+    });
+  });
+
   suite('_onSettingsClosed', () => {
     test('should reset settings when ALL columns are hidden', () => {
       element.columns = [
