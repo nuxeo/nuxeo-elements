@@ -1173,7 +1173,8 @@ function hasRowDetailTemplate(node) {
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }
-              if (this.nxProvider.params[effectiveFilterBy] !== previousParam) {
+              // compared by value: the filter of an aggregation column holds an array, restored as a new one
+              if (JSON.stringify(this.nxProvider.params[effectiveFilterBy]) !== JSON.stringify(previousParam)) {
                 filtersAltered = true;
               }
               // Also add to filters array so user can later clear it
