@@ -55,6 +55,7 @@ jobs:
         # Gated on github.ref, not the checked-out ref. The post-release sync pull request is
         # headed by a branch tracking the release branch, so matching on a branch name alone
         # would publish Storybook from an unmerged pull request.
+        # LTS 2027 only produces test builds for now, so Storybook keeps deploying from lts-2025.
         if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/lts-2025' }}
         env:
           GH_TOKEN: nuxeo-webui-jx-bot:${{ secrets.GIT_ADMIN_TOKEN }}
