@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "2025.24.0-SNAPSHOT",
+  "version": "2027.1.0-SNAPSHOT",
   "workspaces": [
     "core",
     "dataviz",
@@ -14,7 +14,7 @@
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=24"
   },
   "scripts": {
     "postinstall": "check-engine --ignore",
