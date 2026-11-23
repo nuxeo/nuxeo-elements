@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - lts-2025
+      - lts-2027
 
   # Manually trigger the workflow
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
     with:
-      branch: lts-2025
+      branch: lts-2027
 
   storybook:
     uses: ./.github/workflows/storybook.yaml
@@ -37,7 +37,7 @@ jobs:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       GIT_ADMIN_TOKEN: ${{ secrets.GIT_ADMIN_TOKEN }}
     with:
-      branch: lts-2025
+      branch: lts-2027
 
   sonar:
     uses: ./.github/workflows/sonar.yaml
@@ -47,9 +47,13 @@ jobs:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     with:
-      branch: lts-2025
+      branch: lts-2027
 
   build:
+    # TEMP-2027-PLATFORM: LTS 2027 only produces test builds (alpha.yaml) until the release work
+    # is enabled. Skip the RC build on lts-2027 so a sync cannot tag or publish a 2027 RC. The
+    # guard below also keeps lts-2027 out of the publishable branches until then.
+    if: ${{ github.ref != 'refs/heads/lts-2027' }}
     runs-on: ubuntu-latest
     needs: [ lint, test, storybook, sonar ]
     permissions:
