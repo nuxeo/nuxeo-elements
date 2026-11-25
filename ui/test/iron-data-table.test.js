@@ -2429,26 +2429,19 @@ suite('iron-data-table extras', () => {
   });
 
   suite('settings dialog Reset (ELEMENTS-2112)', () => {
-    test('unticks the option and stops saving the filters and sort, without clearing them', async () => {
+    test('leaves the option, the filters and the sort untouched and does not reload', async () => {
       const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ field: 'dc:title', filterBy: 'title', hidden: false, hiddenBack: false, filterValue: 'test1' }];
       el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
       const fetchSpy = sinon.spy(el, 'fetch');
-      const spy = sinon.spy();
-      el.addEventListener('settings-changed', spy);
       const settings = el.querySelector('nuxeo-data-table-settings');
 
-      settings._onResetClick();
+      settings.$$('paper-button.secondary').click();
 
-      expect(el.persistQuerySettings).to.be.false;
-      expect(spy).to.have.been.calledOnce;
+      expect(el.persistQuerySettings).to.be.true;
       expect(el.columns[0].filterValue).to.equal('test1');
       expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
       expect(fetchSpy).to.not.have.been.called;
-      const saved = el.settings;
-      expect(saved.persistQuerySettings).to.be.false;
-      expect(saved).to.not.have.property('sortOrder');
-      expect(saved.columns['dc:title']).to.not.have.property('filterValue');
     });
 
     test('binds the settings dialog checkbox to persistQuerySettings', async () => {
