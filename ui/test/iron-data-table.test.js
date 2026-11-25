@@ -2147,7 +2147,7 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
-  // persistQuerySettings / _resetQuerySettings (ELEMENTS-2112)
+  // persistQuerySettings (ELEMENTS-2112)
   // ------------------------------------------------------------------
   suite('persistQuerySettings (ELEMENTS-2112)', () => {
     const queryColumns = () => [
@@ -2406,7 +2406,7 @@ suite('iron-data-table extras', () => {
       setSpy.restore();
     });
 
-    test('keeps a reset multi-value filter cleared across save and restore', async () => {
+    test('keeps a cleared multi-value filter cleared across save and restore', async () => {
       const el = await newTable({ persistQuerySettings: true });
       el.columns = [{ field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false, filterValue: ['Administrator'] }];
       el.filters = [{ path: 'dc_creator_agg', value: ['Administrator'] }];
@@ -2417,9 +2417,8 @@ suite('iron-data-table extras', () => {
       el.nxProvider = provider;
       sinon.stub(el, '_hasPageProvider').returns(true);
       sinon.stub(el, 'fetch');
-      sinon.stub(el, 'clearSelection');
 
-      el._resetQuerySettings();
+      el._clearQueryState();
       const saved = el.settings;
       el.settings = saved;
 
@@ -2429,100 +2428,27 @@ suite('iron-data-table extras', () => {
     });
   });
 
-  suite('_resetQuerySettings (ELEMENTS-2112)', () => {
-    async function tableWithProvider() {
-      const el = await newTable();
-      el.columns = [
-        { field: 'dc:title', filterBy: 'title', hidden: false, filterValue: 'test1' },
-        { field: 'dc:creator', filterBy: 'dc_creator_agg', hidden: false, filterValue: ['Administrator'] },
-        { field: 'dc:modified', hidden: false },
-      ];
-      el.filters = [
-        { path: 'title', value: 'test1' },
-        { path: 'dc_creator_agg', value: ['Administrator'] },
-      ];
+  suite('settings dialog Reset (ELEMENTS-2112)', () => {
+    test('unticks the option and stops saving the filters and sort, without clearing them', async () => {
+      const el = await newTable({ persistQuerySettings: true });
+      el.columns = [{ field: 'dc:title', filterBy: 'title', hidden: false, hiddenBack: false, filterValue: 'test1' }];
       el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
-      const provider = document.createElement('div');
-      provider.params = { title: 'test1*', dc_creator_agg: ['Administrator'], ecm_parentId: 'abc' };
-      provider.sort = { 'dc:title': 'desc' };
-      provider.page = 3;
-      sinon.stub(el, '_nxProviderChanged');
-      el.nxProvider = provider;
-      el._ppSort = { 'dc:title': 'desc' };
-      sinon.stub(el, '_hasPageProvider').returns(true);
-      sinon.stub(el, 'fetch');
-      sinon.stub(el, 'clearSelection');
-      return el;
-    }
-
-    test('clears column filters, filters list, sort order and provider query, then fetches once', async () => {
-      const el = await tableWithProvider();
-      el.paginable = true;
-
-      el._resetQuerySettings();
-
-      expect(el.columns[0].filterValue).to.equal('');
-      expect(el.columns[1].filterValue).to.deep.equal([]);
-      expect(el.filters).to.deep.equal([]);
-      expect(el.sortOrder).to.deep.equal([]);
-      expect(el._ppSort).to.deep.equal({});
-      expect(el.nxProvider.sort).to.deep.equal({});
-      expect(el.nxProvider.params).to.deep.equal({ ecm_parentId: 'abc' });
-      expect(el.nxProvider.page).to.equal(1);
-      expect(el.clearSelection).to.have.been.calledOnce;
-      expect(el.fetch).to.have.been.calledOnce;
-      expect(el._suppressFilterEvents).to.be.false;
-    });
-
-    test('fires settings-changed so the cleared state is saved', async () => {
-      const el = await tableWithProvider();
-      const spy = sinon.spy();
-      el.addEventListener('settings-changed', spy);
-
-      el._resetQuerySettings();
-
-      expect(spy).to.have.been.calledOnce;
-      expect(spy.firstCall.args[0].detail).to.deep.equal({ source: 'reset' });
-    });
-
-    test('does not fetch or save when there is nothing to clear', async () => {
-      const el = await tableWithProvider();
-      el.columns = [{ field: 'dc:title', hidden: false }];
-      el.filters = [];
-      el.sortOrder = [];
-      el._ppSort = {};
-      const spy = sinon.spy();
-      el.addEventListener('settings-changed', spy);
-
-      el._resetQuerySettings();
-
-      expect(el.fetch).to.not.have.been.called;
-      expect(el.clearSelection).to.not.have.been.called;
-      expect(spy).to.not.have.been.called;
-    });
-
-    test('clears local state without a page provider', async () => {
-      const el = await newTable();
-      el.columns = [{ field: 'dc:title', hidden: false, filterValue: 'test1' }];
-      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
       const fetchSpy = sinon.spy(el, 'fetch');
-
-      el._resetQuerySettings();
-
-      expect(el.columns[0].filterValue).to.equal('');
-      expect(el.sortOrder).to.deep.equal([]);
-      expect(fetchSpy).to.not.have.been.called;
-    });
-
-    test('is triggered by the settings dialog Reset button', async () => {
-      const el = await newTable();
-      const stub = sinon.stub(el, '_resetQuerySettings');
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
       const settings = el.querySelector('nuxeo-data-table-settings');
-      settings.columns = [];
 
       settings._onResetClick();
 
-      expect(stub).to.have.been.calledOnce;
+      expect(el.persistQuerySettings).to.be.false;
+      expect(spy).to.have.been.calledOnce;
+      expect(el.columns[0].filterValue).to.equal('test1');
+      expect(el.sortOrder).to.deep.equal([{ path: 'dc:title', direction: 'desc' }]);
+      expect(fetchSpy).to.not.have.been.called;
+      const saved = el.settings;
+      expect(saved.persistQuerySettings).to.be.false;
+      expect(saved).to.not.have.property('sortOrder');
+      expect(saved.columns['dc:title']).to.not.have.property('filterValue');
     });
 
     test('binds the settings dialog checkbox to persistQuerySettings', async () => {

@@ -151,11 +151,18 @@ import '../nuxeo-button-styles.js';
 
     _onResetClick() {
       this._resetSettings();
-      this.dispatchEvent(new CustomEvent('reset-query-settings'));
+      // The option defaults to off, so Reset turns it off too (ELEMENTS-2112)
+      if (this.persistQuerySettings) {
+        this._setPersistQuery(false);
+      }
     }
 
     _onPersistQueryChange(e) {
-      this.persistQuerySettings = e.target.checked;
+      this._setPersistQuery(e.target.checked);
+    }
+
+    _setPersistQuery(value) {
+      this.persistQuerySettings = value;
       this.dispatchEvent(
         new CustomEvent('settings-changed', {
           composed: true,

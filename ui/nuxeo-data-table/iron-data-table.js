@@ -300,7 +300,6 @@ function hasRowDetailTemplate(node) {
                   role="columnheader"
                   columns="{{columns}}"
                   persist-query-settings="{{persistQuerySettings}}"
-                  on-reset-query-settings="_resetQuerySettings"
                   hidden$="[[!settingsEnabled]]"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
@@ -2133,20 +2132,6 @@ function hasRowDetailTemplate(node) {
         changed = true;
       }
       return changed;
-    }
-
-    /**
-     * Clears the column filters and the sort order, then reloads the results (ELEMENTS-2112).
-     */
-    _resetQuerySettings() {
-      if (!this._clearQueryState()) {
-        return;
-      }
-      if (this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
-        this._rewindResults();
-        this.fetch();
-      }
-      this._fireSettingsChanged({ source: 'reset' });
     }
 
     /**
