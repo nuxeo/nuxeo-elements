@@ -98,6 +98,168 @@ suite('nuxeo-tag-suggestion extras', () => {
     });
   });
 
+  suite('adding tags to a document', () => {
+    const tagsResponse = (...labels) => {
+      return {
+        properties: {
+          'nxtag:tags': labels.map((label) => {
+            return { label, username: 'Administrator' };
+          }),
+        },
+      };
+    };
+    const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+    const paste = async (text) => {
+      const input = el.$.s2.shadowRoot.querySelector('.selectivity-multiple-input');
+      input.value = text;
+      input.dispatchEvent(new Event('paste', { bubbles: true, composed: true }));
+      await wait(50);
+    };
+    const chips = () =>
+      Array.from(el.$.s2._selectivity.el.querySelectorAll('.selectivity-multiple-selected-item')).map((item) =>
+        item.textContent.trim(),
+      );
+    let addExecute;
+
+    setup(async () => {
+      el = await fixture(
+        html`
+          <nuxeo-tag-suggestion allow-new-tags></nuxeo-tag-suggestion>
+        `,
+      );
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['existing'] } };
+      addExecute = sinon.stub(el.$.addTagOp, 'execute');
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('existing', ...el.$.addTagOp.params.tags.split(','))));
+    });
+
+    test('sends all the pasted comma-separated tags in a single request', async () => {
+      const i18n = sinon.spy((key) => key);
+      el.i18n = i18n;
+      await paste('tag1,tag2,tag3,tag4');
+      await wait();
+      expect(addExecute.callCount).to.equal(1);
+      expect(i18n).to.have.been.calledWith('tags.multipleAddedToDocument', 'tag1, tag2, tag3, tag4');
+      expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag1,tag2,tag3,tag4' });
+      expect(chips()).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
+      expect(el.value).to.deep.equal(['existing', 'tag1', 'tag2', 'tag3', 'tag4']);
+      expect(el.$.toast.text).to.contain('tags.multipleAddedToDocument');
+    });
+
+    test('sends a single added tag on its own', async () => {
+      const i18n = sinon.spy((key) => key);
+      el.i18n = i18n;
+      await paste('tag1');
+      await wait();
+      expect(i18n).to.have.been.calledWith('tags.addedToDocument', 'tag1');
+      expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag1' });
+      expect(chips()).to.deep.equal(['existing', 'tag1']);
+      expect(el.$.toast.text).to.contain('tags.addedToDocument');
+      expect(el.$.toast.text).to.not.contain('multiple');
+    });
+
+    test('shows the label stored by the server on the matching tag', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('mytag', 'existing', 'tag2')));
+      await paste('my tag,tag2');
+      await wait();
+      expect(chips()).to.deep.equal(['existing', 'mytag', 'tag2']);
+      expect(el.value).to.deep.equal(['existing', 'mytag', 'tag2']);
+    });
+
+    test('keeps the typed labels when the stored ones cannot be paired with certainty', async () => {
+      addExecute.callsFake(() => Promise.resolve(tagsResponse('ab', 'existing', 'mytag')));
+      await paste('my tag,a%b');
+      await wait();
+      expect(chips()).to.deep.equal(['existing', 'my tag', 'a%b']);
+    });
+
+    test('does not give a label to a tag when another add is still unconfirmed', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab'] } };
+      let resolveFirst;
+      let resolveSecond;
+      addExecute.onCall(0).returns(
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        }),
+      );
+      addExecute.onCall(1).returns(
+        new Promise((resolve) => {
+          resolveSecond = resolve;
+        }),
+      );
+      await paste('my tag');
+      await paste('a%b');
+      // "a%b" is stored as the existing "ab": the only unseen label is the one of the pending "my tag".
+      resolveSecond(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'my tag', 'a%b']);
+      resolveFirst(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'my tag', 'a%b']);
+    });
+
+    test('does not give a label to a tag when a removal overlaps its request', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab', 'old'] } };
+      sinon.stub(el.$.removeTagOp, 'execute').returns(new Promise(() => {}));
+      let resolveAdd;
+      addExecute.returns(
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        }),
+      );
+      await paste('a%b');
+      el.$.s2._selectivity.remove('old');
+      // "a%b" is stored as the existing "ab", and the removed "old" is still on the server in this response.
+      resolveAdd(tagsResponse('ab', 'old'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'a%b']);
+    });
+
+    test('does not give a label to a tag when the chip of a pending add was removed', async () => {
+      el.document = { uid: 'doc-1', contextParameters: { tags: ['ab'] } };
+      sinon.stub(el.$.removeTagOp, 'execute').returns(new Promise(() => {}));
+      addExecute.onCall(0).returns(new Promise(() => {}));
+      let resolveSecond;
+      addExecute.onCall(1).returns(
+        new Promise((resolve) => {
+          resolveSecond = resolve;
+        }),
+      );
+      await paste('my tag');
+      el.$.s2._selectivity.remove('my tag');
+      await paste('a%b');
+      resolveSecond(tagsResponse('ab', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['ab', 'a%b']);
+    });
+
+    test('does not send the tags queued for a previous document to the new one', async () => {
+      el._addedTagHandler({ id: 'tag1', item: {} });
+      el.document = { uid: 'doc-2', contextParameters: { tags: [] } };
+      el._addedTagHandler({ id: 'tag2', item: { displayLabel: 'tag2' } });
+      await wait();
+      expect(addExecute.callCount).to.equal(1);
+      expect(el.$.addTagOp.params).to.deep.equal({ tags: 'tag2' });
+    });
+
+    test('does not abort a previous tag request', () => {
+      expect(el.$.addTagOp.uncancelable).to.be.true;
+    });
+
+    test('does not relabel the tags of another document', async () => {
+      let resolveAdd;
+      addExecute.returns(
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        }),
+      );
+      await paste('my tag');
+      el.document = { uid: 'doc-2', contextParameters: { tags: ['my tag'] } };
+      resolveAdd(tagsResponse('existing', 'mytag'));
+      await wait();
+      expect(chips()).to.deep.equal(['my tag']);
+    });
+  });
+
   suite('_removedTagHandler', () => {
     test('does nothing when no document', () => {
       el.document = null;
