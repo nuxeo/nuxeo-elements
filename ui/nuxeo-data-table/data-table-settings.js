@@ -82,7 +82,7 @@ import '../nuxeo-button-styles.js';
           </paper-dialog-scrollable>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink on-click="_onResetClick" class="secondary"
+              <paper-button noink on-click="_resetSettings" class="secondary"
                 >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
               >
             </div>
@@ -149,20 +149,8 @@ import '../nuxeo-button-styles.js';
       });
     }
 
-    _onResetClick() {
-      this._resetSettings();
-      // The option defaults to off, so Reset turns it off too (ELEMENTS-2112)
-      if (this.persistQuerySettings) {
-        this._setPersistQuery(false);
-      }
-    }
-
     _onPersistQueryChange(e) {
-      this._setPersistQuery(e.target.checked);
-    }
-
-    _setPersistQuery(value) {
-      this.persistQuerySettings = value;
+      this.persistQuerySettings = e.target.checked;
       this.dispatchEvent(
         new CustomEvent('settings-changed', {
           composed: true,

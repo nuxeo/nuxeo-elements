@@ -117,50 +117,19 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
-  suite('_onResetClick (ELEMENTS-2112)', () => {
-    test('should reset column visibility and untick the persistence option', () => {
+  suite('Reset button (ELEMENTS-2112)', () => {
+    test('should restore column visibility and leave the persistence option as it is', () => {
       element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
       element.persistQuerySettings = true;
-      const spy = sinon.spy();
-      element.addEventListener('settings-changed', spy);
 
-      element._onResetClick();
+      element.$$('paper-button.secondary').click();
 
       expect(element.columns[0].hidden).to.be.false;
-      expect(element.persistQuerySettings).to.be.false;
-      expect(element.$$('#persistQuery').checked).to.be.false;
-      // one for the visibility change, one for the option
-      expect(spy).to.have.been.calledTwice;
+      expect(element.persistQuerySettings).to.be.true;
+      expect(element.$$('#persistQuery').checked).to.be.true;
     });
 
-    test('should save the unticked option once when nothing else changed', () => {
-      element.persistQuerySettings = true;
-      const spy = sinon.spy();
-      element.addEventListener('settings-changed', spy);
-
-      element._onResetClick();
-
-      expect(element.persistQuerySettings).to.be.false;
-      expect(spy).to.have.been.calledOnce;
-    });
-
-    test('should not fire anything when the option is already unticked and columns are unchanged', () => {
-      const spy = sinon.spy();
-      element.addEventListener('settings-changed', spy);
-
-      element._onResetClick();
-
-      expect(element.persistQuerySettings).to.be.false;
-      expect(spy).to.not.have.been.called;
-    });
-
-    test('should be wired to the Reset button', () => {
-      element.persistQuerySettings = true;
-      element.$$('paper-button.secondary').click();
-      expect(element.persistQuerySettings).to.be.false;
-    });
-
-    test('should NOT untick the option when closing with all columns hidden', () => {
+    test('should NOT change the option when closing with all columns hidden', () => {
       element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
       element.persistQuerySettings = true;
 
