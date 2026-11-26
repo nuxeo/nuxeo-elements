@@ -9,7 +9,9 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 */
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../nuxeo-data-table/iron-data-table.js';
+import { applyUserSort } from '../nuxeo-user-sort.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -2161,6 +2163,710 @@ suite('iron-data-table extras', () => {
       el._fireSettingsChanged();
 
       expect(capturedDetail).to.deep.equal({});
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // resetLayout (ELEMENTS-2017)
+  // ------------------------------------------------------------------
+  suite('resetLayout', () => {
+    function column(props, declaredWidth) {
+      const col = document.createElement('div');
+      if (declaredWidth) {
+        col.setAttribute('width', declaredWidth);
+      }
+      return Object.assign(col, props);
+    }
+
+    function newProvider(props = {}) {
+      return Object.assign(
+        document.createElement('div'),
+        { sort: {}, params: {}, auto: true, page: 3, cancelAutoFetch: sinon.stub() },
+        props,
+      );
+    }
+
+    async function tableWithProvider(provider) {
+      const el = await newTable();
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'clearSelection');
+      sinon.stub(el, 'notifyResize');
+      return el;
+    }
+
+    test('restores the order and the layout-declared width of every column, keeping their visibility', async () => {
+      const el = await newTable();
+      el.columns = [
+        column(
+          { field: 'dc:title', hidden: true, hiddenBack: false, order: 2, width: '620px', resized: true },
+          '300px',
+        ),
+        column({ field: 'dc:creator', hidden: false, hiddenBack: true, order: 0, width: '90px', resized: true }),
+        column({ field: 'dc:modified', hidden: false, hiddenBack: false, order: 1, width: null, resized: false }),
+      ];
+
+      el.resetLayout();
+
+      // Reset Columns, in the layout settings dialog, restores the visibility
+      expect(el.columns.map((c) => c.hidden)).to.deep.equal([true, false, false]);
+      expect(el.columns.map((c) => c.order)).to.deep.equal([0, 1, 2]);
+      expect(el.columns.map((c) => c.width)).to.deep.equal(['300px', null, null]);
+      expect(el.columns.map((c) => c.resized)).to.deep.equal([false, false, false]);
+    });
+
+    test('only sets the column properties that differ from the defaults', async () => {
+      const el = await newTable();
+      el.columns = [
+        column({ field: 'dc:title', hidden: false, hiddenBack: false, order: 0, width: null, filterValue: '' }),
+      ];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.resetLayout();
+
+      expect(setSpy).to.have.been.calledOnceWith('columns.0.resized', false);
+    });
+
+    test('clears the column filter values with the filter events suppressed', async () => {
+      const el = await newTable();
+      el.columns = [
+        column({ field: 'dc:title', filterValue: 'invoice' }),
+        column({ field: 'dc:creator', filterValue: '' }),
+      ];
+      let suppressedWhileClearing;
+      const setStub = sinon.stub(el, 'set').callsFake((path, value) => {
+        if (path === 'columns.0.filterValue') {
+          suppressedWhileClearing = el._suppressFilterEvents;
+        }
+        setStub.wrappedMethod.call(el, path, value);
+      });
+
+      el.resetLayout();
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(setStub).to.not.have.been.calledWith('columns.1.filterValue');
+      expect(suppressedWhileClearing).to.be.true;
+      expect(el._suppressFilterEvents).to.be.false;
+    });
+
+    test('removes the filters from the provider and fetches once from the first page', async () => {
+      const provider = newProvider({
+        params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_path: '/ws' },
+        auto: false,
+        offset: 80,
+      });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' }), column({ field: 'dc:creator' })];
+      el.filters = [
+        { path: 'dc_title', value: 'invoice', name: 'Title', expression: '$term*' },
+        { path: 'dc_creator', value: 'bob', name: 'Author' },
+      ];
+
+      el.resetLayout();
+
+      expect(provider.params).to.deep.equal({ ecm_path: '/ws' });
+      expect(el.filters).to.deep.equal([]);
+      expect(provider.page).to.equal(1);
+      // the offset kept from a later page would otherwise win over the first page
+      expect(provider.offset).to.equal(0);
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.not.have.been.called;
+    });
+
+    test('does not fetch when there is no filter and the table never changed the sort', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title' })];
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(provider.page).to.equal(3);
+      expect(el.clearSelection).to.not.have.been.called;
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('gives the provider back the sort it had before the table first sorted it', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title' })];
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'desc' });
+      el.fetch.resetHistory();
+      el.clearSelection.resetHistory();
+
+      el.resetLayout();
+
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(el.clearSelection).to.have.been.calledOnce;
+      expect(el.fetch).to.have.been.calledOnce;
+    });
+
+    test('fetches once for an auto provider whose sort changed, cancelling the fetch it scheduled', async () => {
+      const provider = newProvider({ auto: true });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'asc' });
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({});
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
+    });
+
+    test('fetches the first page once for a paginable auto provider', async () => {
+      const provider = newProvider({ auto: true, page: 3, offset: 80, params: { dc_title: 'invoice*' } });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      el.resetLayout();
+
+      expect(provider.params).to.deep.equal({});
+      expect(provider.page).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch).to.have.been.calledOnce;
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
+    });
+
+    test('forgets the cached sort even for a provider it never sorted', async () => {
+      const first = newProvider({ auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
+
+      el.resetLayout();
+
+      expect(el._ppSort).to.deep.equal({});
+      expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      // the same header click as on the first provider now applies to the second one
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      expect(second.sort).to.deep.equal({ 'dc:title': 'asc' });
+    });
+
+    test('restores the sort of each provider after moving between them', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
+      el._sort({ detail: { path: 'dc:creator', direction: 'asc' } });
+      el.nxProvider = first;
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetLayout();
+
+      expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('remembers the provider sort only before the first change', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('never restores a sort remembered for another provider', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' } });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' } });
+      el.nxProvider = second;
+
+      el.resetLayout();
+
+      expect(second.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      expect(el.sortOrder).to.deep.equal([]);
+    });
+
+    test('works without a page provider', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', filterValue: 'invoice', hidden: true, hiddenBack: false })];
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      const fetchSpy = sinon.spy(el, 'fetch');
+
+      el.resetLayout();
+
+      expect(el.columns[0].hidden).to.be.true;
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(fetchSpy).to.not.have.been.called;
+    });
+
+    test('fires a single composed settings-changed event with source reset-layout', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', order: 1 }), column({ field: 'dc:creator', order: 0 })];
+      const spy = sinon.spy();
+      el.addEventListener('settings-changed', spy);
+
+      el.resetLayout();
+
+      expect(spy).to.have.been.calledOnce;
+      const event = spy.firstCall.args[0];
+      expect(event.detail).to.deep.equal({ source: 'reset-layout' });
+      expect(event.composed).to.be.true;
+      expect(event.bubbles).to.be.true;
+    });
+
+    test('keeps a hidden column hidden and fires no other settings-changed event', async () => {
+      const el = await newTable();
+      el.columns = [column({ field: 'dc:title', hidden: true, hiddenBack: false })];
+      await flush();
+      const sources = [];
+      el.addEventListener('settings-changed', (e) => sources.push(e.detail && e.detail.source));
+
+      el.resetLayout();
+
+      expect(el.columns[0].hidden).to.be.true;
+      expect(sources).to.deep.equal(['reset-layout']);
+    });
+
+    test('runs when Reset Layout is pressed in the layout settings dialog', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table settings-enabled>
+            <nuxeo-data-table-column name="Title" field="dc:title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      // the header row, with the settings dialog, is rendered in the table's light DOM
+      const settings = el.querySelector('nuxeo-data-table-settings');
+      const resetLayout = sinon.stub(el, 'resetLayout');
+
+      settings.shadowRoot.querySelector('#resetLayout').click();
+
+      expect(resetLayout).to.have.been.calledOnce;
+    });
+
+    test('does not let real columns announce the filters it clears', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      const [titleColumn] = el.columns;
+      titleColumn.filterValue = 'invoice';
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+
+      el.resetLayout();
+
+      expect(titleColumn.filterValue).to.equal('');
+      expect(spy).to.not.have.been.called;
+    });
+
+    test('drops a header filter still waiting for its debounce', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      await flush();
+      await sleep(50);
+      // the header row is rendered in the table's light DOM
+      const filter = el.querySelector('nuxeo-data-table-column-filter');
+      const input = filter.shadowRoot.querySelector('paper-input');
+      // a filter already cleared before: the reset itself then has no filter value to change
+      el.set('columns.0.filterValue', '');
+      await flush();
+      const discardSpy = sinon.spy(filter, 'discardPendingEdit');
+      // typed into that empty filter, not committed yet
+      input.value = 'invoice';
+      expect(filter._debouncer.isActive()).to.be.true;
+
+      el.resetLayout();
+      await sleep(300);
+
+      expect(discardSpy).to.have.been.calledOnce;
+      expect(filter._debouncer.isActive()).to.be.false;
+      expect(input.value).to.equal('');
+      expect(el.columns[0].filterValue).to.equal('');
+    });
+
+    test('leaves a sort the page set since the table last sorted', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // e.g. the page opening another folder
+      provider.sort = { 'dc:modified': 'desc' };
+      el.fetch.resetHistory();
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el.fetch).to.not.have.been.called;
+    });
+
+    test('sends a single request through the real fetch of a scrolled auto provider', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      // scrolling made the provider request a larger range, and a filter is applied
+      provider.pageSize = 40;
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+
+      el.resetLayout();
+      await sleep(40);
+
+      expect(provider.params).to.deep.equal({});
+      expect(fetchStub.callCount).to.equal(1);
+    });
+
+    test('sends a single request through the real fetch of a paginable auto provider', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table paginable>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      // on a later page, with a filter applied
+      provider.page = 3;
+      provider.offset = 40;
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+
+      el.resetLayout();
+      await sleep(60);
+
+      expect(fetchStub.callCount).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      // the table moved on to the next page once the first one was loaded, without fetching it
+      expect(provider.page).to.equal(2);
+    });
+
+    test('gives a provider back its default sort after another provider was sorted meanwhile', async () => {
+      const first = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const second = newProvider({ sort: { 'dc:modified': 'desc' }, auto: false });
+      const el = await tableWithProvider(first);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.nxProvider = second;
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+      // back to the first provider, reset without sorting it again
+      el.nxProvider = first;
+
+      el.resetLayout();
+
+      expect(first.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('gives back the sort the page set before the table sorted again, not an older one', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // e.g. the page opening another folder, then a header click in the table
+      provider.sort = { 'dc:modified': 'desc' };
+      el._sort({ detail: { path: 'dc:title', direction: 'desc' } });
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({ 'dc:modified': 'desc' });
+    });
+
+    test('leaves an equal sort the page set since, as it is not the one the table applied', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // set as a new object by the page, not chosen by the user
+      const setByThePage = { 'dc:title': 'asc' };
+      provider.sort = setByThePage;
+
+      el.resetLayout();
+
+      expect(provider.sort).to.equal(setByThePage);
+    });
+
+    test('also gives back the default after a sort chosen with the sort selector of another view', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      // the "Sort by" selector of the grid view goes through applyUserSort too
+      applyUserSort(provider, { 'dc:coverage': 'asc' });
+      el.fetch.resetHistory();
+
+      el.resetLayout();
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(el.fetch.callCount).to.equal(1);
+    });
+
+    test('keeps the automatic fetch of a sort changed while the reset of a paginable table was loading', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table paginable>
+            <nuxeo-data-table-column name="Title" field="dc:title" filter-by="dc_title"></nuxeo-data-table-column>
+          </nuxeo-data-table>
+        `,
+      );
+      const provider = await fixture(
+        html`
+          <nuxeo-page-provider provider="reset_provider" page-size="20" auto auto-delay="10"></nuxeo-page-provider>
+        `,
+      );
+      let finishReset;
+      const fetchStub = sinon.stub(provider, 'fetch').resolves({ entries: [], resultsCount: 0 });
+      el.nxProvider = provider;
+      await sleep(40);
+      provider.params = { dc_title: 'invoice' };
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+      await sleep(40);
+      fetchStub.resetHistory();
+      fetchStub.onFirstCall().returns(
+        new Promise((resolve) => {
+          finishReset = resolve;
+        }),
+      );
+
+      el.resetLayout();
+      // while the reset request is loading, a new sort is applied and schedules its own automatic fetch
+      provider.sort = { 'dc:modified': 'desc' };
+      finishReset({ entries: [], resultsCount: 0 });
+      await sleep(60);
+
+      expect(fetchStub.callCount).to.equal(2);
+    });
+
+    test('keeps a page default sort through the settings it saves and their restore after a reload', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+
+      el.resetLayout();
+      const saved = JSON.parse(JSON.stringify(el.settings));
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(saved.sortOrder).to.deep.equal([]);
+      // after a reload, the page gives its default sort to a new provider, then the saved settings are restored
+      const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const restored = await tableWithProvider(reloaded);
+      restored.columns = [];
+      restored.settings = saved;
+      expect(reloaded.sort).to.deep.equal({ 'dc:created': 'asc' });
+      expect(restored.sortOrder).to.deep.equal([]);
+    });
+
+    test('gives a table sorted since its saved reset settings the page default sort back when they are restored', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+      el.resetLayout();
+      const saved = JSON.parse(JSON.stringify(el.settings));
+      el._sort({ detail: { path: 'dc:creator', direction: 'desc' } });
+      expect(provider.sort).to.deep.equal({ 'dc:creator': 'desc' });
+
+      el.settings = saved;
+
+      expect(el.sortOrder).to.deep.equal([]);
+      expect(el._ppSort).to.deep.equal({});
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('gives the page default sort back when the last column sort is cleared, also after a reload', async () => {
+      const provider = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [];
+      el._sort({ detail: { path: 'dc:title', direction: 'asc' } });
+
+      el._sort({ detail: { path: 'dc:title', direction: null } });
+
+      expect(provider.sort).to.deep.equal({ 'dc:created': 'asc' });
+      const saved = JSON.parse(JSON.stringify(el.settings));
+      expect(saved.sortOrder).to.deep.equal([]);
+      const reloaded = newProvider({ sort: { 'dc:created': 'asc' }, auto: false });
+      const restored = await tableWithProvider(reloaded);
+      restored.columns = [];
+      restored.settings = saved;
+      expect(reloaded.sort).to.deep.equal({ 'dc:created': 'asc' });
+    });
+
+    test('clears a filter that restored settings list a column without, keeping other params and filters', async () => {
+      const provider = newProvider({
+        params: { dc_title: 'invoice*', dc_creator: 'bob', ecm_fulltext: 'searched' },
+        auto: false,
+        page: 3,
+        offset: 40,
+      });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [
+        column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' }),
+        column({ field: 'dc:creator', filterBy: 'dc_creator', filterValue: 'bob' }),
+      ];
+      el.filters = [
+        { path: 'dc_title', value: 'invoice', name: 'Title', expression: '$term*' },
+        { path: 'dc_creator', value: 'bob', name: 'Author' },
+      ];
+
+      // e.g. the settings Reset Layout saved in another browser, applied after an older local copy with a filter
+      el.settings = { columns: { 'dc:title': { hidden: false, order: 0 } } };
+
+      expect(el.columns.map((c) => c.filterValue)).to.deep.equal(['', 'bob']);
+      expect(provider.params).to.deep.equal({ dc_creator: 'bob', ecm_fulltext: 'searched' });
+      expect(el.filters.map((f) => f.path)).to.deep.equal(['dc_creator']);
+      // fetched again from the first row: the offset of the later page would otherwise win over the first page
+      expect(provider.page).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch.callCount).to.equal(1);
+      // rows selected among the filtered results do not stay selected among the others
+      expect(el.clearSelection.callCount).to.equal(1);
+      expect(el.clearSelection.calledBefore(el.fetch)).to.be.true;
+    });
+
+    test('restores filters with a single request for a paginable auto provider', async () => {
+      const provider = newProvider({ params: {}, auto: true, page: 3, offset: 40 });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title' })];
+      el.filters = [];
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'invoice' } } };
+
+      expect(provider.params).to.deep.equal({ dc_title: 'invoice' });
+      expect(provider.page).to.equal(1);
+      expect(provider.offset).to.equal(0);
+      expect(el.fetch.callCount).to.equal(1);
+      // the automatic fetch the page change scheduled would repeat the request
+      expect(provider.cancelAutoFetch).to.have.been.calledAfter(el.fetch);
+    });
+
+    test('keeps the page when restored settings only change the sort', async () => {
+      const provider = newProvider({ sort: {}, auto: false, page: 3, offset: 40 });
+      const el = await tableWithProvider(provider);
+      el.paginable = true;
+      el.columns = [column({ field: 'dc:title' })];
+
+      el.settings = { columns: { 'dc:title': { hidden: false } }, sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(provider.sort).to.deep.equal({ 'dc:title': 'asc' });
+      expect(provider.page).to.equal(3);
+      expect(provider.offset).to.equal(40);
+      expect(el.fetch.callCount).to.equal(1);
+    });
+
+    test('leaves the params alone for a column restored without a filter the table never set', async () => {
+      const provider = newProvider({ params: { dc_title: 'from the search form' }, auto: true });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'typed' })];
+      el.filters = [];
+
+      el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+      expect(el.columns[0].filterValue).to.equal('');
+      expect(provider.params).to.deep.equal({ dc_title: 'from the search form' });
+      expect(el.fetch.callCount).to.equal(0);
+      expect(el.clearSelection.callCount).to.equal(0);
+    });
+
+    test('keeps the selection when settings are applied again with the same filters', async () => {
+      const provider = newProvider({ params: { dc_title: 'invoice' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      // e.g. the saved settings applied again once a save completes
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'invoice' } } };
+
+      expect(el.clearSelection.callCount).to.equal(0);
+      expect(provider.params).to.deep.equal({ dc_title: 'invoice' });
+    });
+
+    test('keeps the selection when settings are applied again with the same values of a multiple-value filter', async () => {
+      const provider = newProvider({ params: { dc_creator: ['bob', 'alice'] }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:creator', filterBy: 'dc_creator', filterValue: ['bob', 'alice'] })];
+      el.filters = [{ path: 'dc_creator', value: ['bob', 'alice'], name: 'Author' }];
+
+      // as read back from the stored settings: equal values in a new array
+      el.settings = JSON.parse(
+        JSON.stringify({ columns: { 'dc:creator': { hidden: false, filterValue: ['bob', 'alice'] } } }),
+      );
+
+      expect(el.clearSelection.callCount).to.equal(0);
+      expect(provider.params).to.deep.equal({ dc_creator: ['bob', 'alice'] });
+    });
+
+    test('clears the selection when restored settings change the value of a filter', async () => {
+      const provider = newProvider({ params: { dc_title: 'invoice' }, auto: false });
+      const el = await tableWithProvider(provider);
+      el.columns = [column({ field: 'dc:title', filterBy: 'dc_title', filterValue: 'invoice' })];
+      el.filters = [{ path: 'dc_title', value: 'invoice', name: 'Title' }];
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'report' } } };
+
+      expect(provider.params).to.deep.equal({ dc_title: 'report' });
+      expect(el.clearSelection.callCount).to.equal(1);
+      expect(el.clearSelection.calledBefore(el.fetch)).to.be.true;
+    });
+
+    test('_providerRequest changes with what an automatic fetch would request, not with the page', async () => {
+      const el = await newTable();
+      const provider = newProvider({ provider: 'pp', params: { a: 1 }, sort: { 'dc:title': 'asc' } });
+      const request = el._providerRequest(provider);
+
+      provider.page = 7;
+      provider.pageSize = 40;
+      expect(el._providerRequest(provider)).to.equal(request);
+
+      provider.query = 'SELECT * FROM Document';
+      expect(el._providerRequest(provider)).to.not.equal(request);
     });
   });
 

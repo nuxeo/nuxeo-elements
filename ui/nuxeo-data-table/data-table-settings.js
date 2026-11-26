@@ -41,12 +41,21 @@ import '../nuxeo-button-styles.js';
             @apply --buttons-bar;
             margin-top: 0px;
           }
+
+          .subheading {
+            margin-bottom: 0;
+          }
+
+          .resetButtons paper-button + paper-button {
+            margin-inline-start: 8px;
+          }
         </style>
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
 
         <nuxeo-dialog id="columnsSettingsPopup" with-backdrop on-iron-overlay-closed="_onSettingsClosed">
           <h2>[[i18n('tableSettings.columnSettings')]]</h2>
+          <h3 class="subheading">[[i18n('tableSettings.columnSettings.visibleColumns')]]</h3>
           <paper-dialog-scrollable>
             <div class="paper-content layout horizontal">
               <div class="layout vertical">
@@ -69,9 +78,12 @@ import '../nuxeo-button-styles.js';
             </div>
           </paper-dialog-scrollable>
           <div class="buttons horizontal end-justified layout">
-            <div class="flex start-justified">
+            <div class="flex start-justified resetButtons">
               <paper-button noink on-click="_resetSettings" class="secondary"
                 >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
+              >
+              <paper-button noink id="resetLayout" on-click="_resetLayout" class="secondary"
+                >[[i18n('tableSettings.columnSettings.resetLayout')]]</paper-button
               >
             </div>
             <paper-button noink class="primary" dialog-dismiss
@@ -127,6 +139,14 @@ import '../nuxeo-button-styles.js';
       this.columns.forEach((column, idx) => {
         this.set(`columns.${idx}.hidden`, column.hiddenBack);
       });
+    }
+
+    /**
+     * Asks the table to put its layout back to the defaults it declares: column order and width, column filters and
+     * sort order. Column visibility is left as is, as Reset Columns restores it (ELEMENTS-2017).
+     */
+    _resetLayout() {
+      this.dispatchEvent(new CustomEvent('reset-layout'));
     }
 
     _onSettingsClosed() {

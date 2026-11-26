@@ -117,6 +117,21 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         this.value = value;
       });
     }
+
+    /**
+     * Drops an edit still waiting for its debounce and shows the committed value again, so text typed just before the
+     * table resets its layout does not come back as a filter afterwards (ELEMENTS-2017).
+     */
+    discardPendingEdit() {
+      if (!this._debouncer || !this._debouncer.isActive()) {
+        return;
+      }
+      this._debouncer.cancel();
+      const input = this.shadowRoot.querySelector('paper-input');
+      if (input) {
+        input.value = this.value || '';
+      }
+    }
   }
 
   customElements.define(DataTableColumnFilter.is, DataTableColumnFilter);
