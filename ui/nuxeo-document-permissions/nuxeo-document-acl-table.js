@@ -23,8 +23,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
+import { momentTimezone } from '../nuxeo-timezone.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
 
@@ -352,6 +354,7 @@ import './nuxeo-popup-permission.js';
 
     formatTimeFrame(ace) {
       const now = moment();
+      const m = momentTimezone(config.get('timezone'));
       const { begin } = ace;
       const { end } = ace;
       const format = 'D MMM YYYY';
@@ -362,17 +365,14 @@ import './nuxeo-popup-permission.js';
       const untilMiddleStr = ` ${this.i18n('documentAclTable.untilMiddle')} `;
 
       if (begin !== null && end === null) {
-        return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
+        return (now.isAfter(begin) ? sinceStr : fromStr) + m(begin).format(format);
       }
       if (begin === null && end !== null) {
-        return untilStr + moment(end).format(format);
+        return untilStr + m(end).format(format);
       }
       if (begin !== null && end !== null) {
         return (
-          (now.isAfter(begin) ? sinceStr : fromStr) +
-          moment(begin).format(format) +
-          untilMiddleStr +
-          moment(end).format(format)
+          (now.isAfter(begin) ? sinceStr : fromStr) + m(begin).format(format) + untilMiddleStr + m(end).format(format)
         );
       }
       return this.i18n('documentAclTable.permanent');

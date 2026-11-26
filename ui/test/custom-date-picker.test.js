@@ -285,7 +285,7 @@ suite('custom-date-picker', () => {
       expect(m.year()).to.equal(2024);
     });
 
-    test('uses moment.utc() when timezone is Etc/UTC', async () => {
+    test('keeps local calendar arithmetic when timezone is Etc/UTC', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-04-12T00:00:00Z');
@@ -1478,6 +1478,53 @@ suite('custom-date-picker extras', () => {
       el._viewDate = new Date(2024, 5, 10);
       el._nextMonth();
       expect(el._viewDate.getMonth()).to.equal(6);
+    });
+  });
+
+  suite('_focusDate deferred focus', () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 80));
+
+    // Opening the calendar schedules its own grid focus (150-200 ms, then animation frames). Wait until it has run,
+    // otherwise it lands inside the focus window under test and, as the latest request, rightly wins.
+    async function openOnJanuary2026() {
+      const el = await newPicker();
+      el._openCalendar();
+      el._viewDate = new Date(2026, 0, 1);
+      el._generateCalendar();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return el;
+    }
+
+    test('focuses the requested day once the calendar is rendered', async () => {
+      const el = await openOnJanuary2026();
+      const day = el.shadowRoot.querySelector('[data-date="2026-01-20"]');
+      expect(day).to.exist;
+      const focus = sinon.spy(day, 'focus');
+      el._focusDate(new Date(2026, 0, 20));
+      await settle();
+      expect(focus.calledOnce).to.be.true;
+    });
+
+    test('does not throw or steal focus when a selection clears the focused day first', async () => {
+      const el = await openOnJanuary2026();
+      const findNearest = sinon.spy(el, '_findAndFocusNearestValidDate');
+      el._focusDate(new Date(2026, 0, 20));
+      // Selecting (or closing) before the deferred focus runs clears the focused day.
+      el._focusedDate = null;
+      await settle();
+      expect(findNearest.called).to.be.false;
+      expect(el._focusedDate).to.be.null;
+    });
+
+    test('only the latest focus request moves the focus', async () => {
+      const el = await openOnJanuary2026();
+      const first = sinon.spy(el.shadowRoot.querySelector('[data-date="2026-01-20"]'), 'focus');
+      const latest = sinon.spy(el.shadowRoot.querySelector('[data-date="2026-01-22"]'), 'focus');
+      el._focusDate(new Date(2026, 0, 20));
+      el._focusDate(new Date(2026, 0, 22));
+      await settle();
+      expect(first.called).to.be.false;
+      expect(latest.calledOnce).to.be.true;
     });
   });
 
@@ -3973,7 +4020,7 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_moment timezone branch', () => {
-    test('uses moment.utc for Etc/UTC timezone', async () => {
+    test('keeps calendar dates local with Etc/UTC configured', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-06-15');
@@ -4969,7 +5016,7 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_moment with timezone', () => {
-    test('uses utc when timezone is Etc/UTC', async () => {
+    test('keeps calendar parsing local with Etc/UTC configured', async () => {
       const el = await newPicker();
       el.timezone = 'Etc/UTC';
       const m = el._moment('2024-06-15');

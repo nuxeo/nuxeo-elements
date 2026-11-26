@@ -25,6 +25,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezoneParser } from '../nuxeo-timezone.js';
 
 {
   /**
@@ -112,12 +113,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         /**
          * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
+         * Valid values are:
          * - empty: local time will be used, as read from the browser (this is the default)
          * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * - any IANA zone: dates are read and displayed in that zone; invalid zones use browser local time
          */
         timezone: {
           type: String,
+          observer: '_valueChanged',
           value() {
             return config.get('timezone');
           },
@@ -207,12 +210,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           disabled$="[[disabled]]"
           aria-label$="[[_computeDateAriaLabel(label)]]"
           autocomplete="[[autocomplete]]"
-          min="[[min]]"
-          max="[[max]]"
+          min="[[_calendarDate(min, timezone)]]"
+          max="[[_calendarDate(max, timezone)]]"
           error-message="[[errorMessage]]"
           clear-button-visible$="[[!hideClearDateButton]]"
           hide-placeholder="[[hidePlaceholder]]"
           format="[[format]]"
+          timezone="[[timezone]]"
         >
         </custom-date-picker>
       `;
@@ -223,7 +227,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
       // tell custom-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
-      this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
+      this.$.date.set('i18n.formatDate', (date) =>
+        (date instanceof Date ? moment(date) : this._moment(date)).format(moment.localeData().longDateFormat('L')),
+      );
       this.$.date.set('i18n.parseDate', (text) => {
         const date = this._moment(text, moment.localeData().longDateFormat('L'));
         return {
@@ -254,8 +260,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
+      const fn = momentTimezoneParser(this.timezone);
       return fn(...args);
+    }
+
+    _calendarDate(value, timezone) {
+      if (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+      }
+      const date = momentTimezoneParser(timezone)(value);
+      return date.isValid() ? date.locale('en').format('YYYY-MM-DD') : value;
     }
 
     _computeDateAriaLabel(label) {
@@ -290,7 +304,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const year = `${date.get('Y')}`.padStart(4, '0');
         const month = `${date.get('M') + 1}`.padStart(2, '0');
         const day = `${date.get('D')}`.padStart(2, '0');
-        this._inputValue = `${year}-${month}-${day}`;
+        try {
+          this._inputValue = `${year}-${month}-${day}`;
+        } finally {
+          // A timezone change can leave the calendar day unchanged, so its observer may not run.
+          this._preventInputUpdate = false;
+        }
       } else {
         this._inputValue = '';
       }
@@ -298,14 +317,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _inputValueChanged() {
       if (this._inputValue !== null && !this._preventInputUpdate) {
-        const date = this._moment(this._inputValue);
+        let date = this._moment(this._inputValue);
         if (date.isValid()) {
           if (this.defaultTime) {
             const time = moment(this.defaultTime, 'HH:mm:ss');
             if (time.isValid()) {
-              date.add(time.hour(), 'hour');
-              date.add(time.minute(), 'minute');
-              date.add(time.second(), 'second');
+              // Resolve the wall-clock time in the zone again: its offset may change after midnight.
+              date = this._moment([date.year(), date.month(), date.date(), time.hour(), time.minute(), time.second()]);
             } else {
               throw new Error(`Invalid default time ${this.defaultTime}`);
             }

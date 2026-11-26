@@ -27,6 +27,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezone } from '../nuxeo-timezone.js';
 
 // Formats tried, in order, when the primary (property or locale) format does not match what the
 // user typed. Hoisted to module scope so the list is not rebuilt on every keystroke; the contents
@@ -173,13 +174,12 @@ const VALID_MOMENT_TOKENS = new Set([
         },
 
         /**
-         * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
-         * - empty: local time will be used, as read from the browser (this is the default)
-         * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * IANA timezone used to determine today's calendar day. An empty or invalid zone uses the browser.
+         * Input and value remain wall-clock calendar dates; nuxeo-date-picker handles timestamp conversion.
          */
         timezone: {
           type: String,
+          observer: '_timezoneChanged',
           value() {
             return config.get('timezone');
           },
@@ -1399,9 +1399,8 @@ const VALID_MOMENT_TOKENS = new Set([
       const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
       this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
-      this._today = new Date();
-      this._today.setHours(0, 0, 0, 0); // Normalize to start of day
-      this._viewDate = new Date();
+      this._today = this._getToday();
+      this._viewDate = new Date(this._today);
       this._focusedDate = null;
       // Call sites already reported by _logRecoveredError (see there).
       this._loggedRecoveries = new Set();
@@ -1441,9 +1440,8 @@ const VALID_MOMENT_TOKENS = new Set([
 
       this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
-      this._today = new Date();
-      this._today.setHours(0, 0, 0, 0); // Normalize to start of day
-      this._viewDate = new Date();
+      this._today = this._getToday();
+      this._viewDate = new Date(this._today);
       this._focusedDate = null;
 
       // Verify the locale is properly set
@@ -1642,10 +1640,10 @@ const VALID_MOMENT_TOKENS = new Set([
       }
     }
 
-    // Add _moment method for timezone handling like nuxeo-date-picker
+    // Calendar dates are browser-local Date objects, not instants. The outer nuxeo-date-picker
+    // converts between these wall-clock days and timestamps in the configured timezone.
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
-      return fn(...args);
+      return moment(...args);
     }
 
     // Robust parser for date-only strings (YYYY-MM-DD) to local Date at start of day
@@ -1658,9 +1656,21 @@ const VALID_MOMENT_TOKENS = new Set([
             const year = Number.parseInt(m[1], 10);
             const month = Number.parseInt(m[2], 10) - 1;
             const day = Number.parseInt(m[3], 10);
-            const d = new Date(year, month, day);
+            const calendarDate = new Date(0);
+            calendarDate.setUTCFullYear(year, month, day);
+            // Check Gregorian validity independently of days skipped by the browser's timezone.
+            if (
+              calendarDate.getUTCFullYear() !== year ||
+              calendarDate.getUTCMonth() !== month ||
+              calendarDate.getUTCDate() !== day
+            ) {
+              return null;
+            }
+            const d = new Date(0);
             d.setHours(0, 0, 0, 0);
-            return Number.isNaN(d.getTime()) ? null : d;
+            // The multi-argument Date constructor remaps years 0-99 to 1900-1999.
+            d.setFullYear(year, month, day);
+            return d;
           }
         }
         const d = new Date(value);
@@ -1737,15 +1747,15 @@ const VALID_MOMENT_TOKENS = new Set([
       let maxYear = endYear;
 
       if (this.min) {
-        const minDate = new Date(this.min);
-        if (!Number.isNaN(minDate.getTime())) {
+        const minDate = this._parseBoundDate(this.min);
+        if (minDate) {
           minYear = Math.max(startYear, minDate.getFullYear());
         }
       }
 
       if (this.max) {
-        const maxDate = new Date(this.max);
-        if (!Number.isNaN(maxDate.getTime())) {
+        const maxDate = this._parseBoundDate(this.max, true);
+        if (maxDate) {
           maxYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
@@ -1764,14 +1774,28 @@ const VALID_MOMENT_TOKENS = new Set([
      * null bound is ignored the same way.
      *
      * @param {?string} value
+     * @param {boolean} maximum whether this is an inclusive upper bound
      * @returns {?Date}
      */
-    _parseBoundDate(value) {
+    _parseBoundDate(value, maximum = false) {
       if (!value) {
         return null;
       }
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? null : date;
+      const date = this._parseDateOnly(value);
+      const parts = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      if (
+        date &&
+        maximum &&
+        parts &&
+        (date.getFullYear() !== Number(parts[1]) ||
+          date.getMonth() !== Number(parts[2]) - 1 ||
+          date.getDate() !== Number(parts[3]))
+      ) {
+        // A skipped local day has no selectable Date. Its minimum is the first following instant;
+        // its maximum must end before that instant, so neither bound admits an out-of-range day.
+        return new Date(date.getTime() - 1);
+      }
+      return date;
     }
 
     /**
@@ -1828,7 +1852,7 @@ const VALID_MOMENT_TOKENS = new Set([
       // Use 1900-2099 range but respect min/max constraints. Both bounds are parsed once here
       // rather than inside the loop below.
       const minDate = this._parseBoundDate(this.min);
-      const maxDate = this._parseBoundDate(this.max);
+      const maxDate = this._parseBoundDate(this.max, true);
       const { startYear, endYear } = this._getMonthYearRange(minDate, maxDate);
 
       this._monthYearOptions = [];
@@ -2893,11 +2917,32 @@ const VALID_MOMENT_TOKENS = new Set([
         e.stopPropagation();
       }
 
-      // Create a fresh today date to ensure consistency
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      this._today = this._getToday();
+      this._selectDate(this._today);
+    }
 
-      this._selectDate(today);
+    _getToday() {
+      const today = momentTimezone(this.timezone)();
+      return new Date(today.year(), today.month(), today.date());
+    }
+
+    _timezoneChanged() {
+      this._today = this._getToday();
+      if (!this._selectedDate) {
+        this._viewDate = this._getInitialViewDate();
+      }
+      this._generateYearOptions();
+      if (this.shadowRoot) {
+        this._generateCalendar();
+      }
+    }
+
+    _getInitialViewDate() {
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max, true);
+      // Opening and refreshing an empty calendar use the same permitted starting day.
+      const initialDate = minDate || this._today;
+      return new Date(maxDate && initialDate > maxDate ? maxDate : initialDate);
     }
 
     // Separate method for mouse clicks to ensure proper detection
@@ -2949,35 +2994,7 @@ const VALID_MOMENT_TOKENS = new Set([
         this._viewDate = new Date(this._selectedDate);
         this._focusedDate = new Date(this._selectedDate);
       } else {
-        let initialDate = new Date(this._today);
-
-        // Prioritize min date for initial view when constraints exist
-        // This ensures users see the valid range starting from the minimum date
-        if (this.min) {
-          const minDate = new Date(this.min);
-          // Always start with min date when it exists, regardless of today's date
-          initialDate = new Date(minDate);
-        } else if (this.max) {
-          // Only use max date if no min date is specified and today is after max
-          const maxDate = new Date(this.max);
-          if (initialDate > maxDate) {
-            initialDate = new Date(maxDate);
-          }
-        }
-
-        // Final validation: ensure initial date is within valid range
-        if (this.min && this.max) {
-          const minDate = new Date(this.min);
-          const maxDate = new Date(this.max);
-
-          if (initialDate < minDate) {
-            initialDate = new Date(minDate);
-          } else if (initialDate > maxDate) {
-            initialDate = new Date(maxDate);
-          }
-        }
-
-        this._viewDate = initialDate;
+        this._viewDate = this._getInitialViewDate();
         this._focusedDate = null; // No focused date when no date is selected
       }
 
@@ -3432,15 +3449,21 @@ const VALID_MOMENT_TOKENS = new Set([
 
     _focusDate(date, allowCrossMonth = false) {
       // Update focused date
-      this._focusedDate = new Date(date);
-      this._focusedDate.setHours(0, 0, 0, 0);
+      const focusedDate = new Date(date);
+      focusedDate.setHours(0, 0, 0, 0);
+      this._focusedDate = focusedDate;
 
       // Focus the date element
       this.async(() => {
+        // A selection, close or later focus request replaced this date meanwhile (selecting right after
+        // navigating clears it): leave the focus where that action put it.
+        if (this._focusedDate !== focusedDate) {
+          return;
+        }
         // Use local date formatting to avoid timezone issues
-        const year = this._focusedDate.getFullYear();
-        const month = String(this._focusedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(this._focusedDate.getDate()).padStart(2, '0');
+        const year = focusedDate.getFullYear();
+        const month = String(focusedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(focusedDate.getDate()).padStart(2, '0');
         const dateISO = `${year}-${month}-${day}`;
 
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
@@ -3769,7 +3792,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check min date constraint
       if (this.min) {
-        const minDate = this._parseDateOnly(this.min);
+        const minDate = this._parseBoundDate(this.min);
         if (minDate) {
           minDate.setHours(0, 0, 0, 0);
           if (normalizedDate < minDate) {
@@ -3780,7 +3803,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check max date constraint
       if (this.max) {
-        const maxDate = this._parseDateOnly(this.max);
+        const maxDate = this._parseBoundDate(this.max, true);
         if (maxDate) {
           maxDate.setHours(0, 0, 0, 0);
           if (normalizedDate > maxDate) {
@@ -3814,7 +3837,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check min date constraint
       if (this.min) {
-        const minDate = this._parseDateOnly(this.min);
+        const minDate = this._parseBoundDate(this.min);
         if (minDate) {
           minDate.setHours(0, 0, 0, 0);
           if (normalizedDate < minDate) {
@@ -3828,7 +3851,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
       // Check max date constraint
       if (this.max) {
-        const maxDate = this._parseDateOnly(this.max);
+        const maxDate = this._parseBoundDate(this.max, true);
         if (maxDate) {
           maxDate.setHours(0, 0, 0, 0);
           if (normalizedDate > maxDate) {
@@ -3968,21 +3991,21 @@ const VALID_MOMENT_TOKENS = new Set([
         const hasMax = !!this.max;
 
         if (hasMin && hasMax) {
-          const minDate = this._parseDateOnly(this.min);
-          const maxDate = this._parseDateOnly(this.max);
+          const minDate = this._parseBoundDate(this.min);
+          const maxDate = this._parseBoundDate(this.max, true);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be between ${minFormatted} and ${maxFormatted}`;
         }
 
         if (hasMin) {
-          const minDate = this._parseDateOnly(this.min);
+          const minDate = this._parseBoundDate(this.min);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or after ${minFormatted}`;
         }
 
         if (hasMax) {
-          const maxDate = this._parseDateOnly(this.max);
+          const maxDate = this._parseBoundDate(this.max, true);
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or before ${maxFormatted}`;
         }
@@ -4584,10 +4607,10 @@ const VALID_MOMENT_TOKENS = new Set([
      * @returns {?string} 'min', 'max' or null.
      */
     _getViolatedBound(currentDate) {
-      if (this.min && currentDate.isBefore(this._moment(this._parseDateOnly(this.min)), 'day')) {
+      if (this.min && currentDate.isBefore(this._moment(this._parseBoundDate(this.min)), 'day')) {
         return 'min';
       }
-      if (this.max && currentDate.isAfter(this._moment(this._parseDateOnly(this.max)), 'day')) {
+      if (this.max && currentDate.isAfter(this._moment(this._parseBoundDate(this.max, true)), 'day')) {
         return 'max';
       }
       return null;
@@ -5449,16 +5472,10 @@ const VALID_MOMENT_TOKENS = new Set([
       const lastDay = new Date(year, month + 1, 0);
 
       // Normalize min and max dates
-      let minDate = null;
-      let maxDate = null;
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max, true);
 
-      if (this.min) {
-        minDate = new Date(this.min);
-        minDate.setHours(0, 0, 0, 0);
-      }
-
-      if (this.max) {
-        maxDate = new Date(this.max);
+      if (maxDate) {
         maxDate.setHours(23, 59, 59, 999);
       }
 
