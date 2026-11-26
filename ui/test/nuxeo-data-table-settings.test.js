@@ -117,6 +117,54 @@ suite('nuxeo-data-table-settings', () => {
     });
   });
 
+  suite('Reset button (ELEMENTS-2112)', () => {
+    test('should restore column visibility and leave the persistence option as it is', () => {
+      element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
+      element.persistQuerySettings = true;
+
+      element.$$('paper-button.secondary').click();
+
+      expect(element.columns[0].hidden).to.be.false;
+      expect(element.persistQuerySettings).to.be.true;
+      expect(element.$$('#persistQuery').checked).to.be.true;
+    });
+
+    test('should NOT change the option when closing with all columns hidden', () => {
+      element.columns = [{ name: 'Title', hidden: true, hiddenBack: false, alwaysVisible: false }];
+      element.persistQuerySettings = true;
+
+      element._onSettingsClosed();
+
+      expect(element.columns[0].hidden).to.be.false;
+      expect(element.persistQuerySettings).to.be.true;
+    });
+  });
+
+  suite('persistQuerySettings (ELEMENTS-2112)', () => {
+    test('should default to unchecked', () => {
+      expect(element.persistQuerySettings).to.be.false;
+      expect(element.$$('#persistQuery').checked).to.be.false;
+    });
+
+    test('should reflect the property on the checkbox', async () => {
+      element.persistQuerySettings = true;
+      await new Promise((r) => setTimeout(r, 0));
+      expect(element.$$('#persistQuery').checked).to.be.true;
+    });
+
+    test('should update the property and dispatch settings-changed on change', () => {
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+
+      element._onPersistQueryChange({ target: { checked: true } });
+
+      expect(element.persistQuerySettings).to.be.true;
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].bubbles).to.be.true;
+      expect(spy.firstCall.args[0].composed).to.be.true;
+    });
+  });
+
   suite('canChangeVisibility', () => {
     test('should return true when column is not alwaysVisible', () => {
       expect(element.canChangeVisibility({ name: 'Modified', alwaysVisible: false })).to.be.true;
