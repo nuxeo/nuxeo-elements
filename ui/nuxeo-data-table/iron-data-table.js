@@ -50,6 +50,7 @@ import './data-table-icons.js';
 import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
+import { applyUserSort, restoreDefaultSort } from '../nuxeo-user-sort.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -300,6 +301,7 @@ function hasRowDetailTemplate(node) {
                   role="columnheader"
                   columns="{{columns}}"
                   hidden$="[[!settingsEnabled]]"
+                  on-reset-layout="resetLayout"
                 ></nuxeo-data-table-settings>
               </nuxeo-data-table-row>
             </div>
@@ -1096,11 +1098,14 @@ function hasRowDetailTemplate(node) {
       // ---- columns (hidden / order / width / filterValue) ----
       // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
       let needsFetch = false;
+      // restored or cleared column filters change the results, which are then fetched again from the first row
+      let filtersChanged = false;
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
         // avoid firing many fetches that may abort each other (WEBUI-1885)
         this._suppressFilterEvents = true;
         const restoredFilters = [];
+        const clearedFilters = [];
         this.columns.forEach(function(column, idx) {
           const key = column.field ? column.field : `col-${idx}`;
           const colSettings = settings.columns[key] || {};
@@ -1135,26 +1140,42 @@ function hasRowDetailTemplate(node) {
               value: colSettings.filterValue,
               expression: colSettings.filterExpression || null,
             });
+          } else if (settings.columns[key] && column.filterValue) {
+            // A column the settings list without a filter value has no filter: clear the one it still shows, e.g. from
+            // an older copy of the settings applied before these (ELEMENTS-2017)
+            this.set(`columns.${idx}.filterValue`, '');
+            clearedFilters.push(idx);
           }
         }, this);
 
         // Re-enable per-column events and apply restored filters to the provider once
         this._suppressFilterEvents = false;
+        // Whether the restored settings change the filters, which changes the results: a selection made among the
+        // filtered ones then no longer applies, as for a filter the user changes. Settings applied again with the same
+        // filters, e.g. once a save completes, keep the selection (ELEMENTS-2017).
+        let filtersAltered = this._removeColumnFilters(clearedFilters);
+        if (filtersAltered) {
+          needsFetch = true;
+          filtersChanged = true;
+        }
         if (restoredFilters.length > 0 && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
-          if (this.paginable) {
-            this.nxProvider.page = 1;
-          }
-          // Apply restored filters to nxProvider.params AND to this.filters array
+          // Apply restored filters to nxProvider.params AND to this.filters array (the fetch below starts from the first
+          // page)
           restoredFilters.forEach((entry) => {
             const column = this.columns[entry.index];
             const effectiveFilterBy = column.filterBy || column.field || null;
             if (effectiveFilterBy && entry.value) {
+              const previousParam = this.nxProvider.params[effectiveFilterBy];
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
                 this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
+              }
+              // compared by value: the filter of an aggregation column holds an array, restored as a new one
+              if (JSON.stringify(this.nxProvider.params[effectiveFilterBy]) !== JSON.stringify(previousParam)) {
+                filtersAltered = true;
               }
               // Also add to filters array so user can later clear it
               const existingIdx = this.filters.findIndex((f) => f.path === effectiveFilterBy);
@@ -1174,6 +1195,10 @@ function hasRowDetailTemplate(node) {
             }
           });
           needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
+          filtersChanged = true;
+        }
+        if (filtersAltered) {
+          this.clearSelection();
         }
       }
 
@@ -1197,9 +1222,14 @@ function hasRowDetailTemplate(node) {
           return acc;
         }, {});
 
-        // keep provider sort aligned with the table's sortOrder
+        // keep provider sort aligned with the table's sortOrder (ELEMENTS-2017): a restored sort is a sort the user chose,
+        // and no sort at all, as saved after Reset Layout, gives the provider back the sort its page gave it
         this._ppSort = sortMap;
-        this.nxProvider.sort = sortMap;
+        if (Object.keys(sortMap).length > 0) {
+          applyUserSort(this.nxProvider, sortMap);
+        } else {
+          restoreDefaultSort(this.nxProvider);
+        }
         if (!this.nxProvider.auto) {
           needsFetch = true;
         }
@@ -1208,10 +1238,175 @@ function hasRowDetailTemplate(node) {
         this.notifyResize();
       }
 
-      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
+      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966). Changed filters fetch
+      // from the first row, as Reset Layout does: from the first page without the offset of a later one, and without the
+      // automatic fetches of an auto provider repeating the request (ELEMENTS-2017).
       if (needsFetch && typeof this.fetch === 'function') {
-        this.fetch();
+        if (filtersChanged) {
+          this._refetchFromFirstRow();
+        } else {
+          this.fetch();
+        }
       }
+    }
+
+    /**
+     * Puts the table back to the layout it declares: column order and width, column filters and sort order. Column
+     * visibility is left as is: Reset Columns, in the layout settings dialog, restores it. Results are fetched again
+     * only when a filter or the sort actually changed. Fires a single `settings-changed` whose `detail.source` is
+     * `'reset-layout'`, so a host that stores the table settings saves the new ones and can reset controls of its own,
+     * such as a sort selector (ELEMENTS-2017).
+     */
+    resetLayout() {
+      // A filter typed just before the reset is still waiting for its debounce: drop it, or it comes back afterwards.
+      // The header row is rendered in light DOM; filters of a table nested in a row detail belong to that table.
+      this.querySelectorAll('nuxeo-data-table-column-filter').forEach((filter) => {
+        if (filter.closest('nuxeo-data-table') === this) {
+          filter.discardPendingEdit();
+        }
+      });
+
+      // Clear the column filters with their events suppressed, as the settings setter does, so several cleared
+      // filters do not each start a fetch that could abort the others (WEBUI-1885). The provider is updated below.
+      this._suppressFilterEvents = true;
+      try {
+        (this.columns || []).forEach((column, idx) => this._resetColumn(column, idx));
+      } finally {
+        this._suppressFilterEvents = false;
+      }
+
+      const filtersCleared = this._clearFilters();
+      const sortChanged = this._resetSortOrder();
+      if (filtersCleared || sortChanged) {
+        this.clearSelection();
+        this._refetchFromFirstRow();
+      }
+
+      this.notifyResize();
+      this._fireSettingsChanged({ source: 'reset-layout' });
+    }
+
+    /**
+     * Shows the results again from the first row once a reset changed the filters or the sort. The table's own fetch
+     * does it, as for any other refresh: it requests the first page or range and replaces the rows. Changing the sort,
+     * page or range of an auto provider also schedules a fetch of its own, which would only repeat that request, so it
+     * is cancelled.
+     */
+    _refetchFromFirstRow() {
+      const provider = this.nxProvider;
+      if (this.paginable) {
+        // the provider gives its offset, kept from the last page it returned, precedence over the page
+        provider.offset = 0;
+        provider.page = 1;
+      }
+      const fetched = this.fetch();
+      if (provider.auto && typeof provider.cancelAutoFetch === 'function') {
+        provider.cancelAutoFetch();
+        if (this.paginable && fetched) {
+          // Once the first page is loaded the table moves the provider to the next one, which schedules another
+          // automatic fetch: cancel that one too, unless what the provider fetches changed meanwhile and needs its own.
+          const fetchedFor = this._providerRequest(provider);
+          fetched.then(
+            () => {
+              if (this._providerRequest(provider) === fetchedFor) {
+                provider.cancelAutoFetch();
+              }
+            },
+            // a failed fetch does not move the page, so there is nothing of the table's own to cancel
+            (error) => error,
+          );
+        }
+      }
+    }
+
+    /**
+     * Describes what a page provider fetches, apart from the page and its size: its page provider or query, params and
+     * sort. Two equal descriptions mean an automatic fetch would request the same results.
+     */
+    _providerRequest(provider) {
+      return JSON.stringify([provider.provider, provider.query, provider.params || {}, provider.sort || {}]);
+    }
+
+    /**
+     * Restores the order, width and filter of one column to its layout defaults, leaving its visibility as is. The
+     * width is read from the `width` attribute: the property is not reflected, so the attribute keeps the layout value
+     * after a resize; a column that declares none gets `null`, so it sizes from its flex. These are the defaults
+     * `nuxeo-results` applies when it restores a table from empty settings (WEBUI-2079).
+     */
+    _resetColumn(column, idx) {
+      const declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
+      const defaults = {
+        order: idx,
+        width: declaredWidth || null,
+        resized: false,
+        filterValue: '',
+      };
+      Object.keys(defaults).forEach((prop) => {
+        if (column[prop] !== defaults[prop]) {
+          this.set(`columns.${idx}.${prop}`, defaults[prop]);
+        }
+      });
+    }
+
+    /**
+     * Removes the filters of the given columns from `filters`, and from the page provider params when the table set
+     * them, leaving params the table does not filter on, such as search criteria, alone (ELEMENTS-2017).
+     *
+     * @param {Array<number>} indexes The indexes of the columns, whose filter value is already cleared.
+     * @return {boolean} `true` when a filter was removed.
+     */
+    _removeColumnFilters(indexes) {
+      if (indexes.length === 0 || !this._hasPageProvider() || !this.filters) {
+        return false;
+      }
+      let removed = false;
+      indexes.forEach((idx) => {
+        const column = this.columns[idx];
+        const path = column.filterBy || column.field || null;
+        const filterIdx = path ? this.filters.findIndex((filter) => filter.path === path) : -1;
+        if (filterIdx !== -1) {
+          this.splice('filters', filterIdx, 1);
+          if (this.nxProvider.params) {
+            delete this.nxProvider.params[path];
+          }
+          removed = true;
+        }
+      });
+      return removed;
+    }
+
+    /**
+     * Removes the column filters from the page provider params and from `filters`.
+     *
+     * @return {boolean} `true` when there was at least one filter to remove.
+     */
+    _clearFilters() {
+      if (!this._hasPageProvider() || !this.filters || this.filters.length === 0) {
+        return false;
+      }
+      const { params } = this.nxProvider;
+      if (params) {
+        this.filters.forEach((filter) => {
+          delete params[filter.path];
+        });
+      }
+      this.set('filters', []);
+      return true;
+    }
+
+    /**
+     * Clears the sort order and gives the page provider back the sort it had before the user changed it, from a table
+     * header or elsewhere (e.g. the sort selector of the grid view), as long as it still holds the last sort the user
+     * chose: a sort the page set since, e.g. for another folder, is left alone.
+     *
+     * @return {boolean} `true` when the provider sort changed.
+     */
+    _resetSortOrder() {
+      // `_ppSort` is the sort the table last applied, possibly to another provider: forget it with the sort order, so
+      // the next header click is compared to an empty sort and applied.
+      this.sortOrder = [];
+      this._ppSort = {};
+      return this._hasPageProvider() && restoreDefaultSort(this.nxProvider);
     }
 
     _onCheckBoxTap(e) {

@@ -157,9 +157,8 @@ import './nuxeo-tooltip.js';
     }
 
     _selectedChanged() {
-      if (this.selected) {
-        this._sortOrder = this.selected.order;
-      }
+      // with no option selected, the arrow shows the initial ascending order again
+      this._sortOrder = this.selected ? this.selected.order : 'asc';
     }
 
     _toggleSortOrder() {
