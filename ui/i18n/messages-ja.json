@@ -412,6 +412,7 @@
   "tableSettings.columnSettings.done": "完了",
   "tableSettings.columnSettings.reset": "リセット",
   "tags.addedToDocument": "タグ{0}が文書に追加されました",
+  "tags.multipleAddedToDocument": "The tags {0} have been added to the document.",
   "tags.removedFromDocument": "タグ{0}が文書から削除されました",
   "today": "今日",
   "tree.loadMore": "...",

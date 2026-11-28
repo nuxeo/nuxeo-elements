@@ -412,6 +412,7 @@
   "tableSettings.columnSettings.done": "Gereed",
   "tableSettings.columnSettings.reset": "Resetten",
   "tags.addedToDocument": "De tag {0} is aan het document toegevoegd.",
+  "tags.multipleAddedToDocument": "The tags {0} have been added to the document.",
   "tags.removedFromDocument": "De tag {0} is van het document verwijderd.",
   "today": "Vandaag",
   "tree.loadMore": "...",

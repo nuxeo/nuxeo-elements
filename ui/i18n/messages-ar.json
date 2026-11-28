@@ -412,6 +412,7 @@
   "tableSettings.columnSettings.done": "تم",
   "tableSettings.columnSettings.reset": "إعادة الضبط",
   "tags.addedToDocument": "تم إضافة العلامة {0} إلى المستند.",
+  "tags.multipleAddedToDocument": "The tags {0} have been added to the document.",
   "tags.removedFromDocument": "تم إزالة العلامة {0} من المستند.",
   "today": "اليوم",
   "tree.loadMore": "...",

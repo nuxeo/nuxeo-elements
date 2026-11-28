@@ -412,6 +412,7 @@
   "tableSettings.columnSettings.done": "Hecho",
   "tableSettings.columnSettings.reset": "Reiniciar",
   "tags.addedToDocument": "La etiqueta {0} se ha agregado al documento",
+  "tags.multipleAddedToDocument": "The tags {0} have been added to the document.",
   "tags.removedFromDocument": "La etiqueta {0} se ha eliminado del documento",
   "today": "Hoy",
   "tree.loadMore": "...",
