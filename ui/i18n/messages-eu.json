@@ -412,6 +412,7 @@
   "tableSettings.columnSettings.done": "Eginda",
   "tableSettings.columnSettings.reset": "Berrezarri",
   "tags.addedToDocument": "Dokumentuari {0} etiketa gehitu zaio.",
+  "tags.multipleAddedToDocument": "The tags {0} have been added to the document.",
   "tags.removedFromDocument": "Dokumentuari {0} etiketa kendu zaio.",
   "today": "Gaur",
   "tree.loadMore": "...",
